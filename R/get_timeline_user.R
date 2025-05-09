@@ -10,16 +10,15 @@
 #' @importFrom dplyr select distinct mutate any_of
 #' @examples
 #' \dontrun{
-#' timeline <- x_get_timeline(
-#'   username = "Tesla",
+#' timeline <- get_timeline(
+#'   username    = "XDevelopers",
 #'   max_results = 100,
-#'   start_time = iso_8601(as_date("2024-10-10") - days(14)),
-#'   end_time = iso_8601(as_date("2024-10-10") + days(14))
+#'   start_time  = iso_8601(Sys.Date() - 7)
 #' )
-#' user <- x_get_timeline_user(timeline)
+#' user <- get_timeline_user(timeline)
 #' }
 #' @export
-x_get_timeline_user <- function(timeline) {
+get_timeline_user <- function(timeline) {
 
   # Extract user data directly
   timeline |>
@@ -66,8 +65,8 @@ x_get_timeline_user <- function(timeline) {
         verified_type     = .x$verified_type,
         location          = .x$location %||% NA |> as.character(),
         profile_image_url = .x$profile_image_url,
-        link_in_bio       = .x$entities$url$urls |>  
-                              pluck(1, "display_url", .default = NA) |> 
+        link_in_bio       = .x$entities$url$urls |>
+                              pluck(1, "display_url", .default = NA) |>
                               as.character(),
         user_id           = .x$id
       )

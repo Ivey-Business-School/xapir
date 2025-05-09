@@ -11,15 +11,15 @@
 #' @importFrom dplyr mutate select any_of arrange distinct
 #' @examples
 #' \dontrun{
-#' timeline <- x_get_timeline(
+#' timeline <- get_timeline(
 #'   username = "XDevelopers",
 #'   max_results = 100,
 #'   start_time = iso_8601(Sys.Date() - 7)
 #' )
-#' post <- x_get_timeline_post(timeline)
+#' post <- get_timeline_post(timeline)
 #' }
 #' @export
-x_get_timeline_post <- function(
+get_timeline_post <- function(
     timeline,
     tz = Sys.timezone(),
     include_referenced_posts = TRUE

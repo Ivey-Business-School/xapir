@@ -33,10 +33,10 @@
 #'   response
 #' @examples
 #' \dontrun{
-#' tl <- x_get_timeline("Tesla")
+#' tl <- get_timeline("XDevelopers")
 #' }
 #' @export
-x_get_timeline <- function(
+get_timeline <- function(
     username,
     max_results      = 10,
     end_time         = NULL,
