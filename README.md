@@ -12,21 +12,21 @@ endpoints using tidy principles.
 
 Package features include:
 
-- OAuth 2.0 authentication by setting your API token as environment
-  variable (Bearer Token)
-- Retrieve timeline data using `x_get_timeline()`
-- Retrieve tweet data using `x_get_tweets()`
+-   OAuth 2.0 authentication by setting your API token as environment
+    variable (Bearer Token)
+-   Retrieve timeline data using `get_timeline()`
+-   Retrieve tweet data using `x_get_tweets()`
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Vignettes](#vignettes)
-- [Usage](#usage)
-  - [Authenticate](#authenticate)
-  - [Get Timeline](#get-timeline)
-  - [Get Tweets](#get-tweets)
-- [Future](#future)
-- [More Information](#more-information)
+-   [Installation](#installation)
+-   [Vignettes](#vignettes)
+-   [Usage](#usage)
+    -   [Authenticate](#authenticate)
+    -   [Get Timeline](#get-timeline)
+    -   [Get Tweets](#get-tweets)
+-   [Future](#future)
+-   [More Information](#more-information)
 
 ## Installation
 
@@ -49,8 +49,8 @@ information please feel free to browse the {xapir} website at
 <https://Ivey-Business-School.github.io/xapir/> which contains the
 following vignettes:
 
-- [Getting
-  Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.html)
+-   [Getting
+    Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.html)
 
 ## Usage
 
@@ -69,10 +69,17 @@ the X APIs.
 
 ### Get Timeline
 
-TBA
+‘get\_timeline()’ allows for the timeline of an account to be extracted
+through the X API. The following example uses the function to extract
+all posts from Tesla between January 1, 2025 to January 31, 2025.
 
 ``` r
-# example code here
+timeline <- get_timeline(
+  username = "Tesla",
+  max_results = 100,
+  start_time = iso_8601("2025-01-01"), 
+  end_time = iso_8601("2025-01-31"),
+)
 ```
 
 ### Get Tweets
