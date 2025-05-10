@@ -28,7 +28,6 @@ Package features include:
   * Retrieve timeline data using `get_timeline()`
   * Extract post data using `get_timeline_post()`
   * Extract user data using `get_timeline_user()`
-  * Retrieve tweet data using `x_get_tweets()`
   
 ## Table of Contents  
   * [Installation](#installation)
