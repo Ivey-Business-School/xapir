@@ -83,10 +83,6 @@ response <- get_timeline(
 )
 ```
 
-`get_timeline_post()` and `get_timeline_user()` will then take the list
-returned and clean the data into a tibble of posts and users,
-respectively.
-
 ### get\_timeline\_post()
 
 `get_timeline_post()` uses the results from the API call and cleans the

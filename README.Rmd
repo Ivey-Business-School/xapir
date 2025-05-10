@@ -87,9 +87,6 @@ response <- get_timeline(
 )
 ```
 
-`get_timeline_post()` and `get_timeline_user()` will then take the list returned and clean the data into a tibble of
-posts and users, respectively. 
-
 ### get_timeline_post()
 
 `get_timeline_post()` uses the results from the API call and cleans the data to return a tibble of all tweets. 
