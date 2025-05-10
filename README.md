@@ -15,6 +15,8 @@ Package features include:
 -   OAuth 2.0 authentication by setting your API token as environment
     variable (Bearer Token)
 -   Retrieve timeline data using `get_timeline()`
+-   Extract post data using `get_timeline_post()`
+-   Extract user data using `get_timeline_user()`
 -   Retrieve tweet data using `x_get_tweets()`
 
 ## Table of Contents
@@ -67,9 +69,9 @@ token <- Sys.getenv("MY_TOKEN")
 After supplying your token, you can begin running functions that call
 the X APIs.
 
-### ‘get\_timeline()’
+### get\_timeline()
 
-‘get\_timeline()’ allows for the timeline of an account to be extracted
+`get_timeline()` allows for the timeline of an account to be extracted
 through the X API. The following example uses the function to extract
 all posts from Tesla between January 1, 2025 to January 31, 2025.
 
@@ -81,6 +83,10 @@ timeline <- get_timeline(
   end_time = iso_8601("2025-01-31"),
 )
 ```
+
+`get_timeline_post()` and `get_timeline_user()` will take the list
+returned and clean the data into a tibble of posts and users,
+respectively.
 
 ### Get Tweets
 
