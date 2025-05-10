@@ -35,8 +35,8 @@ Package features include:
   * [Usage](#usage)
     * [Authenticate](#authenticate)
     * [Get Timeline](#get-timeline)
-    * [Get Timeline Posts](#get-timeline-post)
-    * [Get Timeline Users](#get-timeline-user)
+    * [Get Timeline Posts](#get-timeline-posts)
+    * [Get Timeline Users](#get-timeline-users)
   * [Future](#future)
   * [More Information](#more-information)
 
