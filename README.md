@@ -67,7 +67,7 @@ token <- Sys.getenv("MY_TOKEN")
 After supplying your token, you can begin running functions that call
 the X APIs.
 
-### Get Timeline
+### ‘get\_timeline()’
 
 ‘get\_timeline()’ allows for the timeline of an account to be extracted
 through the X API. The following example uses the function to extract
