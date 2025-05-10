@@ -25,7 +25,8 @@ Package features include:
 -   [Usage](#usage)
     -   [Authenticate](#authenticate)
     -   [Get Timeline](#get-timeline)
-    -   [Get Tweets](#get-tweets)
+    -   [Get Timeline Posts](#get-timeline-post)
+    -   [Get Timeline Users](#get-timeline-user)
 -   [Future](#future)
 -   [More Information](#more-information)
 
@@ -68,7 +69,7 @@ token <- Sys.getenv("MY_TOKEN")
 After supplying your token, you can begin running functions that call
 the X APIs.
 
-### get\_timeline()
+### Get Timeline
 
 `get_timeline()` allows for the timeline of an account to be extracted
 through the X API. The following example uses the function to extract
@@ -83,7 +84,7 @@ response <- get_timeline(
 )
 ```
 
-### get\_timeline\_post()
+### Get Timeline Posts
 
 `get_timeline_post()` uses the results from the API call and cleans the
 data to return a tibble of all tweets.
@@ -94,7 +95,7 @@ posts <- get_timeline_post(
 )
 ```
 
-### get\_timeline\_user()
+### Get Timeline Users
 
 `get_timeline_user()` uses the results from the API call and cleans the
 data to return a tiblle of all users. This includes accounts whose
