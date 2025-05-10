@@ -76,7 +76,7 @@ through the X API. The following example uses the function to extract
 all posts from Tesla between January 1, 2025 to January 31, 2025.
 
 ``` r
-timeline <- get_timeline(
+response <- get_timeline(
   username = "Tesla",
   max_results = 100,
   start_time = iso_8601("2025-01-01"), 
@@ -84,16 +84,31 @@ timeline <- get_timeline(
 )
 ```
 
-`get_timeline_post()` and `get_timeline_user()` will take the list
+`get_timeline_post()` and `get_timeline_user()` will then take the list
 returned and clean the data into a tibble of posts and users,
 respectively.
 
-### Get Tweets
+### get\_timeline\_post()
 
-TBA
+`get_timeline_post()` uses the results from the API call and cleans the
+data to return a tibble of all tweets.
 
 ``` r
-# example code here
+posts <- get_timeline_post(
+  timeline = response
+)
+```
+
+### get\_timeline\_user()
+
+`get_timeline_user()` uses the results from the API call and cleans the
+data to return a tiblle of all users. This includes accounts whose
+tweets were retweeted by the targeted account.
+
+``` r
+users <-  get_timeline_user(
+  timeline = response
+)
 ```
 
 ## Future
