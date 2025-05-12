@@ -58,16 +58,24 @@ following vignettes:
 
 ### Authenticate
 
-First, load the {xapir} package and supply your token.
+First, initialize your X token for future use.
+
+``` r
+library(usethis)
+
+# Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = "">, then restart R
+edit_renviron()
+```
+
+From here, you can load the packages required.
 
 ``` r
 suppressWarnings(suppressMessages(library(dplyr)))
 library(xapir)
-token <- Sys.getenv("MY_TOKEN")
 ```
 
-After supplying your token, you can begin running functions that call
-the X APIs.
+After supplying your token and loading the package, you can begin
+running functions that call the X APIs.
 
 ### Get Timeline
 
