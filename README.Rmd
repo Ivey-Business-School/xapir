@@ -69,7 +69,7 @@ First, initialize your X token for future use.
 library(usethis)
 
 # Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = "">, then restart R
-edit_renviron()
+edit_r_environ()
 ```
 
 From here, you can load the packages required. 
