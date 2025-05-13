@@ -15,10 +15,10 @@
 #'   max_results = 100,
 #'   start_time  = iso_8601(Sys.Date() - 7)
 #' )
-#' user <- get_timeline_user(timeline)
+#' user <- extract_user(timeline)
 #' }
 #' @export
-get_timeline_user <- function(timeline) {
+extract_user <- function(timeline) {
 
   # Extract user data directly
   timeline |>

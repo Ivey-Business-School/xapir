@@ -16,10 +16,10 @@
 #'   max_results = 100,
 #'   start_time = iso_8601(Sys.Date() - 7)
 #' )
-#' post <- get_timeline_post(timeline)
+#' post <- extract_post(timeline)
 #' }
 #' @export
-get_timeline_post <- function(
+extract_post <- function(
     timeline,
     tz = Sys.timezone(),
     include_referenced_posts = TRUE
