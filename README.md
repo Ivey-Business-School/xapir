@@ -14,9 +14,10 @@ Package features include:
 
 -   OAuth 2.0 authentication by setting your API token as environment
     variable (Bearer Token)
--   Retrieve timeline data using `get_timeline()`
--   Extract post data using `get_timeline_post()`
--   Extract user data using `get_timeline_user()`
+-   Retrieve a user’s timeline data using `get_timeline()`
+-   Search for posts with keywords using `search_recent_posts()`
+-   Extract post data using `extract_post()`
+-   Extract user data using `extract_user()`
 
 ## Table of Contents
 
@@ -25,8 +26,9 @@ Package features include:
 -   [Usage](#usage)
     -   [Authenticate](#authenticate)
     -   [Get Timeline](#get-timeline)
-    -   [Get Timeline Posts](#get-timeline-posts)
-    -   [Get Timeline Users](#get-timeline-users)
+    -   [Search Recent Posts](#search-recent-posts)
+    -   [Extract Posts](#extract-posts)
+    -   [Extract Users](#extract-users)
 -   [Future](#future)
 -   [More Information](#more-information)
 
@@ -92,25 +94,37 @@ response <- get_timeline(
 )
 ```
 
-### Get Timeline Posts
+### Search Recent Posts
 
-`get_timeline_post()` uses the results from the API call and cleans the
-data to return a tibble of all tweets.
+`search_recent_posts()` allows for the user to search for posts using a
+query within the last 7 days. The following example uses the function to
+extract posts related to weddings and are not retweets nor replies.
 
 ``` r
-posts <- get_timeline_post(
+response <- search_recent_posts{
+  query = "weddings -is:retweet -is:reply"
+}
+```
+
+### Extract Posts
+
+`extract_post()` uses the results from the API call and cleans the data
+to return a tibble of all tweets.
+
+``` r
+posts <- extract_post(
   timeline = response
 )
 ```
 
-### Get Timeline Users
+### Extract Users
 
-`get_timeline_user()` uses the results from the API call and cleans the
-data to return a tiblle of all users. This includes accounts whose
-tweets were retweeted by the targeted account.
+`extract_user()` uses the results from the API call and cleans the data
+to return a tibble of all users. This includes accounts whose tweets
+were retweeted by the targeted account.
 
 ``` r
-users <-  get_timeline_user(
+users <-  extract_user(
   timeline = response
 )
 ```
