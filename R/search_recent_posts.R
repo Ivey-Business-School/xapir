@@ -1,4 +1,4 @@
-#' Get Query Timeline
+#' Search Recent Posts
 #'
 #' @description
 #' Ping the search tweets endpoint.  The X API only allows fetching up to the most
@@ -34,13 +34,13 @@
 #'   response
 #' @examples
 #' \dontrun{
-#' tl <- get_query("Developers")
+#' tl <- search_recent_posts("Developers")
 #' }
 #' @export
-get_query <- function(
+search_recent_posts <- function(
     query,
-    max_results      = 10,
-    tweet_limit      = 500,
+    max_results      = 100,
+    tweet_limit      = 100,
     end_time         = NULL,
     start_time       = NULL,
     until_id         = NULL,

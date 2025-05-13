@@ -107,7 +107,7 @@ posts <- get_timeline_post(
 
 ### Get Timeline Users
 
-`get_timeline_user()` uses the results from the API call and cleans the data to return a tiblle of all users. 
+`get_timeline_user()` uses the results from the API call and cleans the data to return a tibble of all users. 
 This includes accounts whose tweets were retweeted by the targeted account. 
 
 ```{r get-timeline-user, eval = FALSE}
