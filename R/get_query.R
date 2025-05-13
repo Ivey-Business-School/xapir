@@ -7,9 +7,9 @@
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
 #' @importFrom stringr str_c
-#' @template query
+#' @param query The search to be made on X.
 #' @template max_results
-#' @template tweet_limit
+#' @param tweet_limit The number of posts that this function will return. 
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
