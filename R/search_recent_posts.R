@@ -7,7 +7,7 @@
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
 #' @importFrom stringr str_c
-#' @param query The search to be made on X.
+#' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
 #' @template max_results
 #' @param tweet_limit The number of posts that this function will return. 
 #' @param end_time The latest date-time from which you want to get posts.

@@ -33,7 +33,7 @@ search_recent_posts(
 )
 }
 \arguments{
-\item{query}{The search to be made on X.}
+\item{query}{The search to be made on X. You can find ways to build specific queries according to the \href{https://docs.x.com/x-api/posts/search/integrate/build-a-query#types}{X API documentation website}}
 
 \item{max_results}{\code{numeric}; a number between 5 and 100 indicating the
 number of posts returned per API call.}
