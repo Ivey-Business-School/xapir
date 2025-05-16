@@ -13,6 +13,7 @@ search_recent_posts(
   until_id = NULL,
   since_id = NULL,
   pagination_token = NULL,
+  sort_order = "relevancy",
   exclude = NULL,
   sleep_time = 0,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
@@ -58,6 +59,8 @@ pages. The X API provides this token when more results are available.
 Typically, you won’t need to set this manually as the function handles it,
 but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
+
+\item{sort_order}{The method in which the posts returned are sorted. It can take the values of 'relevancy' or 'recency'.}
 
 \item{exclude}{A comma-separated list of the types of posts to exclude from
 the response (e.g., "retweets", "replies", or "retweets,replies"). #'}

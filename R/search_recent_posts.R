@@ -20,6 +20,7 @@
 #' @param since_id A post ID to limit the results to posts more recent than the
 #'   specified ID.
 #' @template pagination_token
+#' @param sort_order The method in which the posts returned are sorted. It can take the values of 'relevancy' or 'recency'.
 #' @param exclude A comma-separated list of the types of posts to exclude from
 #'   the response (e.g., "retweets", "replies", or "retweets,replies"). #'
 #' @param sleep_time A numeric value specifying the number of seconds to wait
@@ -46,6 +47,7 @@ search_recent_posts <- function(
     until_id         = NULL,
     since_id         = NULL,
     pagination_token = NULL,
+    sort_order       = "relevancy",
     exclude          = NULL,
     sleep_time       = 0,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
@@ -102,6 +104,7 @@ search_recent_posts <- function(
               since_id         = since_id,
               exclude          = exclude,
               pagination_token = pagination_token,
+              sort_order       = sort_order,
               tweet.fields     = post_fields_str,
               user.fields      = user_fields_str,
               media.fields     = media_fields_str,
