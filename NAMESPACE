@@ -2,9 +2,10 @@
 
 export(extract_post)
 export(extract_user)
+export(get_post_count)
+export(get_recent_posts)
 export(get_timeline)
 export(iso_8601)
-export(search_recent_posts)
 importFrom(dplyr,any_of)
 importFrom(dplyr,arrange)
 importFrom(dplyr,distinct)

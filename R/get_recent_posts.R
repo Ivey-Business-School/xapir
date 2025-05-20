@@ -1,4 +1,4 @@
-#' Search Recent Posts
+#' Get Recent Posts
 #'
 #' @description
 #' Ping the search tweets endpoint.  The X API only allows fetching up to the most
@@ -9,7 +9,7 @@
 #' @importFrom stringr str_c
 #' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
 #' @template max_results
-#' @param tweet_limit The number of posts that this function will return. 
+#' @param sort_order The method in which the posts returned are sorted. It can take the values of 'relevancy' or 'recency'.
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
@@ -20,7 +20,6 @@
 #' @param since_id A post ID to limit the results to posts more recent than the
 #'   specified ID.
 #' @template pagination_token
-#' @param sort_order The method in which the posts returned are sorted. It can take the values of 'relevancy' or 'recency'.
 #' @param exclude A comma-separated list of the types of posts to exclude from
 #'   the response (e.g., "retweets", "replies", or "retweets,replies"). #'
 #' @param sleep_time A numeric value specifying the number of seconds to wait
@@ -35,19 +34,18 @@
 #'   response
 #' @examples
 #' \dontrun{
-#' tl <- search_recent_posts("Developers")
+#' tl <- get_recent_posts("Developers")
 #' }
 #' @export
-search_recent_posts <- function(
+get_recent_posts <- function(
     query,
     max_results      = 100,
-    tweet_limit      = 100,
+    sort_order       = "relevancy",
     end_time         = NULL,
     start_time       = NULL,
     until_id         = NULL,
     since_id         = NULL,
     pagination_token = NULL,
-    sort_order       = "relevancy",
     exclude          = NULL,
     sleep_time       = 0,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
@@ -82,8 +80,6 @@ search_recent_posts <- function(
   expansions_str   <- str_c(expansions, collapse = ",")
 
   response <- NULL
-  total_count <- 0
-  call_i <- 1
 
   # Make the API request
   while (call_i == 1 | !is.null(pagination_token)) {
@@ -130,15 +126,12 @@ search_recent_posts <- function(
     if (is.null(this_response$data)) break
 
     response <- c(response, list(this_response))
-    total_count <- total_count + length(this_response$data)
 
     this_response |>
       pluck("meta", "next_token") ->
       pagination_token
 
     message(paste("Finished getting posts on page ", call_i))
-
-    if (total_count >= tweet_limit) break
 
     call_i <- call_i + 1
 

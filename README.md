@@ -15,7 +15,9 @@ Package features include:
 -   OAuth 2.0 authentication by setting your API token as environment
     variable (Bearer Token)
 -   Retrieve a user’s timeline data using `get_timeline()`
--   Search for posts with keywords using `search_recent_posts()`
+-   Search for posts with keywords using `get_recent_posts()`
+-   See how many posts have been posted under a query using
+    `get_post_count()`
 -   Extract post data using `extract_post()`
 -   Extract user data using `extract_user()`
 
@@ -26,7 +28,8 @@ Package features include:
 -   [Usage](#usage)
     -   [Authenticate](#authenticate)
     -   [Get Timeline](#get-timeline)
-    -   [Search Recent Posts](#search-recent-posts)
+    -   [Get Recent Posts](#get-recent-posts)
+    -   [Get Post Count](#get-post-count)
     -   [Extract Posts](#extract-posts)
     -   [Extract Users](#extract-users)
 -   [Future](#future)
@@ -94,14 +97,27 @@ response <- get_timeline(
 )
 ```
 
-### Search Recent Posts
+### Get Recent Posts
 
-`search_recent_posts()` allows for the user to search for posts using a
+`get_recent_posts()` allows for the user to search for posts using a
 query within the last 7 days. The following example uses the function to
 extract posts related to weddings and are not retweets nor replies.
 
 ``` r
-response <- search_recent_posts{
+response <- get_recent_posts{
+  query = "weddings -is:retweet -is:reply"
+}
+```
+
+### Get Post Count
+
+`get_post_count()` allows for the user to see how many posts were posted
+within the last 7 days. The following example uses the function to count
+the number of posts related to weddings and are not retweets nor
+replies.
+
+``` r
+response <- get_post_count{
   query = "weddings -is:retweet -is:reply"
 }
 ```
