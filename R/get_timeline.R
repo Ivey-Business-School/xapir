@@ -21,7 +21,7 @@
 #' @template pagination_token
 #' @param exclude A comma-separated list of the types of posts to exclude from
 #'   the response (e.g., "retweets", "replies", or "retweets,replies"). #'
-#'   @param sleep_time A numeric value specifying the number of seconds to wait
+#' @param sleep_time A numeric value specifying the number of seconds to wait
 #'   between API calls. This helps avoid hitting rate limits imposed by the X
 #'   API. You can adjust this value based on your tier's rate limits, which are
 #'   detailed on the [X API documentation

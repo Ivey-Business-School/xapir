@@ -1,20 +1,19 @@
 #' Get Recent Posts
 #'
 #' @description
-#' Ping the search tweets endpoint.  The X API only allows fetching up to the most
-#' recent 7 days worth of posts.
+#' Ping the search tweets endpoint.  Returns Posts from the last 7 days that match a search query.
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
 #' @importFrom stringr str_c
 #' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
 #' @template max_results
-#' @param sort_order The method in which the posts returned are sorted. It can take the values of 'relevancy' or 'recency'.
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
 #'   the required format (e.g., `iso_8601("2024-10-10")`).
 #' @param start_time The earliest date-time from which you want to get posts.
+#' @param sort_order The method in which the posts returned are sorted. It can take the values of 'relevancy' or 'recency'.
 #' @param until_id A post ID to limit the results to posts older than the
 #'   specified ID.
 #' @param since_id A post ID to limit the results to posts more recent than the
@@ -40,9 +39,9 @@
 get_recent_posts <- function(
     query,
     max_results      = 100,
-    sort_order       = "relevancy",
     end_time         = NULL,
     start_time       = NULL,
+    sort_order       = "relevancy",
     until_id         = NULL,
     since_id         = NULL,
     pagination_token = NULL,
