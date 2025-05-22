@@ -1,23 +1,24 @@
 #' Get Recent Post Count
 #'
 #' @description
-#' Retrieve the number of recent posts (tweet counts) for a given query. This endpoint provides 
-#' counts over the last 7 days, and allows for aggregation by minute, hour, or day.
+#' Returns Post Counts from the last 7 days that match a search query via the [recent posts count 
+#' endpoint](https://docs.x.com/x-api/posts/recent-search-counts).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
 #' @importFrom stringr str_c
 #' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
+#' @param start_time The earliest date-time from which you want to get posts.
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
 #'   the required format (e.g., `iso_8601("2024-10-10")`).
-#' @param start_time The earliest date-time from which you want to get posts.
 #' @param granularity The granularity for the search counts results. This takes either the value 'minute', 'hour', or 'day'.
-#' @param until_id A post ID to limit the results to posts older than the
-#'   specified ID.
 #' @param since_id A post ID to limit the results to posts more recent than the
 #'   specified ID.
+#' @param until_id A post ID to limit the results to posts older than the
+#'   specified ID.
+#' @param search_count.fields A comma separated list of SearchCount fields to display. The available options are 'end', 'start', and 'tweet_count'.
 #' @template pagination_token
 #' @param sleep_time A numeric value specifying the number of seconds to wait
 #'   between API calls. This helps avoid hitting rate limits imposed by the X
@@ -29,16 +30,17 @@
 #'   response
 #' @examples
 #' \dontrun{
-#' tl <- get_post_count("Developers")
+#' tl <- get_recent_post_count("Developers")
 #' }
 #' @export
-get_post_count <- function(
+get_recent_post_count <- function(
     query,
-    end_time         = NULL,
     start_time       = NULL,
+    end_time         = NULL,
     granularity      = "hour",
-    until_id         = NULL,
     since_id         = NULL,
+    until_id         = NULL,
+    search_count.fields = "tweet-count",
     pagination_token = NULL,
     sleep_time       = 0,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN")
@@ -59,7 +61,8 @@ get_post_count <- function(
             until_id         = until_id,
             since_id         = since_id,
             pagination_token = pagination_token,
-            granularity      = granularity
+            granularity      = granularity,
+            search_count.fields = search.count.fields
         ) |>
         req_auth_bearer_token(token = bearer_token) |>
         req_perform() |>

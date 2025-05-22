@@ -1,8 +1,8 @@
 #' Get User Timeline
 #'
 #' @description
-#' Ping the timeline endpoint.  The X API only allows fetching up to the most
-#' recent 3,200 posts.
+#' Returns a list of Posts authored by the provided User ID via the [user posts timeline by user ID
+#' endpoint](https://docs.x.com/x-api/posts/user-posts-timeline-by-user-id).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck

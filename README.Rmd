@@ -26,8 +26,8 @@ Package features include:
 
   * OAuth 2.0 authentication by setting your API token as environment variable (Bearer Token)
   * Retrieve a user's timeline data using `get_timeline()`
-  * Search for posts with keywords using `get_recent_posts()`
-  * See how many posts have been posted under a query using `get_post_count()`
+  * Search for posts with keywords using `get_recent_post()`
+  * See how many posts have been posted under a query using `get_recent_post_count()`
   * Extract post data using `extract_post()`
   * Extract user data using `extract_user()`
   
@@ -37,8 +37,8 @@ Package features include:
   * [Usage](#usage)
     * [Authenticate](#authenticate)
     * [Get Timeline](#get-timeline)
-    * [Get Recent Posts](#get-recent-posts)
-    * [Get Post Count](#get-post-count)
+    * [Get Recent Post](#get-recent-post)
+    * [Get Recent Post Count](#get-recent-post-count)
     * [Extract Posts](#extract-posts)
     * [Extract Users](#extract-users)
   * [Future](#future)
@@ -99,24 +99,24 @@ response <- get_timeline(
 )
 ```
 
-### Get Recent Posts
+### Get Recent Post
 
-`get_recent_posts()` allows for the user to search for posts using a query within the last 7 days. The 
+`get_recent_post()` allows for the user to search for posts using a query within the last 7 days. The 
 following example uses the function to extract posts related to weddings and are not retweets nor replies.
 
-``` {r get-recent-posts, eval = FALSE} 
-response <- get_recent_posts{
+``` {r get-recent-post, eval = FALSE} 
+response <- get_recent_post{
   query = "weddings -is:retweet -is:reply"
 }
 ```
 
-### Get Post Count
+### Get Recent Post Count
 
-`get_post_count()` allows for the user to see how many posts were posted within the last 7 days. The following
+`get_recent_post_count()` allows for the user to see how many posts were posted within the last 7 days. The following
 example uses the function to count the number of posts related to weddings and are not retweets nor replies.
 
-``` {r get-post-count, eval = FALSE} 
-response <- get_post_count{
+``` {r get-recent-post-count, eval = FALSE} 
+response <- get_recent_post_count{
   query = "weddings -is:retweet -is:reply"
 }
 ```

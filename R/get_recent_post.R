@@ -1,7 +1,8 @@
-#' Get Recent Posts
+#' Get Recent Post
 #'
 #' @description
-#' Ping the search tweets endpoint.  Returns Posts from the last 7 days that match a search query.
+#' Returns Posts from the last 7 days that match a search query via the [recent search 
+#' endpoint](https://docs.x.com/x-api/posts/recent-search).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
@@ -33,10 +34,10 @@
 #'   response
 #' @examples
 #' \dontrun{
-#' tl <- get_recent_posts("Developers")
+#' tl <- get_recent_post("Developers")
 #' }
 #' @export
-get_recent_posts <- function(
+get_recent_post <- function(
     query,
     max_results      = 100,
     end_time         = NULL,
@@ -79,6 +80,7 @@ get_recent_posts <- function(
   expansions_str   <- str_c(expansions, collapse = ",")
 
   response <- NULL
+  call_i <- 1
 
   # Make the API request
   while (call_i == 1 | !is.null(pagination_token)) {

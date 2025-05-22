@@ -88,8 +88,7 @@ A \code{list} containing the four elements that make up the API
 response
 }
 \description{
-Ping the timeline endpoint.  The X API only allows fetching up to the most
-recent 3,200 posts.
+Returns a list of Posts authored by the provided User ID via the \href{https://docs.x.com/x-api/posts/user-posts-timeline-by-user-id}{user posts timeline by user ID endpoint}.
 }
 \examples{
 \dontrun{
