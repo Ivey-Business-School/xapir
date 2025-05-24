@@ -29,6 +29,7 @@ Package features include:
   * Search for posts with keywords using `get_recent_post()`
   * See how many posts have been posted under a query using `get_recent_post_count()`
   * Retrieve owned lists using `get_list()`
+  * Obtain the accounts in a list using `get_list_member()`
   * Extract post data using `extract_post()`
   * Extract user data using `extract_user()`
   
@@ -41,6 +42,7 @@ Package features include:
     * [Get Recent Post](#get-recent-post)
     * [Get Recent Post Count](#get-recent-post-count)
     * [Get List](#get-list)
+    * [Get List Member](#get-list-member)
     * [Extract Posts](#extract-posts)
     * [Extract Users](#extract-users)
   * [Future](#future)
@@ -107,9 +109,9 @@ response <- get_timeline(
 following example uses the function to extract posts related to weddings and are not retweets nor replies.
 
 ``` {r get-recent-post, eval = FALSE} 
-response <- get_recent_post{
+response <- get_recent_post(
   query = "weddings -is:retweet -is:reply"
-}
+)
 ```
 
 ### Get Recent Post Count
@@ -118,9 +120,9 @@ response <- get_recent_post{
 example uses the function to count the number of posts related to weddings and are not retweets nor replies.
 
 ``` {r get-recent-post-count, eval = FALSE} 
-response <- get_recent_post_count{
+post_count <- get_recent_post_count(
   query = "weddings -is:retweet -is:reply"
-}
+)
 ```
 
 ### Get List
@@ -128,7 +130,17 @@ response <- get_recent_post_count{
 `get_list()` allows for the user to extract the IDs of their owned lists.
 
 ``` {r get-list, eval = FALSE} 
-response <- get_list{}
+list_IDs <- get_list()
+```
+
+### Get List Member
+
+`get_list_member()` allows for the user to extract the IDs and usernames of the members of a list.
+
+``` {r get-list-member, eval = FALSE} 
+members <- get_list_member(
+  list_id = desired_list_id_value
+)
 ```
 
 ### Extract Posts
