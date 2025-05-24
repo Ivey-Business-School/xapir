@@ -18,6 +18,7 @@ Package features include:
 -   Search for posts with keywords using `get_recent_post()`
 -   See how many posts have been posted under a query using
     `get_recent_post_count()`
+-   Retrieve owned lists using `get_list()`
 -   Extract post data using `extract_post()`
 -   Extract user data using `extract_user()`
 
@@ -30,6 +31,7 @@ Package features include:
     -   [Get Timeline](#get-timeline)
     -   [Get Recent Post](#get-recent-post)
     -   [Get Recent Post Count](#get-recent-post-count)
+    -   [Get List](#get-list)
     -   [Extract Posts](#extract-posts)
     -   [Extract Users](#extract-users)
 -   [Future](#future)
@@ -120,6 +122,15 @@ nor replies.
 response <- get_recent_post_count{
   query = "weddings -is:retweet -is:reply"
 }
+```
+
+### Get List
+
+`get_list()` allows for the user to extract the IDs of their owned
+lists.
+
+``` r
+response <- get_list{}
 ```
 
 ### Extract Posts

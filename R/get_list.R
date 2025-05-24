@@ -1,22 +1,30 @@
-#' Get Owned Lists from X (Twitter) via OAuth 2.0
+#' Get List
 #'
 #' @description
-#' Authenticates via OAuth 2.0 Authorization Code with PKCE and retrieves all lists owned by the authenticated user.
+#' Get a User’s Owned Lists via the [owned list endpoint](https://docs.x.com/x-api/lists/get-a-users-owned-lists).
 #'
-#' @param client_id Your app's Client ID (from developer portal).
-#' @return A data frame of lists you own, or NULL if none found.
 #' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_perform resp_body_json
+#' @param client_id A string containing the OAuth 2.0 client ID for authenticating
+#'   with the X API. By default, this argument retrieves the token from the
+#'   environment variable `X_CLIENT_ID` (via `Sys.getenv("X_CLIENT_ID")`).
+#'   Adding your client ID to your `.Renviron` file ensures it is securely
+#'   stored and accessible without needing to manually input it for each
+#'   session.
+#' @return A tibble containing the IDs of the lists and their names, or NULL if none found.
+#' @examples
+#' \dontrun{
+#' lists <- get_list()
+#' }
 #' @export
 get_list <- function(client_id = Sys.getenv("X_CLIENT_ID")) {
-  library(httr2)
 
-  # Step 1: Create OAuth client (no secret for PKCE)
+  # Create OAuth client 
   client <- oauth_client(
     id = client_id,
     token_url = "https://api.twitter.com/2/oauth2/token"
   )
 
-  # Step 2: Run authorization code flow with PKCE
+  # Run authorization code flow with PKCE
   token <- oauth_flow_auth_code(
     client = client,
     auth_url = "https://twitter.com/i/oauth2/authorize",
@@ -25,7 +33,7 @@ get_list <- function(client_id = Sys.getenv("X_CLIENT_ID")) {
     pkce = TRUE
   )
 
-  # Step 3: Get authenticated user's ID
+  # Get authenticated user's ID
   user_req <- request("https://api.twitter.com/2/users/me") |>
     req_auth_bearer_token(token$access_token) |>
     req_perform()
@@ -33,7 +41,7 @@ get_list <- function(client_id = Sys.getenv("X_CLIENT_ID")) {
   user_data <- resp_body_json(user_req)
   user_id <- user_data$data$id
 
-  # Step 4: Get lists owned by the user
+  # Get lists owned by the user
   lists_req <- request(paste0("https://api.twitter.com/2/users/", user_id, "/owned_lists")) |>
     req_auth_bearer_token(token$access_token) |>
     req_perform()

@@ -26,8 +26,7 @@
 #'   detailed on the [X API documentation
 #'   website](https://developer.x.com/en/docs/rate-limits).
 #' @template bearer_token
-#' @return A \code{list} containing the four elements that make up the API
-#'   response
+#' @return A tibble containing the number of posts.
 #' @examples
 #' \dontrun{
 #' tl <- get_recent_post_count("Developers")

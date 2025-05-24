@@ -56,8 +56,7 @@ stored and accessible without needing to manually input it for each
 session.}
 }
 \value{
-A \code{list} containing the four elements that make up the API
-response
+A tibble containing the number of posts.
 }
 \description{
 Returns Post Counts from the last 7 days that match a search query via the \href{https://docs.x.com/x-api/posts/recent-search-counts}{recent posts count endpoint}.
