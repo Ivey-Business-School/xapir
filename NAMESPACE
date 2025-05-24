@@ -3,6 +3,7 @@
 export(extract_post)
 export(extract_user)
 export(get_list)
+export(get_list_member)
 export(get_recent_post)
 export(get_recent_post_count)
 export(get_timeline)

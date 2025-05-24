@@ -43,7 +43,7 @@ get_recent_post_count <- function(
     pagination_token = NULL,
     sleep_time       = 0,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN")
- ) {
+) {
 
   # Make the API request
   while (TRUE) {
