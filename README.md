@@ -20,6 +20,8 @@ Package features include:
     `get_recent_post_count()`
 -   Retrieve owned lists using `get_list()`
 -   Obtain the accounts in a list using `get_list_member()`
+-   Create a post on X using `post_to_x()`
+-   Delete a post on X using `delete_from_x()`
 -   Extract post data using `extract_post()`
 -   Extract user data using `extract_user()`
 
@@ -34,6 +36,8 @@ Package features include:
     -   [Get Recent Post Count](#get-recent-post-count)
     -   [Get List](#get-list)
     -   [Get List Member](#get-list-member)
+    -   [Post to X](#post-to-X)
+    -   [Delete From X](#delete-from-x)
     -   [Extract Posts](#extract-posts)
     -   [Extract Users](#extract-users)
 -   [Future](#future)
@@ -143,6 +147,27 @@ of the members of a list.
 ``` r
 members <- get_list_member(
   list_id = desired_list_id_value
+)
+```
+
+### Post to X
+
+`post_to_x()` allows the user to create a post on X.
+
+``` r
+post_to_x(
+  text = "Hello world!"
+)
+```
+
+### Delete From X
+
+`delete_from_x()` allows the user to delete a specific post on X using
+its post ID.
+
+``` r
+delete_from_x(
+  post_id = targeted_posts_ID_value
 )
 ```
 
