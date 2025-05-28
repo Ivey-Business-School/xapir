@@ -15,6 +15,7 @@ Package features include:
 -   OAuth 2.0 authentication by setting your API token as environment
     variable (Bearer Token)
 -   Retrieve a user’s timeline data using `get_timeline()`
+-   Develop a search query URL using `search_x()`
 -   Search for posts with keywords using `get_recent_post()`
 -   See how many posts have been posted under a query using
     `get_recent_post_count()`
@@ -32,6 +33,7 @@ Package features include:
 -   [Usage](#usage)
     -   [Authenticate](#authenticate)
     -   [Get Timeline](#get-timeline)
+    -   [Search X](#search-x)
     -   [Get Recent Post](#get-recent-post)
     -   [Get Recent Post Count](#get-recent-post-count)
     -   [Get List](#get-list)
@@ -102,6 +104,27 @@ response <- get_timeline(
   max_results = 100,
   start_time = iso_8601("2025-01-01"), 
   end_time = iso_8601("2025-01-31"),
+)
+```
+
+### Search X
+
+`search_x()` allows for the user to programatically develop search query
+URLs for X’s advanced search feature. It allows for filtering through
+keywords, hashtags, engagement thresholds, date ranges, and account
+interactions.
+
+``` r
+url <- search_x(
+   words_exact = "full self driving",
+   words_any = "optimus tesla",
+   lang = "en", 
+   sort = "top", 
+   since = today() - months(1),
+   until = today(),
+   min_faves = 500,
+   filter_links = "exclude", 
+   filter_replies = "exclude"
 )
 ```
 
