@@ -10,21 +10,10 @@
 #' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
 #' @param start_time The earliest date-time from which you want to get posts.
 #' @param end_time The latest date-time from which you want to get posts.
-#'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
+#' Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
 #'   the required format (e.g., `iso_8601("2024-10-10")`).
 #' @param granularity The granularity for the search counts results. This takes either the value 'minute', 'hour', or 'day'.
-#' @param since_id A post ID to limit the results to posts more recent than the
-#'   specified ID.
-#' @param until_id A post ID to limit the results to posts older than the
-#'   specified ID.
-#' @param search_count.fields A comma separated list of SearchCount fields to display. The available options are 'end', 'start', and 'tweet_count'.
-#' @template pagination_token
-#' @param sleep_time A numeric value specifying the number of seconds to wait
-#'   between API calls. This helps avoid hitting rate limits imposed by the X
-#'   API. You can adjust this value based on your tier's rate limits, which are
-#'   detailed on the [X API documentation
-#'   website](https://developer.x.com/en/docs/rate-limits).
 #' @template bearer_token
 #' @return A tibble containing the number of posts.
 #' @examples
@@ -37,11 +26,6 @@ get_recent_post_count <- function(
     start_time       = NULL,
     end_time         = NULL,
     granularity      = "hour",
-    since_id         = NULL,
-    until_id         = NULL,
-    search_count.fields = "tweet-count",
-    pagination_token = NULL,
-    sleep_time       = 0,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN")
 ) {
 
@@ -56,12 +40,7 @@ get_recent_post_count <- function(
         req_url_query(
             query            = query,
             end_time         = end_time,
-            start_time       = start_time,
-            until_id         = until_id,
-            since_id         = since_id,
-            pagination_token = pagination_token,
-            granularity      = granularity,
-            search_count.fields = search.count.fields
+            start_time       = start_time
         ) |>
         req_auth_bearer_token(token = bearer_token) |>
         req_perform() |>
