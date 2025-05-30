@@ -8,28 +8,28 @@
 #' @param words_any A string containing words or phrases (in quotes) that could be contained in the query results
 #' @param words_none A string containing words that will not be contained in the query results
 #' @param hashtags A string containing the hashtags that must be contained in the query result
-#' @param lang Restrict results by language
-#' @param accounts_from Tweets authored by these accounts
-#' @param accounts_to Tweets directed to these accounts
-#' @param accounts_mention Tweets mentioning these accounts
+#' @param lang Restrict results by language, which are encoded through their [ISO 639-1 codes](https://localizely.com/iso-639-1-list/)
+#' @param accounts_from Posts authored by these accounts
+#' @param accounts_to Posts directed to these accounts
+#' @param accounts_mention Posts mentioning these accounts
 #' @param filter_replies Filter replies: "" (show all), "include" (only replies), "exclude" (no replies)
-#' @param filter_links Filter tweets with links: "" (show all), "include" (only links), "exclude" (no links)
-#' @param min_replies Minimum number of replies the tweet must have
-#' @param min_faves Minimum number of likes (faves) the tweet must have
-#' @param min_reposts Minimum number of reposts (retweets) the tweet must have
-#' @param since Start date for tweet search
-#' @param until End date for tweet search
-#' @param sort Sorting method: "top" relevancy, "live" (latest)
+#' @param filter_links Filter posts with links: "" (show all), "include" (only links), "exclude" (no links)
+#' @param min_replies Minimum number of replies the post must have
+#' @param min_faves Minimum number of likes the post must have
+#' @param min_reposts Minimum number of reposts (retweets) the post must have
+#' @param since Start date for post search in YYYY-MM-DD format
+#' @param until End date for post search in YYYY-MM-DD format
+#' @param sort Sorting method: "top" (relevancy), "live" (latest)
 #' @return A character string containing the full search URL that was opened in the browser.
 #' @examples
 #' \dontrun{
 #' url <- search_x(
 #' words_exact = "full self driving",
-#' words_any = "optimus tesla",
+#' words_any = "optimus tesla \"electric vehicle\"",
 #' lang = "en", 
 #' sort = "top", 
-#' since = today() - months(1),
-#' until = today(),
+#' since = "2025-01-01",
+#' until = "2025-01-31",
 #' min_faves = 500,
 #' filter_links = "exclude", 
 #' filter_replies = "exclude"
@@ -176,16 +176,21 @@ search_x <- function(
    }
    
    # Validate and add date range
-   current_date <- as.Date("2025-05-27")  # Today's date
+   current_date <- Sys.Date()  # Today's date
+
+   if (!is.null(since)) since_date <- as.Date(since)
+   if (!is.null(until)) until_date <- as.Date(until)
+
    if (!is.null(since) && !is.null(until)) {
-      since_date <- as.Date(since)
-      until_date <- as.Date(until)
       if (since_date > until_date) {
          stop("Error: 'since' date cannot be after 'until' date.")
       }
+   }
+      
+   if (!is.null(until)) {
       if (until_date > current_date) {
-         warning("The 'until' date is in the future. Setting it to today: 2025-05-27.")
-         until <- "2025-05-27"
+         warning(sprintf("The 'until' date is in the future. Setting it to today: %s.", current_date))
+         until <- as.character(current_date)
       }
    }
    
