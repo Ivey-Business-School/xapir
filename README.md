@@ -23,6 +23,7 @@ Package features include:
 -   Obtain the accounts in a list using `get_list_member()`
 -   Create a post on X using `post_to_x()`
 -   Delete a post on X using `delete_from_x()`
+-   Repost a post on X using `repost_to_x()`
 -   Extract post data using `extract_post()`
 -   Extract user data using `extract_user()`
 
@@ -40,6 +41,7 @@ Package features include:
     -   [Get List Member](#get-list-member)
     -   [Post to X](#post-to-X)
     -   [Delete From X](#delete-from-x)
+    -   [Repost to X](#repost-to-x)
     -   [Extract Posts](#extract-posts)
     -   [Extract Users](#extract-users)
 -   [Future](#future)
@@ -169,7 +171,7 @@ of the members of a list.
 
 ``` r
 members <- get_list_member(
-  list_id = desired_list_id_value
+  list_id = "desired_list_id_value"
 )
 ```
 
@@ -190,7 +192,18 @@ its post ID.
 
 ``` r
 delete_from_x(
-  post_id = targeted_posts_ID_value
+  post_id = "targeted_post_ID_value"
+)
+```
+
+### Repost To X
+
+`repost_to_x()` allows the user to repost a specific post on X using its
+post ID.
+
+``` r
+repost_to_x(
+  post_id = "targeted_post_ID_value"
 )
 ```
 

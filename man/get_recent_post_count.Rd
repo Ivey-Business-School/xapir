@@ -9,11 +9,6 @@ get_recent_post_count(
   start_time = NULL,
   end_time = NULL,
   granularity = "hour",
-  since_id = NULL,
-  until_id = NULL,
-  search_count.fields = "tweet-count",
-  pagination_token = NULL,
-  sleep_time = 0,
   bearer_token = Sys.getenv("X_BEARER_TOKEN")
 )
 }
@@ -28,25 +23,6 @@ Provide the value in ISO 8601 format (i.e., \code{YYYY-MM-DDTHH:mm:ssZ}). The
 the required format (e.g., \code{iso_8601("2024-10-10")}).}
 
 \item{granularity}{The granularity for the search counts results. This takes either the value 'minute', 'hour', or 'day'.}
-
-\item{since_id}{A post ID to limit the results to posts more recent than the
-specified ID.}
-
-\item{until_id}{A post ID to limit the results to posts older than the
-specified ID.}
-
-\item{search_count.fields}{A comma separated list of SearchCount fields to display. The available options are 'end', 'start', and 'tweet_count'.}
-
-\item{pagination_token}{A string used to navigate backward through result
-pages. The X API provides this token when more results are available.
-Typically, you won’t need to set this manually as the function handles it,
-but you can supply a pagination_token from a previous response to continue
-retrieving results beyond the last page, if desired.}
-
-\item{sleep_time}{A numeric value specifying the number of seconds to wait
-between API calls. This helps avoid hitting rate limits imposed by the X
-API. You can adjust this value based on your tier's rate limits, which are
-detailed on the \href{https://developer.x.com/en/docs/rate-limits}{X API documentation website}.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the

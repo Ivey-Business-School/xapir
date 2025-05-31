@@ -35,29 +35,29 @@ search_x(
 
 \item{hashtags}{A string containing the hashtags that must be contained in the query result}
 
-\item{lang}{Restrict results by language}
+\item{lang}{Restrict results by language, which are encoded through their \href{https://localizely.com/iso-639-1-list/}{ISO 639-1 codes}}
 
-\item{accounts_from}{Tweets authored by these accounts}
+\item{accounts_from}{Posts authored by these accounts}
 
-\item{accounts_to}{Tweets directed to these accounts}
+\item{accounts_to}{Posts directed to these accounts}
 
-\item{accounts_mention}{Tweets mentioning these accounts}
+\item{accounts_mention}{Posts mentioning these accounts}
 
 \item{filter_replies}{Filter replies: "" (show all), "include" (only replies), "exclude" (no replies)}
 
-\item{filter_links}{Filter tweets with links: "" (show all), "include" (only links), "exclude" (no links)}
+\item{filter_links}{Filter posts with links: "" (show all), "include" (only links), "exclude" (no links)}
 
-\item{min_replies}{Minimum number of replies the tweet must have}
+\item{min_replies}{Minimum number of replies the post must have}
 
-\item{min_faves}{Minimum number of likes (faves) the tweet must have}
+\item{min_faves}{Minimum number of likes the post must have}
 
-\item{min_reposts}{Minimum number of reposts (retweets) the tweet must have}
+\item{min_reposts}{Minimum number of reposts (retweets) the post must have}
 
-\item{since}{Start date for tweet search}
+\item{since}{Start date for post search in YYYY-MM-DD format}
 
-\item{until}{End date for tweet search}
+\item{until}{End date for post search in YYYY-MM-DD format}
 
-\item{sort}{Sorting method: "top" relevancy, "live" (latest)}
+\item{sort}{Sorting method: "top" (relevancy), "live" (latest)}
 }
 \value{
 A character string containing the full search URL that was opened in the browser.
@@ -69,11 +69,11 @@ Search for posts using X's advanced search feature
 \dontrun{
 url <- search_x(
 words_exact = "full self driving",
-words_any = "optimus tesla",
+words_any = "optimus tesla \"electric vehicle\"",
 lang = "en", 
 sort = "top", 
-since = today() - months(1),
-until = today(),
+since = "2025-01-01",
+until = "2025-01-31",
 min_faves = 500,
 filter_links = "exclude", 
 filter_replies = "exclude"
