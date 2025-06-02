@@ -5,7 +5,7 @@
 \title{Retrieve Quote Posts for a Given Post}
 \usage{
 get_quote_posts(
-  tweet_id,
+  post_id,
   max_results = 100,
   exclude = NULL,
   pagination_token = NULL,
@@ -27,12 +27,13 @@ get_quote_posts(
 )
 }
 \arguments{
-\item{tweet_id}{The ID of the tweet to retrieve quote tweets for.}
+\item{post_id}{The ID of the tweet to retrieve quote tweets for.}
 
-\item{max_results}{Maximum number of results per page (default is 10, maximum is 100).}
+\item{max_results}{\code{numeric}; a number between 10 and 100 indicating the
+number of posts returned per API call.}
 
 \item{exclude}{A comma-separated list of the types of posts to exclude from
-the response (e.g., "retweets", "replies", or "retweets,replies"). #'}
+the response (e.g., "retweets", "replies", or "retweets,replies").}
 
 \item{pagination_token}{A string used to navigate backward through result
 pages. The X API provides this token when more results are available.

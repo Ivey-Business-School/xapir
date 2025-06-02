@@ -19,6 +19,7 @@ Package features include:
 -   Search for posts with keywords using `get_recent_post()`
 -   See how many posts have been posted under a query using
     `get_recent_post_count()`
+-   Retrieve quote posts for a given post using `get_quote_posts()`
 -   Retrieve owned lists using `get_list()`
 -   Obtain the accounts in a list using `get_list_member()`
 -   Create a post on X using `post_to_x()`
@@ -37,6 +38,7 @@ Package features include:
     -   [Search X](#search-x)
     -   [Get Recent Post](#get-recent-post)
     -   [Get Recent Post Count](#get-recent-post-count)
+    -   [Get Quote Posts](#get-quote-posts)
     -   [Get List](#get-list)
     -   [Get List Member](#get-list-member)
     -   [Post to X](#post-to-X)
@@ -75,12 +77,12 @@ following vignettes:
 
 ### Authenticate
 
-First, initialize your X token for future use.
+First, initialize your X bearer token and client ID for future use.
 
 ``` r
 library(usethis)
 
-# Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = "">, then restart R
+# Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = ""> and your client ID as <X_CLIENT_ID = "">, then restart R
 edit_r_environ()
 ```
 
@@ -91,8 +93,8 @@ suppressWarnings(suppressMessages(library(dplyr)))
 library(xapir)
 ```
 
-After supplying your token and loading the package, you can begin
-running functions that call the X APIs.
+After supplying your token, client ID, and loading the package, you can
+begin running functions that call the X APIs.
 
 ### Get Timeline
 
@@ -152,6 +154,18 @@ nor replies.
 ``` r
 post_count <- get_recent_post_count(
   query = "weddings -is:retweet -is:reply"
+)
+```
+
+### Get Quote Posts
+
+`get_quote_posts()` allows for the user to retrieve information about
+posts that quote a specific post.
+
+``` r
+response <- get_quote_posts(
+  post_id = "targeted_post_ID_value",
+  max_results = 100
 )
 ```
 

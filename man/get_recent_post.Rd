@@ -60,7 +60,7 @@ but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
 
 \item{exclude}{A comma-separated list of the types of posts to exclude from
-the response (e.g., "retweets", "replies", or "retweets,replies"). #'}
+the response (e.g., "retweets", "replies", or "retweets,replies").}
 
 \item{sleep_time}{A numeric value specifying the number of seconds to wait
 between API calls. This helps avoid hitting rate limits imposed by the X

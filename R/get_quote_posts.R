@@ -4,7 +4,7 @@
 #' Returns a variety of information about each Post that quotes the Post specified by the requested ID
 #' via the [quote tweets endpoint](https://docs.x.com/x-api/posts/retrieve-posts-that-quote-a-post).
 #'
-#' @param tweet_id The ID of the tweet to retrieve quote tweets for.
+#' @param post_id The ID of the tweet to retrieve quote tweets for.
 #' @template max_results 
 #' @param exclude A comma-separated list of the types of posts to exclude from
 #'   the response (e.g., "retweets", "replies", or "retweets,replies").
@@ -19,7 +19,7 @@
 #' }
 #' @export
 get_quote_posts <- function(
-  tweet_id,
+  post_id,
   max_results      = 100,
   exclude          = NULL,
   pagination_token = NULL,
@@ -59,7 +59,7 @@ get_quote_posts <- function(
   expansions_str   <- str_c(expansions, collapse = ",")
 
   # Build the request URL
-  url <- paste0("https://api.twitter.com/2/tweets/", tweet_id, "/quote_tweets")
+  url <- paste0("https://api.twitter.com/2/tweets/", post_id, "/quote_tweets")
 
   response <- NULL
 
