@@ -4,13 +4,15 @@
 \alias{get_list}
 \title{Get List}
 \usage{
-get_list(client_id = Sys.getenv("X_CLIENT_ID"))
+get_list(username, bearer_token = Sys.getenv("X_BEARER_TOKEN"))
 }
 \arguments{
-\item{client_id}{A string containing the OAuth 2.0 client ID for authenticating
+\item{username}{Username of the account that owns the lists}
+
+\item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
-environment variable \code{X_CLIENT_ID} (via \code{Sys.getenv("X_CLIENT_ID")}).
-Adding your client ID to your \code{.Renviron} file ensures it is securely
+environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN")}).
+Adding your bearer token to your \code{.Renviron} file ensures it is securely
 stored and accessible without needing to manually input it for each
 session.}
 }
@@ -22,6 +24,6 @@ Get a User’s Owned Lists via the \href{https://docs.x.com/x-api/lists/get-a-us
 }
 \examples{
 \dontrun{
-lists <- get_list()
+lists <- get_list(username = "Tesla")
 }
 }

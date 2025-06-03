@@ -175,7 +175,9 @@ response <- get_quote_posts(
 lists.
 
 ``` r
-list_IDs <- get_list()
+list_IDs <- get_list(
+  username = "Tesla"
+)
 ```
 
 ### Get List Member

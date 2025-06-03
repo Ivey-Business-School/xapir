@@ -170,7 +170,9 @@ response <- get_quote_posts(
 `get_list()` allows for the user to extract the IDs of their owned lists.
 
 ``` {r get-list, eval = FALSE} 
-list_IDs <- get_list()
+list_IDs <- get_list(
+  username = "Tesla"
+)
 ```
 
 ### Get List Member
