@@ -31,7 +31,6 @@ get_recent_post_count <- function(
 
   # Make the API request
   while (TRUE) {
-    tryCatch(
     expr = {
         request(base_url = "https://api.x.com/2") |>
         req_url_path_append(
@@ -49,13 +48,8 @@ get_recent_post_count <- function(
 
         # Exit the loop if successful
         break
-    },
-    error = function(e) {
-        message(e$message, " Retrying in 60 seconds.")
-        Sys.sleep(60)
     }
-    )
-}
+ }
 
 counts <- pluck(this_response, "meta", .default = NULL)
 
@@ -65,7 +59,6 @@ if (is.null(counts)) {
 }
 
 counts <- as.data.frame(counts)
-
 
 # Return the response
 return(counts)
