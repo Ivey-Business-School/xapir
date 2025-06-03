@@ -6,7 +6,8 @@
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
-#' @importFrom stringr str_c
+#' @importFrom tibble tibble
+#' @importFrom lubridate ymd_hms
 #' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
 #' @param start_time The earliest date-time from which you want to get posts.
 #' @param end_time The latest date-time from which you want to get posts.
@@ -49,17 +50,21 @@ get_recent_post_count <- function(
         # Exit the loop if successful
         break
     }
- }
+  }
 
-counts <- pluck(this_response, "meta", .default = NULL)
+  # Extract per-interval counts
+  counts <- pluck(this_response, "data", .default = NULL)
 
-if (is.null(counts)) {
+  if (is.null(counts)) {
     message("No count data found.")
     return(NULL)
-}
+  }
 
-counts <- as.data.frame(counts)
-
-# Return the response
-return(counts)
+  counts_df <- tibble(
+    start = ymd_hms(sapply(counts, `[[`, "start")),
+    end = ymd_hms(sapply(counts, `[[`, "end")),
+    tweet_count = sapply(counts, `[[`, "tweet_count")
+  )
+  
+  return(counts_df)
 }
