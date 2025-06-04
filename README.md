@@ -106,6 +106,7 @@ all posts from Tesla between January 1, 2025 to January 31, 2025.
 response <- get_timeline(
   username = "Tesla",
   max_results = 100,
+  max_posts = 500,
   start_time = iso_8601("2025-01-01"), 
   end_time = iso_8601("2025-01-31"),
 )
@@ -186,7 +187,7 @@ list_IDs <- get_list(
 of the members of a list.
 
 ``` r
-members <- get_list_member(
+response <- get_list_member(
   list_id = "desired_list_id_value"
 )
 ```

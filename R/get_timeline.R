@@ -9,6 +9,7 @@
 #' @importFrom stringr str_c
 #' @template username
 #' @template max_results
+#' @param max_posts The maximum number of posts to obtain from X.
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
@@ -39,6 +40,7 @@
 get_timeline <- function(
     username,
     max_results      = 10,
+    max_posts        = 3200,
     end_time         = NULL,
     start_time       = NULL,
     until_id         = NULL,
@@ -70,6 +72,7 @@ get_timeline <- function(
 ) {
 
   response <- NULL
+  post_counter <- 0
 
   # Get the user_id for the specified username
   while (TRUE) {
@@ -105,7 +108,7 @@ get_timeline <- function(
   call_i <- 1
 
   # Make the API request
-  while (call_i == 1 | !is.null(pagination_token)) {
+  while ((call_i == 1 || !is.null(pagination_token)) && post_counter < max_posts) {
 
     while (TRUE) {
       tryCatch(
@@ -154,9 +157,12 @@ get_timeline <- function(
 
     call_i <- call_i + 1
 
+    post_counter <- post_counter + length(this_response$data)
+    print(post_counter)
+    if (post_counter >= max_posts) break
+
     # Sleep time between API requests
     Sys.sleep(sleep_time)
-
   }
 
   # Return the response
