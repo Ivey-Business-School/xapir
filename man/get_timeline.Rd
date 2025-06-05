@@ -7,6 +7,7 @@
 get_timeline(
   username,
   max_results = 10,
+  max_posts = 3200,
   end_time = NULL,
   start_time = NULL,
   until_id = NULL,
@@ -37,6 +38,8 @@ get_timeline(
 
 \item{max_results}{\code{numeric}; a number between 10 and 100 indicating the
 number of posts returned per API call.}
+
+\item{max_posts}{The maximum number of posts to obtain from X.}
 
 \item{end_time}{The latest date-time from which you want to get posts.
 Provide the value in ISO 8601 format (i.e., \code{YYYY-MM-DDTHH:mm:ssZ}). The

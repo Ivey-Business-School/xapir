@@ -4,20 +4,30 @@
 \alias{get_list_member}
 \title{Get List Members}
 \usage{
-get_list_member(list_id, client_id = Sys.getenv("X_CLIENT_ID"))
+get_list_member(
+  list_id,
+  bearer_token = Sys.getenv("X_BEARER_TOKEN"),
+  user_fields = c("created_at", "description", "protected", "entities", "location",
+    "profile_image_url", "public_metrics", "verified", "verified_type")
+)
 }
 \arguments{
 \item{list_id}{A string representing the unique ID of the list.}
 
-\item{client_id}{A string containing the OAuth 2.0 client ID for authenticating
+\item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
-environment variable \code{X_CLIENT_ID} (via \code{Sys.getenv("X_CLIENT_ID")}).
-Adding your client ID to your \code{.Renviron} file ensures it is securely
+environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN")}).
+Adding your bearer token to your \code{.Renviron} file ensures it is securely
 stored and accessible without needing to manually input it for each
 session.}
+
+\item{user_fields}{\code{character}, \code{vector}; a list of fields to return
+for each user \code{c("created_at", "description", "protected", "entities",
+"location", "profile_image_url", "public_metrics", "verified",
+"verified_type")}}
 }
 \value{
-A tibble with user details (ID, name, username) of list members, or NULL if none found.
+A list containing the API response.
 }
 \description{
 Returns a list of Users that are members of a List by the provided List ID via the \href{https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of-a-list-by-the-provided-list-id}{get list members}.

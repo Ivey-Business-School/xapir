@@ -26,6 +26,7 @@ Package features include:
 -   Delete a post on X using `delete_from_x()`
 -   Repost a post on X using `repost_to_x()`
 -   Extract post data using `extract_post()`
+-   Extract post media data using `extract_post_media()`
 -   Extract user data using `extract_user()`
 
 ## Table of Contents
@@ -45,6 +46,7 @@ Package features include:
     -   [Delete From X](#delete-from-x)
     -   [Repost to X](#repost-to-x)
     -   [Extract Posts](#extract-posts)
+    -   [Extract Post Media](#extract-post-media)
     -   [Extract Users](#extract-users)
 -   [Future](#future)
 -   [More Information](#more-information)
@@ -231,6 +233,17 @@ to return a tibble of all tweets.
 
 ``` r
 posts <- extract_post(
+  timeline = response
+)
+```
+
+### Extract Post Media
+
+`extract_post_media()` uses the results from the API call and cleans the
+data to return a tibble of all media contained in tweets.
+
+``` r
+post_media <- extract_post_media(
   timeline = response
 )
 ```
