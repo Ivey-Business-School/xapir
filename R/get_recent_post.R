@@ -9,6 +9,7 @@
 #' @importFrom stringr str_c
 #' @param query The search to be made on X. You can find ways to build specific queries according to the [X API documentation website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
 #' @template max_results
+#' @param max_posts The maximum number of posts to obtain from X.
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
@@ -20,8 +21,6 @@
 #' @param since_id A post ID to limit the results to posts more recent than the
 #'   specified ID.
 #' @template pagination_token
-#' @param exclude A comma-separated list of the types of posts to exclude from
-#'   the response (e.g., "retweets", "replies", or "retweets,replies"). 
 #' @param sleep_time A numeric value specifying the number of seconds to wait
 #'   between API calls. This helps avoid hitting rate limits imposed by the X
 #'   API. You can adjust this value based on your tier's rate limits, which are
@@ -40,13 +39,13 @@
 get_recent_post <- function(
     query,
     max_results      = 100,
+    max_posts        = 3200,
     end_time         = NULL,
     start_time       = NULL,
     sort_order       = "relevancy",
     until_id         = NULL,
     since_id         = NULL,
     pagination_token = NULL,
-    exclude          = NULL,
     sleep_time       = 0,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
     post_fields      =
@@ -80,6 +79,7 @@ get_recent_post <- function(
   expansions_str   <- str_c(expansions, collapse = ",")
 
   response <- NULL
+  post_counter <- 0
   call_i <- 1
 
   # Make the API request
@@ -99,7 +99,6 @@ get_recent_post <- function(
               start_time       = start_time,
               until_id         = until_id,
               since_id         = since_id,
-              exclude          = exclude,
               pagination_token = pagination_token,
               sort_order       = sort_order,
               tweet.fields     = post_fields_str,
@@ -135,6 +134,10 @@ get_recent_post <- function(
     message(paste("Finished getting posts on page ", call_i))
 
     call_i <- call_i + 1
+
+    post_counter <- post_counter + length(this_response$data)
+    print(post_counter)
+    if (post_counter >= max_posts) break
 
     # Sleep time between API requests
     Sys.sleep(sleep_time)

@@ -7,13 +7,13 @@
 get_recent_post(
   query,
   max_results = 100,
+  max_posts = 3200,
   end_time = NULL,
   start_time = NULL,
   sort_order = "relevancy",
   until_id = NULL,
   since_id = NULL,
   pagination_token = NULL,
-  exclude = NULL,
   sleep_time = 0,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   post_fields = c("created_at", "text", "public_metrics", "geo", "attachments",
@@ -38,6 +38,8 @@ get_recent_post(
 \item{max_results}{\code{numeric}; a number between 10 and 100 indicating the
 number of posts returned per API call.}
 
+\item{max_posts}{The maximum number of posts to obtain from X.}
+
 \item{end_time}{The latest date-time from which you want to get posts.
 Provide the value in ISO 8601 format (i.e., \code{YYYY-MM-DDTHH:mm:ssZ}). The
 \code{iso_8601()} function will convert a string, date, or date-time object to
@@ -58,9 +60,6 @@ pages. The X API provides this token when more results are available.
 Typically, you won’t need to set this manually as the function handles it,
 but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
-
-\item{exclude}{A comma-separated list of the types of posts to exclude from
-the response (e.g., "retweets", "replies", or "retweets,replies").}
 
 \item{sleep_time}{A numeric value specifying the number of seconds to wait
 between API calls. This helps avoid hitting rate limits imposed by the X
