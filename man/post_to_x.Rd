@@ -12,8 +12,7 @@ post_to_x(
   nullcast = FALSE,
   poll = NULL,
   reply = NULL,
-  reply_settings = NULL,
-  client_id = Sys.getenv("X_CLIENT_ID")
+  reply_settings = NULL
 )
 }
 \arguments{
@@ -33,13 +32,6 @@ Quote Tweet Id, Poll, and Card URI.}
 \item{reply}{Tweet information of the Tweet being replied to.}
 
 \item{reply_settings}{Settings to indicate who can reply to the Tweet.}
-
-\item{client_id}{A string containing the OAuth 2.0 client ID for authenticating
-with the X API. By default, this argument retrieves the token from the
-environment variable \code{X_CLIENT_ID} (via \code{Sys.getenv("X_CLIENT_ID")}).
-Adding your client ID to your \code{.Renviron} file ensures it is securely
-stored and accessible without needing to manually input it for each
-session.}
 }
 \description{
 Causes the User to create a Post under the authorized account via the \href{https://docs.x.com/x-api/posts/creation-of-a-post}{create a post endpoint}.

@@ -4,17 +4,10 @@
 \alias{delete_from_x}
 \title{Delete a Post on X}
 \usage{
-delete_from_x(post_id, client_id = Sys.getenv("X_CLIENT_ID"))
+delete_from_x(post_id)
 }
 \arguments{
 \item{post_id}{The ID of the post you want to delete.}
-
-\item{client_id}{A string containing the OAuth 2.0 client ID for authenticating
-with the X API. By default, this argument retrieves the token from the
-environment variable \code{X_CLIENT_ID} (via \code{Sys.getenv("X_CLIENT_ID")}).
-Adding your client ID to your \code{.Renviron} file ensures it is securely
-stored and accessible without needing to manually input it for each
-session.}
 }
 \value{
 A list containing the API response, typically \code{deleted = TRUE}.

@@ -4,17 +4,10 @@
 \alias{repost_to_x}
 \title{Repost a Post on X}
 \usage{
-repost_to_x(tweet_id, client_id = Sys.getenv("X_CLIENT_ID"))
+repost_to_x(tweet_id)
 }
 \arguments{
 \item{tweet_id}{The ID of the post to be reposted.}
-
-\item{client_id}{A string containing the OAuth 2.0 client ID for authenticating
-with the X API. By default, this argument retrieves the token from the
-environment variable \code{X_CLIENT_ID} (via \code{Sys.getenv("X_CLIENT_ID")}).
-Adding your client ID to your \code{.Renviron} file ensures it is securely
-stored and accessible without needing to manually input it for each
-session.}
 }
 \value{
 A list containing the API response.

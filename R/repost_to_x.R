@@ -6,7 +6,6 @@
 #' 
 #' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_body_json req_perform resp_body_json
 #' @param tweet_id The ID of the post to be reposted.
-#' @template client_id 
 #' @return A list containing the API response.
 #' @examples
 #' \dontrun{
@@ -14,24 +13,11 @@
 #' }
 #' @export
 repost_to_x <- function(
-    tweet_id, 
-    client_id = Sys.getenv("X_CLIENT_ID")
+    tweet_id
 ) {
 
-  # Create OAuth 2.0 client
-  client <- oauth_client(
-    id = client_id,
-    token_url = "https://api.twitter.com/2/oauth2/token"
-  )
-
-  # Run authorization code flow with PKCE
-  token <- oauth_flow_auth_code(
-    client = client,
-    auth_url = "https://twitter.com/i/oauth2/authorize",
-    redirect_uri = "http://localhost:1410/",
-    scope = "tweet.read tweet.write users.read offline.access",
-    pkce = TRUE
-  )
+  # Get cached or refreshed token
+  token <- authenticate_user()
 
   # Get authenticated user's ID
   user_req <- request("https://api.twitter.com/2/users/me") |>

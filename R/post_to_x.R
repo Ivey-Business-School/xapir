@@ -14,7 +14,6 @@
 #' @param poll Poll options for a Tweet with a poll. This is mutually exclusive from Media, Quote Tweet Id, and Card URI.
 #' @param reply Tweet information of the Tweet being replied to.
 #' @param reply_settings Settings to indicate who can reply to the Tweet.
-#' @template client_id 
 #' @examples
 #' \dontrun{
 #' post_to_x(text = "Hello, world!")
@@ -28,28 +27,15 @@ post_to_x <- function(
     nullcast = FALSE,
     poll = NULL,
     reply = NULL,
-    reply_settings = NULL,
-    client_id = Sys.getenv("X_CLIENT_ID")
+    reply_settings = NULL
 ) {
 
   if (nchar(text) > 280) {
     stop("Tweet exceeds 280 characters.")
   }
 
-  # Create OAuth 2.0 client
-  client <- oauth_client(
-    id = client_id,
-    token_url = "https://api.twitter.com/2/oauth2/token"
-  )
-
-  # Run authorization code flow with PKCE
-  token <- oauth_flow_auth_code(
-    client = client,
-    auth_url = "https://twitter.com/i/oauth2/authorize",
-    redirect_uri = "http://localhost:1410/",
-    scope = "tweet.read tweet.write users.read list.read offline.access",
-    pkce = TRUE
-  )
+  # Get cached or refreshed token
+  token <- authenticate_user()
 
   # Build JSON payload
   body <- list(text = text)
