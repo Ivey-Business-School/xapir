@@ -1,9 +1,11 @@
 #' Follow User
 #'
 #' @description
-#' Makes the authenticated user follow another user via the X API.
+#' Causes the User(in the path) to follow, or “request to follow” for protected Users, the target User
+#' via the [follow user endpoint](https://docs.x.com/x-api/users/follow-user).
+#' The User(in the path) must match the User context authorizing the request
 #'
-#' @importFrom httr2 request req_url_path_append req_body_json req_auth_bearer_token req_perform resp_body_json
+#' @importFrom httr2 request req_auth_bearer_token req_perform resp_body_json
 #' @param source_username Username of account that will follow someone.
 #' @param target_username Username of account that will be followed. 
 #' @return A list with the API response that shows a successful action. 

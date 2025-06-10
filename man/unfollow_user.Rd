@@ -15,7 +15,8 @@ unfollow_user(source_username, target_username)
 A list with the API response that shows a successful action.
 }
 \description{
-Makes the authenticated user unfollow another user via the X API.
+Causes the source User to unfollow the target User via the \href{https://docs.x.com/x-api/users/unfollow-user}{unfollow user endpoint}.
+The source User must match the User context authorizing the request
 }
 \examples{
 \dontrun{

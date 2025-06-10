@@ -15,7 +15,9 @@ follow_user(source_username, target_username)
 A list with the API response that shows a successful action.
 }
 \description{
-Makes the authenticated user follow another user via the X API.
+Causes the User(in the path) to follow, or “request to follow” for protected Users, the target User
+via the \href{https://docs.x.com/x-api/users/follow-user}{follow user endpoint}.
+The User(in the path) must match the User context authorizing the request
 }
 \examples{
 \dontrun{

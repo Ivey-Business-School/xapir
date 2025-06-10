@@ -22,12 +22,12 @@ authenticate_user <- function(
   }
 
   # Re-authenticate
-  client <- httr2::oauth_client(
+  client <- oauth_client(
     id = client_id,
     token_url = "https://api.twitter.com/2/oauth2/token"
   )
 
-  token <- httr2::oauth_flow_auth_code(
+  token <- oauth_flow_auth_code(
     client = client,
     auth_url = "https://twitter.com/i/oauth2/authorize",
     redirect_uri = "http://localhost:1410",

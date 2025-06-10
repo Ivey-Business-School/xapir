@@ -25,6 +25,8 @@ Package features include:
 -   Create a post on X using `post_to_x()`
 -   Delete a post on X using `delete_from_x()`
 -   Repost a post on X using `repost_to_x()`
+-   Follow a user on X using `follow_user()`
+-   Unfollow a user on X using `unfollow_user()`
 -   Extract post data using `extract_post()`
 -   Extract post media data using `extract_post_media()`
 -   Extract user data using `extract_user()`
@@ -45,6 +47,8 @@ Package features include:
     -   [Post to X](#post-to-X)
     -   [Delete From X](#delete-from-x)
     -   [Repost to X](#repost-to-x)
+    -   [Follow User](#follow-user)
+    -   [Unfollow User](#unfollow-user)
     -   [Extract Posts](#extract-posts)
     -   [Extract Post Media](#extract-post-media)
     -   [Extract Users](#extract-users)
@@ -167,7 +171,7 @@ posts that quote a specific post.
 
 ``` r
 response <- get_quote_posts(
-  post_id = "targeted_post_ID_value",
+  post_id = <targeted_post_ID_value>,
   max_results = 100
 )
 ```
@@ -190,7 +194,7 @@ of the members of a list.
 
 ``` r
 response <- get_list_member(
-  list_id = "desired_list_id_value"
+  list_id = <desired_list_id_value>
 )
 ```
 
@@ -211,7 +215,7 @@ its post ID.
 
 ``` r
 delete_from_x(
-  post_id = "targeted_post_ID_value"
+  post_id = <targeted_post_ID_value>
 )
 ```
 
@@ -222,7 +226,30 @@ post ID.
 
 ``` r
 repost_to_x(
-  post_id = "targeted_post_ID_value"
+  post_id = <targeted_post_ID_value>
+)
+```
+
+### Follow User
+
+`follow_user()` allows the user to follow, or request to follow for
+protected users, the target user.
+
+``` r
+follow_user(
+  source_username = <your username>,
+  target_username = <account to follow>
+)
+```
+
+### Unfollow User
+
+`unfollow_user()` allows the user to unfollow the target user.
+
+``` r
+unfollow_user(
+  source_username = <your username>,
+  target_username = <account to unfollow>
 )
 ```
 
