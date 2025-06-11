@@ -20,7 +20,9 @@
 #' post_mediat <- extract_post_media(timeline)
 #' }
 #' @export
-extract_post_media <- function(timeline) {
+extract_post_media <- function(
+  timeline
+) {
 
   post_media_map <- timeline |>
     map(pluck("data")) |>

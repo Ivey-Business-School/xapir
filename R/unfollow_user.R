@@ -7,7 +7,6 @@
 #' @importFrom httr2 request req_auth_bearer_token req_perform resp_body_json req_method
 #' @param source_username Username of account that will unfollow someone.
 #' @param target_username Username of account that will be unfollowed. 
-#' @return A list with the API response that shows a successful action. 
 #' @examples
 #' \dontrun{
 #' unfollow_user(source_username = "Tesla", target_username = "elonmusk")
@@ -68,7 +67,6 @@ unfollow_user <- function(
       } else {
         message("Error: ", e$message)
       }
-      return(NULL)
     }
   )
 }

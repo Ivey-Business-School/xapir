@@ -43,8 +43,9 @@ get_quote_posts <- function(
       c("author_id", "entities.mentions.username",
         "referenced_tweets.id.author_id", "referenced_tweets.id",
         "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids"),
-  bearer_token = Sys.getenv("X_BEARER_TOKEN")
+  bearer_token     = Sys.getenv("X_BEARER_TOKEN")
 ) {
+  
   # Validate max_results
   if (max_results < 1 || max_results > 100) {
     stop("max_results must be between 1 and 100.")

@@ -13,7 +13,7 @@ endpoints using tidy principles.
 Package features include:
 
 -   OAuth 2.0 authentication by setting your API token as environment
-    variable (Bearer Token)
+    variable (Bearer Token and Client ID)
 -   Retrieve a user’s timeline data using `get_timeline()`
 -   Develop a search query URL using `search_x()`
 -   Search for posts with keywords using `get_recent_post()`
@@ -88,7 +88,8 @@ First, initialize your X bearer token and client ID for future use.
 ``` r
 library(usethis)
 
-# Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = ""> and your client ID as <X_CLIENT_ID = "">, then restart R
+# Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = ""> 
+# and your client ID as <X_CLIENT_ID = "">, then restart R
 edit_r_environ()
 ```
 
@@ -167,11 +168,13 @@ post_count <- get_recent_post_count(
 ### Get Quote Posts
 
 `get_quote_posts()` allows for the user to retrieve information about
-posts that quote a specific post.
+posts that quote a specific post. The following example uses the
+function to retrieve up to 100 posts that quote post the first post on
+X.
 
 ``` r
 response <- get_quote_posts(
-  post_id = <targeted_post_ID_value>,
+  post_id = "20",
   max_results = 100
 )
 ```
@@ -179,7 +182,8 @@ response <- get_quote_posts(
 ### Get List
 
 `get_list()` allows for the user to extract the IDs of their owned
-lists.
+lists. The following example uses the function to retrieve the lists
+owned by Tesla.
 
 ``` r
 list_IDs <- get_list(
@@ -190,17 +194,20 @@ list_IDs <- get_list(
 ### Get List Member
 
 `get_list_member()` allows for the user to extract the IDs and usernames
-of the members of a list.
+of the members of a list. The following example uses the function to
+retrieve the members of Tesla’s “ev-news” list.
 
 ``` r
 response <- get_list_member(
-  list_id = <desired_list_id_value>
+  list_id = "45924881"
 )
 ```
 
 ### Post to X
 
-`post_to_x()` allows the user to create a post on X.
+`post_to_x()` allows the user to create a post on their X account. The
+following example uses the function to post the phrase “Hello world!” on
+X.
 
 ``` r
 post_to_x(
@@ -210,46 +217,51 @@ post_to_x(
 
 ### Delete From X
 
-`delete_from_x()` allows the user to delete a specific post on X using
-its post ID.
+`delete_from_x()` allows the user to delete a specific post on their X
+account using its post ID. The following example uses the function to
+delete a post with a post ID value of “20”.
 
 ``` r
 delete_from_x(
-  post_id = <targeted_post_ID_value>
+  post_id = "20"
 )
 ```
 
 ### Repost To X
 
-`repost_to_x()` allows the user to repost a specific post on X using its
-post ID.
+`repost_to_x()` allows the user to repost a specific post on their X
+account using its post ID. The following example uses the function to
+repost the first ever post on X.
 
 ``` r
 repost_to_x(
-  post_id = <targeted_post_ID_value>
+  post_id = "20"
 )
 ```
 
 ### Follow User
 
 `follow_user()` allows the user to follow, or request to follow for
-protected users, the target user.
+protected users, the target user. The following example uses the
+function to follow Elon Musk from the perspective of Tesla.
 
 ``` r
 follow_user(
-  source_username = <your username>,
-  target_username = <account to follow>
+  source_username = "Tesla",
+  target_username = "elonmusk"
 )
 ```
 
 ### Unfollow User
 
-`unfollow_user()` allows the user to unfollow the target user.
+`unfollow_user()` allows the user to unfollow the target user. The
+following example uses the function to unfollow Elon Musk from the
+perspective of Tesla.
 
 ``` r
 unfollow_user(
-  source_username = <your username>,
-  target_username = <account to unfollow>
+  source_username = "Tesla",
+  target_username = "elonmusk"
 )
 ```
 

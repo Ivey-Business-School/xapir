@@ -20,9 +20,9 @@
 #' }
 #' @export
 extract_post <- function(
-    timeline,
-    tz = Sys.timezone(),
-    include_referenced_posts = TRUE
+  timeline,
+  tz = Sys.timezone(),
+  include_referenced_posts = TRUE
 ) {
 
   timeline |>

@@ -20,14 +20,14 @@
 #' }
 #' @export
 post_to_x <- function(
-    text,
-    for_super_followers_only = FALSE,
-    geo = NULL,
-    media = NULL, 
-    nullcast = FALSE,
-    poll = NULL,
-    reply = NULL,
-    reply_settings = NULL
+  text,
+  for_super_followers_only = FALSE,
+  geo = NULL,
+  media = NULL, 
+  nullcast = FALSE,
+  poll = NULL,
+  reply = NULL,
+  reply_settings = NULL
 ) {
 
   if (nchar(text) > 280) {

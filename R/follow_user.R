@@ -8,7 +8,6 @@
 #' @importFrom httr2 request req_auth_bearer_token req_perform resp_body_json
 #' @param source_username Username of account that will follow someone.
 #' @param target_username Username of account that will be followed. 
-#' @return A list with the API response that shows a successful action. 
 #' @examples
 #' \dontrun{
 #' follow_user(source_username = "Tesla", target_username = "elonmusk")
@@ -49,6 +48,5 @@ follow_user <- function(
     req_body_json(list(target_user_id = target_user_id)) |>
     req_perform()
 
-  resp <- resp_body_json(req, simplifyVector = TRUE)
-  return(resp)
+  resp <- resp_body_json(req)
 }

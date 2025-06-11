@@ -6,7 +6,6 @@
 #'
 #' @importFrom httr2 request req_url_path_append req_auth_bearer_token req_perform resp_body_json
 #' @param post_id The ID of the post you want to delete.
-#' @return A list containing the API response, typically `deleted = TRUE`.
 #' @examples
 #' \dontrun{
 #' delete_from_x(post_id = targeted_post_id)
@@ -28,6 +27,4 @@ delete_from_x <- function(
   # Perform request
   resp <- req_perform(req)
   result <- resp_body_json(resp)
-
-  return(result)
 }

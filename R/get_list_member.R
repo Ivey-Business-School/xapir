@@ -16,10 +16,10 @@
 #' }
 #' @export
 get_list_member <- function(
-    list_id, 
-    bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-    user_fields      =
-      c("created_at", "description", "protected", "entities", "location",
+  list_id, 
+  bearer_token      = Sys.getenv("X_BEARER_TOKEN"),
+  user_fields       =
+    c("created_at", "description", "protected", "entities", "location",
         "profile_image_url", "public_metrics", "verified", "verified_type")
 ) {
 

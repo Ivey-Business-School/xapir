@@ -6,14 +6,13 @@
 #' 
 #' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_body_json req_perform resp_body_json
 #' @param tweet_id The ID of the post to be reposted.
-#' @return A list containing the API response.
 #' @examples
 #' \dontrun{
 #' repost_to_x(tweet_id = "20")
 #' }
 #' @export
 repost_to_x <- function(
-    tweet_id
+  tweet_id
 ) {
 
   # Get cached or refreshed token
@@ -36,6 +35,4 @@ repost_to_x <- function(
     req_body_json(list(tweet_id = tweet_id)) |>
     req_perform() |>
     resp_body_json()
-
-  return(response)
 }

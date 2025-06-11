@@ -23,32 +23,32 @@
 #' }
 #' @export
 get_recent_post_count <- function(
-    query,
-    start_time       = NULL,
-    end_time         = NULL,
-    granularity      = "hour",
-    bearer_token     = Sys.getenv("X_BEARER_TOKEN")
+  query,
+  start_time       = NULL,
+  end_time         = NULL,
+  granularity      = "hour",
+  bearer_token     = Sys.getenv("X_BEARER_TOKEN")
 ) {
 
   # Make the API request
   while (TRUE) {
     expr = {
-        request(base_url = "https://api.x.com/2") |>
-        req_url_path_append(
-            endpoint = paste0("tweets/counts/recent")
-        ) |>
-        req_url_query(
-            query            = query,
-            end_time         = end_time,
-            start_time       = start_time
-        ) |>
-        req_auth_bearer_token(token = bearer_token) |>
-        req_perform() |>
-        resp_body_json() ->
-        this_response
+      request(base_url = "https://api.x.com/2") |>
+      req_url_path_append(
+        endpoint = paste0("tweets/counts/recent")
+      ) |>
+      req_url_query(
+        query            = query,
+        end_time         = end_time,
+        start_time       = start_time
+      ) |>
+      req_auth_bearer_token(token = bearer_token) |>
+      req_perform() |>
+      resp_body_json() ->
+      this_response
 
-        # Exit the loop if successful
-        break
+      # Exit the loop if successful
+      break
     }
   }
 

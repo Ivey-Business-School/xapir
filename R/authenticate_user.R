@@ -11,6 +11,7 @@
 authenticate_user <- function(
   client_id = Sys.getenv("X_CLIENT_ID")
 ) {
+  
   # Check in-memory token
   if (!is.null(.x_env$token)) {
     token <- .x_env$token

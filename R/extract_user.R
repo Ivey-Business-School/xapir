@@ -18,7 +18,9 @@
 #' user <- extract_user(timeline)
 #' }
 #' @export
-extract_user <- function(timeline) {
+extract_user <- function(
+  timeline
+) {
 
   # Extract user data directly
   timeline |>

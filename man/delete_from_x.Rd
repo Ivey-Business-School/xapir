@@ -9,9 +9,6 @@ delete_from_x(post_id)
 \arguments{
 \item{post_id}{The ID of the post you want to delete.}
 }
-\value{
-A list containing the API response, typically \code{deleted = TRUE}.
-}
 \description{
 Delete specified Post (in the path) by ID via the \href{https://docs.x.com/x-api/posts/post-delete-by-post-id}{delete a post endpoint}.
 }

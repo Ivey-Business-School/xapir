@@ -11,9 +11,6 @@ follow_user(source_username, target_username)
 
 \item{target_username}{Username of account that will be followed.}
 }
-\value{
-A list with the API response that shows a successful action.
-}
 \description{
 Causes the User(in the path) to follow, or “request to follow” for protected Users, the target User
 via the \href{https://docs.x.com/x-api/users/follow-user}{follow user endpoint}.

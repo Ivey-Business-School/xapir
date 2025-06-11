@@ -11,9 +11,6 @@ unfollow_user(source_username, target_username)
 
 \item{target_username}{Username of account that will be unfollowed.}
 }
-\value{
-A list with the API response that shows a successful action.
-}
 \description{
 Causes the source User to unfollow the target User via the \href{https://docs.x.com/x-api/users/unfollow-user}{unfollow user endpoint}.
 The source User must match the User context authorizing the request
