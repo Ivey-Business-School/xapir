@@ -60,6 +60,8 @@ Package features include:
     * [Unfollow User](#unfollow-user)
     * [Extract Posts](#extract-posts)
     * [Extract Post Media](#extract-post-media)
+    * [Extract Post Place](#extract-post-place)
+    * [Extract Post Poll](#extract-post-poll)
     * [Extract Users](#extract-users)
   * [Future](#future)
   * [More Information](#more-information)
