@@ -68,7 +68,8 @@ get_timeline <- function(
     expansions       =
       c("author_id", "entities.mentions.username",
         "referenced_tweets.id.author_id", "referenced_tweets.id",
-        "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids")
+        "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids",
+        "geo.place_id")
 ) {
 
   response <- NULL

@@ -3,6 +3,8 @@
 export(delete_from_x)
 export(extract_post)
 export(extract_post_media)
+export(extract_post_place)
+export(extract_post_poll)
 export(extract_user)
 export(follow_user)
 export(get_list)

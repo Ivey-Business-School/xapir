@@ -39,6 +39,8 @@ Package features include:
   * Unfollow a user on X using `unfollow_user()`
   * Extract post data using `extract_post()`
   * Extract post media data using `extract_post_media()`
+  * Extract post location data using `extract_post_place()`
+  * Extract post poll data using `extract_post_poll()`
   * Extract user data using `extract_user()`
   
 ## Table of Contents  
@@ -60,6 +62,8 @@ Package features include:
     * [Unfollow User](#unfollow-user)
     * [Extract Posts](#extract-posts)
     * [Extract Post Media](#extract-post-media)
+    * [Extract Post Place](#extract-post-place)
+    * [Extract Post Poll](#extract-post-poll)
     * [Extract Users](#extract-users)
   * [Future](#future)
   * [More Information](#more-information)
@@ -271,6 +275,28 @@ media contained in tweets.
 
 ```{r extract-post-media, eval = FALSE}
 post_media <- extract_post_media(
+  timeline = response
+)
+```
+
+### Extract Post Place
+
+`extract_post_place()` uses the results from the API call and cleans the data to return a tibble of all
+location data contained in tweets. 
+
+```{r extract-post-place, eval = FALSE}
+post_place <- extract_post_place(
+  timeline = response
+)
+```
+
+### Extract Post Poll
+
+`extract_post_poll()` uses the results from the API call and cleans the data to return a tibble of all
+poll data contained in tweets. 
+
+```{r extract-post-poll, eval = FALSE}
+post_poll <- extract_post_poll(
   timeline = response
 )
 ```
