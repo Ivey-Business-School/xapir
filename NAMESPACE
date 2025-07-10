@@ -2,6 +2,9 @@
 
 export(delete_from_x)
 export(extract_post)
+export(extract_post_cashtag)
+export(extract_post_context)
+export(extract_post_edited_post_id)
 export(extract_post_media)
 export(extract_post_place)
 export(extract_post_poll)
