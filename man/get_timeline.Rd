@@ -6,7 +6,7 @@
 \usage{
 get_timeline(
   username,
-  max_results = 10,
+  max_results = 100,
   max_posts = 3200,
   end_time = NULL,
   start_time = NULL,
@@ -14,7 +14,7 @@ get_timeline(
   since_id = NULL,
   pagination_token = NULL,
   exclude = NULL,
-  sleep_time = 0,
+  sleep_time = 90,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   post_fields = c("created_at", "text", "public_metrics", "geo", "attachments",
     "context_annotations", "entities", "lang", "referenced_tweets", "reply_settings",

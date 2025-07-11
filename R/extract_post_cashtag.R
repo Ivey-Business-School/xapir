@@ -4,11 +4,11 @@
 #' Processes the timeline data retrieved from the X API to wrangle post cashtag data,
 #' including metadata relating to the ticker symbol and its position in the post.
 #'
-#' @param timeline A list containing the timeline data retrieved from the X API.
-#' @return A tibble containing structured post context data.
 #' @importFrom purrr map map_dfr pluck map_chr
 #' @importFrom tibble tibble
 #' @importFrom dplyr distinct
+#' @param timeline A list containing the timeline data retrieved from the X API.
+#' @return A tibble containing structured post context data.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
