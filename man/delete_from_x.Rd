@@ -2,18 +2,21 @@
 % Please edit documentation in R/delete_from_x.R
 \name{delete_from_x}
 \alias{delete_from_x}
-\title{Delete a Post on X}
+\title{Delete Post(s) on X}
 \usage{
-delete_from_x(post_id)
+delete_from_x(post_ids)
 }
 \arguments{
-\item{post_id}{The ID of the post you want to delete.}
+\item{post_ids}{The IDs of the posts you want to delete.}
+}
+\value{
+A tibble with post_id, deleted (TRUE/FALSE), and error (if any).
 }
 \description{
-Delete specified Post (in the path) by ID via the \href{https://docs.x.com/x-api/posts/post-delete-by-post-id}{delete a post endpoint}.
+Delete one or more Posts (in the path) by ID via the \href{https://docs.x.com/x-api/posts/post-delete-by-post-id}{delete a post endpoint}.
 }
 \examples{
 \dontrun{
-delete_from_x(post_id = targeted_post_id)
+delete_from_x(post_id = targeted_post_ids)
 }
 }
