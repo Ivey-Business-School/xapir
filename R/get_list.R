@@ -5,7 +5,7 @@
 #'
 #' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_perform resp_body_json
 #' @importFrom tibble tibble
-#' @importFrom purrr map_chr
+#' @importFrom purrr map_chr map_int map_lgl
 #' @param username Username of the account that owns the lists
 #' @template bearer_token 
 #' @return A tibble containing the IDs of the lists and their names, or NULL if none found.
@@ -16,7 +16,10 @@
 #' @export
 get_list <- function(
   username,
-  bearer_token = Sys.getenv("X_BEARER_TOKEN")
+  bearer_token = Sys.getenv("X_BEARER_TOKEN"),
+  list_fields     =
+    c("id", "name", "created_at", "description", "follower_count", "member_count", 
+    "private")
 ) {
 
   # Get user ID
@@ -37,6 +40,7 @@ get_list <- function(
   # Get lists owned by user
   lists_req <- request(paste0("https://api.twitter.com/2/users/", user_id, "/owned_lists")) |>
     req_auth_bearer_token(bearer_token) |>
+    req_url_query(`list.fields` = paste(list_fields, collapse = ",")) |>
     req_perform()
   
   lists_data <- resp_body_json(lists_req)
@@ -44,8 +48,13 @@ get_list <- function(
   if (!is.null(lists_data$data)) {
     data <- lists_data$data
     return(tibble(
-      id          = map_chr(data, "id"),
-      name        = map_chr(data, "name")
+      list_id             = map_chr(data, ~ as.character(.x$id)),
+      list_name           = map_chr(data, ~ as.character(.x$name)),
+      description         = map_chr(data, ~ .x$description %||% NA_character_),
+      created_at          = map_chr(data, ~ .x$created_at %||% NA_character_),
+      follower_count      = map_int(data, ~ .x$follower_count %||% NA_integer_),
+      member_count        = map_int(data, ~ .x$member_count %||% NA_integer_),
+      private             = map_lgl(data, ~ .x$private %||% NA)
     ))
   } else {
     message("No owned lists found.")

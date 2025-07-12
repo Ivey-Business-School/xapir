@@ -33,9 +33,30 @@ get_list_member <- function(
 
   json <- resp_body_json(resp)
 
-  return(list(
-    list(
-      includes = list(users = json$data %||% list()),
-      meta = json$meta %||% list()
-  )))
+  if (is.null(json$data) || length(json$data) == 0) {
+    message("No users found in the list.")
+    return(tibble())
+  }
+
+  users <- json$data
+
+  users_tbl <- tibble(
+    list_id          = map_chr(list_id),
+    user_id          = map_chr(users, ~ as.character(.x$id)),
+    name             = map_chr(users, ~ .x$name %||% NA_character_),
+    username         = map_chr(users, ~ .x$username %||% NA_character_),
+    created_at       = map_chr(users, ~ .x$created_at %||% NA_character_),
+    description      = map_chr(users, ~ .x$description %||% NA_character_),
+    protected        = map_lgl(users, ~ .x$protected %||% NA),
+    is_verified      = map_lgl(users, ~ .x$verified %||% NA),
+    verified_type    = map_chr(users, ~ .x$verified_type %||% NA_character_),
+    location         = map_chr(users, ~ .x$location %||% NA_character_),
+    profile_image_url= map_chr(users, ~ .x$profile_image_url %||% NA_character_),
+    followers_count  = map_int(users, ~ .x$public_metrics$followers_count %||% NA_integer_),
+    following_count  = map_int(users, ~ .x$public_metrics$following_count %||% NA_integer_),
+    tweet_count      = map_int(users, ~ .x$public_metrics$tweet_count %||% NA_integer_),
+    listed_count     = map_int(users, ~ .x$public_metrics$listed_count %||% NA_integer_)
+  )
+
+  return(users_tbl)
 }
