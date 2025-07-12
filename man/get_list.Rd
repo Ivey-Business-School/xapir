@@ -4,7 +4,12 @@
 \alias{get_list}
 \title{Get List}
 \usage{
-get_list(username, bearer_token = Sys.getenv("X_BEARER_TOKEN"))
+get_list(
+  username,
+  bearer_token = Sys.getenv("X_BEARER_TOKEN"),
+  list_fields = c("id", "name", "created_at", "description", "follower_count",
+    "member_count", "private")
+)
 }
 \arguments{
 \item{username}{Username of the account that owns the lists}

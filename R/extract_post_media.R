@@ -33,11 +33,11 @@ extract_post_media <- function(
         if (is.null(keys)) return(NULL)
         tibble(
           post_id   = .x$id,
-          media_key = as.character(keys)  # ensure character vector
+          media_id  = as.character(keys)  # ensure character vector
         )
       }
     ) |>
-    unnest(media_key)
+    unnest(media_id)
 
   # Extract media data directly
   timeline |>
@@ -48,48 +48,46 @@ extract_post_media <- function(
 
   # Define the variable order
   media_variables <-  c(
-    "media_key",
+    "media_id",
     "type", 
     "view_count",
     "duration_ms", 
     "height", 
     "width", 
     "preview_image_url", 
-    "url"
+    "url",
+    "bit_rate"
   )
 
   # Create the post media tibble
   media_list |>
-    map_dfr(
-      ~ tibble(
-        media_key           = .x$media_key,
-        type                = .x$type,
-        view_count          = .x$public_metrics$view_count %||% NA |> as.character(),
-        duration_ms         = .x$duration_ms %||% NA |> as.character(),
-        height              = .x$height,
-        width               = .x$width,
-        preview_image_url   = .x$preview_image_url %||% NA |> as.character(),
-        url                 = .x$url %||% 
-          {
-        variants <- .x$variants %||% list()
-        first_mp4 <- purrr::pluck(
-          purrr::detect(variants, ~ .x$content_type == "video/mp4"),
-          "url",
-          .default = NA_character_
-        )
-        first_mp4
-        }
+  map_dfr(
+    ~ {
+      variants <- .x$variants %||% list()
+      first_mp4 <- purrr::detect(variants, ~ .x$content_type == "video/mp4")
+
+      tibble(
+        media_id          = .x$media_key,
+        type              = .x$type,
+        view_count        = .x$public_metrics$view_count %||% NA_integer_,
+        duration_ms       = .x$duration_ms %||% NA_integer_,
+        height            = .x$height,
+        width             = .x$width,
+        preview_image_url = .x$preview_image_url %||% NA |> as.character(),
+        url               = first_mp4$url %||% NA_character_,
+        bit_rate          = first_mp4$bit_rate %||% NA_integer_
       )
-    ) |>
+    }
+  ) |>
     select(any_of(media_variables)) ->
     media_tbl
 
     # Join post_id to media table
     post_media <- media_tbl |>
-      left_join(post_media_map, by = "media_key") |>
+      left_join(post_media_map, by = "media_id") |>
       select(post_id, any_of(c(
-        "media_key", "type", "view_count", "duration_ms", "height",
-        "width", "preview_image_url", "url"
+        "media_id", "type", "view_count", "duration_ms", "height",
+        "width", "preview_image_url", "url", "bit_rate"
       ))) |>
       distinct()
 

@@ -33,8 +33,8 @@ extract_post_cashtag <- function(
           end_val   <- if (is.list(cashtag) && !is.null(cashtag[["end"]]))   cashtag[["end"]]   else NA_integer_
 
           tibble(
-            tweet_id = .x$id,
-            cashtag  = tag_val,
+            post_id = .x$id,
+            tag  = tag_val,
             start    = start_val,
             end      = end_val
           )

@@ -30,7 +30,7 @@ extract_post_entity_annotation <- function(
             if (!is.null(.x$entities$annotations)) {
                 map_dfr(.x$entities$annotations, function(annotation) {
                     tibble(
-                        tweet_id         = .x$id,
+                        post_id          = .x$id,
                         normalized_text  = annotation[["normalized_text"]] %||% NA_character_,
                         type             = annotation[["type"]] %||% NA_character_,
                         probability      = annotation[["probability"]] %||% NA_real_,

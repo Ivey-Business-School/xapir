@@ -19,7 +19,7 @@
 #' polls <- extract_post_url(timeline)
 #' }
 #' @export
-extract_urls <- function(
+extract_post_url <- function(
     timeline
 ) {
   timeline |>
@@ -30,7 +30,7 @@ extract_urls <- function(
             if (!is.null(.x$entities$urls)) {
                 map_dfr(.x$entities$urls, function(u) {
                     tibble(
-                        tweet_id      = .x$id,
+                        post_id       = .x$id,
                         start         = u[["start"]] %||% NA_integer_,
                         end           = u[["end"]] %||% NA_integer_,
                         url           = u[["url"]] %||% NA_character_,

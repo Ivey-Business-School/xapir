@@ -30,7 +30,7 @@ extract_post_hashtag <- function(
             if (!is.null(.x$entities$hashtags)) {
                 map_dfr(.x$entities$hashtags, function(tag) {
                     tibble(
-                        tweet_id = .x$id,
+                        post_id  = .x$id,
                         hashtag  = tag[["tag"]] %||% NA_character_,
                         start    = tag[["start"]] %||% NA_integer_,
                         end      = tag[["end"]] %||% NA_integer_

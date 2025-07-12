@@ -30,7 +30,7 @@ extract_post_mention <- function(
             if (!is.null(.x$entities$mentions)) {
                 map_dfr(.x$entities$mentions, function(mention) {
                     tibble(
-                        tweet_id = .x$id,
+                        post_id  = .x$id,
                         username = mention[["username"]] %||% NA_character_,
                         user_id  = mention[["id"]] %||% NA_character_,
                         start    = mention[["start"]] %||% NA_integer_,

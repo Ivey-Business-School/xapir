@@ -8,6 +8,7 @@
 #' @importFrom dplyr mutate select any_of distinct
 #' @importFrom tibble tibble
 #' @importFrom tidyr unnest
+#' @importFrom lubridate ymd_hms
 #' @param timeline A list containing the timeline data retrieved from the X API.
 #' @return A tibble containing structured poll data.
 #' @examples
@@ -49,6 +50,7 @@ extract_post_poll_option <- function(timeline) {
       poll_id <- .x$id
       duration <- .x$duration_minutes %||% NA
       end_time <- .x$end_datetime %||% NA_character_
+      end_time <- if (!is.na(end_time)) ymd_hms(end_time, tz = "UTC") else as.POSIXct(NA)
       status   <- .x$voting_status %||% NA_character_
 
       if (!is.null(.x$options)) {

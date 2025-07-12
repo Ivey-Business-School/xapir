@@ -29,7 +29,7 @@ extract_post_place <- function(timeline) {
         place_id <- .x$geo$place_id %||% NA_character_
 
         tibble(
-          post_id = .x$id,
+          post_id  = .x$id,
           place_id = as.character(place_id)
         )
       }
@@ -49,11 +49,11 @@ extract_post_place <- function(timeline) {
         bbox <- .x$geo$bbox %||% rep(NA, 4)
         
         tibble(
-          place_id = .x$id,
-          full_name = .x$full_name %||% NA_character_,
-          country = .x$country %||% NA_character_,
-          country_code = .x$country_code %||% NA_character_,
-          place_type = .x$place_type %||% NA_character_,
+          place_id       = .x$id,
+          full_name      = .x$full_name %||% NA_character_,
+          country        = .x$country %||% NA_character_,
+          country_code   = .x$country_code %||% NA_character_,
+          place_type     = .x$place_type %||% NA_character_,
           west_longitude = bbox[[1]],
           south_latitude = bbox[[2]],
           east_longitude = bbox[[3]],

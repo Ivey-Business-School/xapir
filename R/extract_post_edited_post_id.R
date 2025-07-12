@@ -29,8 +29,8 @@ extract_post_edited_post_id <- function(
     map_dfr(~ {
       if (!is.null(.x$edit_history_tweet_ids)) {
         tibble(
-          tweet_id          = .x$id,
-          history_tweet_id  = .x$edit_history_tweet_ids
+          post_id          = .x$id,
+          edited_post_id   = .x$edit_history_tweet_ids
         )
       } else {
         NULL

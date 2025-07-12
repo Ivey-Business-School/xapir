@@ -28,7 +28,7 @@ extract_post_context <- function(
         ~ {
             if (!is.null(.x$context_annotations)) {
                 tibble(
-                    tweet_id           = .x$id,
+                    post_id            = .x$id,
                     domain_id          = map_chr(.x$context_annotations, ~ .x$domain$id %||% NA_character_),
                     domain_name        = map_chr(.x$context_annotations, ~ .x$domain$name %||% NA_character_),
                     domain_description = map_chr(.x$context_annotations, ~ .x$domain$description %||% NA_character_),
