@@ -22,7 +22,7 @@ Provide the value in ISO 8601 format (i.e., \code{YYYY-MM-DDTHH:mm:ssZ}). The
 \code{iso_8601()} function will convert a string, date, or date-time object to
 the required format (e.g., \code{iso_8601("2024-10-10")}).}
 
-\item{granularity}{The granularity for the search counts results. This takes either the value 'minute', 'hour', or 'day'.}
+\item{granularity}{The granularity for the search count results. This takes either the value 'minute', 'hour', or 'day'.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the

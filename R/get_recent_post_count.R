@@ -14,7 +14,7 @@
 #' Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
 #'   the required format (e.g., `iso_8601("2024-10-10")`).
-#' @param granularity The granularity for the search counts results. This takes either the value 'minute', 'hour', or 'day'.
+#' @param granularity The granularity for the search count results. This takes either the value 'minute', 'hour', or 'day'.
 #' @template bearer_token
 #' @return A tibble containing the number of posts.
 #' @examples
@@ -40,7 +40,8 @@ get_recent_post_count <- function(
       req_url_query(
         query            = query,
         end_time         = end_time,
-        start_time       = start_time
+        start_time       = start_time,
+        granularity      = granularity
       ) |>
       req_auth_bearer_token(token = bearer_token) |>
       req_perform() |>
@@ -63,7 +64,7 @@ get_recent_post_count <- function(
   counts_df <- tibble(
     start = ymd_hms(sapply(counts, `[[`, "start")),
     end = ymd_hms(sapply(counts, `[[`, "end")),
-    tweet_count = sapply(counts, `[[`, "tweet_count")
+    post_count = sapply(counts, `[[`, "tweet_count")
   )
   
   return(counts_df)
