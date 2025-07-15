@@ -38,7 +38,13 @@ extract_post_mention <- function(
                     )
                 })
             } else {
-                NULL
+                tibble(
+                    post_id  = character(0),
+                    username = character(0),
+                    user_id  = character(0),
+                    start    = integer(0),
+                    end      = integer(0)
+                )
             }
         }
     ) |>

@@ -4,8 +4,8 @@
 #' Processes the timeline data retrieved from the X API to wrangle poll option information,
 #' such as poll IDs, options, and voting details.
 #'
-#' @importFrom purrr map map_dfr pluck flatten_chr compact
-#' @importFrom dplyr mutate select any_of distinct
+#' @importFrom purrr map map_dfr pluck compact flatten
+#' @importFrom dplyr select distinct left_join
 #' @importFrom tibble tibble
 #' @importFrom tidyr unnest
 #' @importFrom lubridate ymd_hms
@@ -21,7 +21,13 @@
 #' polls <- extract_post_poll_option(timeline)
 #' }
 #' @export
-extract_post_poll_option <- function(timeline) {
+extract_post_poll_option <- function(
+  timeline
+) {
+  poll_columns <- c(
+    "post_id", "poll_id", "position", "label", "votes",
+    "duration_minutes", "end_datetime", "voting_status"
+  )
 
   # Step 1: Map post_id to poll_id
   post_poll_map <- timeline |>
@@ -34,8 +40,13 @@ extract_post_poll_option <- function(timeline) {
         post_id = .x$id,
         poll_id = as.character(poll_ids)
       )
-    }) |>
-    unnest(poll_id)
+    }) 
+
+  if (nrow(post_poll_map) == 0) {
+    return(tibble(!!!setNames(rep(list(logical(0)), length(poll_columns)), poll_columns)))
+  }
+
+  post_poll_map <- unnest(post_poll_map, poll_id)
 
   # Step 2: Extract and flatten includes$polls
   poll_list <- timeline |>
@@ -43,6 +54,10 @@ extract_post_poll_option <- function(timeline) {
     map("polls") |>
     compact() |>  # remove NULLs
     flatten()
+
+  if (length(poll_list) == 0) {
+    return(tibble(!!!setNames(rep(list(logical(0)), length(poll_columns)), poll_columns)))
+  }
 
   # Step 3: Create one row per poll option
   poll_tbl <- poll_list |>
@@ -66,13 +81,21 @@ extract_post_poll_option <- function(timeline) {
           )
         })
       } else {
-        NULL
+        tibble(
+          poll_id          = poll_id,
+          position         = integer(0),
+          label            = character(0),
+          votes            = integer(0),
+          duration_minutes = integer(0),
+          end_datetime     = as.POSIXct(character(0)),
+          voting_status    = character(0)
+        )
       }
     })
 
   # Step 4: Join post_id with poll options
   post_polls <- left_join(poll_tbl, post_poll_map, by = "poll_id") |>
-    select(post_id, poll_id, position, label, votes, duration_minutes, end_datetime, voting_status) |>
+    select(any_of(poll_columns)) |>
     distinct()
 
   return(post_polls)

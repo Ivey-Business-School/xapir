@@ -33,10 +33,13 @@ extract_post_edited_post_id <- function(
           edited_post_id   = .x$edit_history_tweet_ids
         )
       } else {
-        NULL
+        tibble(
+          post_id        = character(0),
+          edited_post_id = list()
+        )
       }
     }) |>
-    unnest(cols = history_tweet_id) |>
+    unnest(cols = edited_post_id) |>
     distinct() ->
     post_edited_post_id
 

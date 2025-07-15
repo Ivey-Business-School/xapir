@@ -37,7 +37,12 @@ extract_post_hashtag <- function(
                     )
                 })
             } else {
-                NULL
+                tibble(
+                    post_id = character(0),
+                    hashtag = character(0),
+                    start   = integer(0),
+                    end     = integer(0)
+                )
             }
         }
     ) |>

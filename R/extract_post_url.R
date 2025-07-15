@@ -4,7 +4,7 @@
 #' Processes the timeline data retrieved from the X API to wrangle poll URL information,
 #' such as the URL, title, and description. 
 #'
-#' @importFrom purrr map map_dfr pluck map_chr
+#' @importFrom purrr map map_dfr pluck 
 #' @importFrom tibble tibble
 #' @importFrom dplyr distinct
 #' @param timeline A list containing the timeline data retrieved from the X API.
@@ -47,7 +47,19 @@ extract_post_url <- function(
                     )
                 })
             } else {
-                NULL
+                tibble(
+                    post_id       = character(0),
+                    start         = integer(0),
+                    end           = integer(0),
+                    url           = character(0),
+                    expanded_url  = character(0),
+                    unwound_url   = character(0),
+                    display_url   = character(0),
+                    title         = character(0),
+                    description   = character(0),
+                    status        = integer(0),
+                    image_url     = character(0)
+                )
             }
         }
     ) |>

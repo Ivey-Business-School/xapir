@@ -39,7 +39,14 @@ extract_post_entity_annotation <- function(
                     )
                 })
             } else {
-                NULL
+                tibble(
+                    post_id         = character(0),
+                    normalized_text = character(0),
+                    type            = character(0),
+                    probability     = numeric(0),
+                    start           = integer(0),
+                    end             = integer(0)
+                )
             }
         }
     ) |>

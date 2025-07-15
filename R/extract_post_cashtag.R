@@ -33,14 +33,14 @@ extract_post_cashtag <- function(
           end_val   <- if (is.list(cashtag) && !is.null(cashtag[["end"]]))   cashtag[["end"]]   else NA_integer_
 
           tibble(
-            post_id = .x$id,
-            tag  = tag_val,
+            post_id  = .x$id,
+            tag      = tag_val,
             start    = start_val,
             end      = end_val
           )
         })
       } else {
-        NULL
+        tibble(post_id = character(0), tag = character(0), start = integer(0), end = integer(0))
       }
     }) |>
     distinct() ->

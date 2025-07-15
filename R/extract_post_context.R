@@ -4,8 +4,9 @@
 #' Processes the timeline data retrieved from the X API to wrangle post context data,
 #' including metadata relating to the domain and entity.
 #'
-#' @importFrom purrr map map_dfr map_chr pluck map_lgl
-#' @importFrom dplyr mutate select any_of arrange distinct
+#' @importFrom purrr map map_dfr map_chr pluck 
+#' @importFrom dplyr distinct
+#' @importFrom tibble tibble
 #' @param timeline A list containing the timeline data retrieved from the X API.
 #' @return A tibble containing structured post context data.
 #' @examples

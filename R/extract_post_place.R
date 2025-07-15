@@ -4,8 +4,8 @@
 #' Processes the timeline data retrieved from the X API to wrangle place information
 #' and exact geo-coordinates attached to posts.
 #'
-#' @importFrom purrr map map_dfr pluck flatten_chr compact
-#' @importFrom dplyr mutate select any_of distinct
+#' @importFrom purrr map map_dfr pluck  
+#' @importFrom dplyr select distinct filter left_join
 #' @importFrom tibble tibble
 #' @param timeline A list containing the timeline data retrieved from the X API.
 #' @return A tibble containing structured place and coordinate data.
@@ -19,7 +19,14 @@
 #' post_places <- extract_post_place(timeline)
 #' }
 #' @export
-extract_post_place <- function(timeline) {
+extract_post_place <- function(
+  timeline
+) {
+
+  place_columns <- c(
+    "post_id", "place_id", "full_name", "country", "country_code", "place_type",
+    "west_longitude", "south_latitude", "east_longitude", "north_latitude"
+  )
 
   post_place_map <- timeline |>
     map(pluck("data")) |>
@@ -36,12 +43,20 @@ extract_post_place <- function(timeline) {
     ) |>
     filter(!is.na(place_id)) 
 
+  if (nrow(post_place_map) == 0) {
+    return(tibble(!!!setNames(rep(list(logical(0)), length(place_columns)), place_columns)))
+  }
+
   # Extract place data directly
   timeline |>
     map(pluck("includes")) |>
     map(pluck("places")) |>
     unlist(recursive = FALSE) ->
     place_list
+
+  if (length(place_list) == 0) {
+    return(tibble(!!!setNames(rep(list(logical(0)), length(place_columns)), place_columns)))
+  }
 
   place_tbl <- place_list |>
     map_dfr(
@@ -65,8 +80,7 @@ extract_post_place <- function(timeline) {
   # Join place details to post table
   post_places <- post_place_map |>
     left_join(place_tbl, by = "place_id") |>
-    select(post_id, place_id, full_name, country, country_code, place_type,
-      west_longitude, south_latitude, east_longitude, north_latitude) |>
+    select(any_of(place_columns)) |>
     distinct()
 
   return(post_places)

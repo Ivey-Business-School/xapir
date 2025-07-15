@@ -4,8 +4,8 @@
 #' Processes the timeline data retrieved from the X API to wrangle media information,
 #' such as images, videos, and GIFs attached to posts.
 #'
-#' @importFrom purrr map map_dfr pluck flatten_chr compact
-#' @importFrom dplyr mutate select any_of distinct
+#' @importFrom purrr map map_dfr pluck detect
+#' @importFrom dplyr select any_of distinct left_join
 #' @importFrom tibble tibble
 #' @importFrom tidyr unnest
 #' @param timeline A list containing the timeline data retrieved from the X API.
@@ -24,6 +24,11 @@ extract_post_media <- function(
   timeline
 ) {
 
+  media_variables <-  c(
+    "post_id", "media_id", "type", "view_count", "duration_ms", "height", 
+    "width", "preview_image_url", "url", "bit_rate"
+  )
+
   post_media_map <- timeline |>
     map(pluck("data")) |>
     unlist(recursive = FALSE) |>
@@ -36,8 +41,13 @@ extract_post_media <- function(
           media_id  = as.character(keys)  # ensure character vector
         )
       }
-    ) |>
-    unnest(media_id)
+    )
+
+  if (nrow(post_media_map) == 0) {
+    return(tibble(!!!setNames(rep(list(logical(0)), length(media_variables)), media_variables)))
+  }
+
+  post_media_map <- unnest(post_media_map, media_id)
 
   # Extract media data directly
   timeline |>
@@ -45,26 +55,17 @@ extract_post_media <- function(
     map(pluck("media")) |>
     unlist(recursive = FALSE) ->
     media_list
-
-  # Define the variable order
-  media_variables <-  c(
-    "media_id",
-    "type", 
-    "view_count",
-    "duration_ms", 
-    "height", 
-    "width", 
-    "preview_image_url", 
-    "url",
-    "bit_rate"
-  )
+  
+  if (length(media_list) == 0) {
+    return(tibble(!!!setNames(rep(list(logical(0)), length(media_variables)), media_variables)))
+  }
 
   # Create the post media tibble
   media_list |>
   map_dfr(
     ~ {
       variants <- .x$variants %||% list()
-      first_mp4 <- purrr::detect(variants, ~ .x$content_type == "video/mp4")
+      first_mp4 <- detect(variants, ~ .x$content_type == "video/mp4")
 
       tibble(
         media_id          = .x$media_key,
@@ -79,16 +80,13 @@ extract_post_media <- function(
       )
     }
   ) |>
-    select(any_of(media_variables)) ->
+    select(any_of(media_variables[-1])) ->
     media_tbl
 
     # Join post_id to media table
     post_media <- media_tbl |>
       left_join(post_media_map, by = "media_id") |>
-      select(post_id, any_of(c(
-        "media_id", "type", "view_count", "duration_ms", "height",
-        "width", "preview_image_url", "url", "bit_rate"
-      ))) |>
+      select(any_of(media_variables)) |>
       distinct()
 
     return(post_media)
