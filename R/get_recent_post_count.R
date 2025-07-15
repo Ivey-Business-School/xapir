@@ -15,6 +15,8 @@
 #'   `iso_8601()` function will convert a string, date, or date-time object to
 #'   the required format (e.g., `iso_8601("2024-10-10")`).
 #' @param granularity The granularity for the search count results. This takes either the value 'minute', 'hour', or 'day'.
+#' @param is_local_tz Tracks wheather to use the local timezone or default timezone.
+#' @param drop_incomplete Drops rows that do not contain a full granularity period amount of data.
 #' @template bearer_token
 #' @return A tibble containing the number of posts.
 #' @examples
@@ -27,30 +29,35 @@ get_recent_post_count <- function(
   start_time       = NULL,
   end_time         = NULL,
   granularity      = "hour",
+  is_local_tz      = TRUE,
+  drop_incomplete  = TRUE,
   bearer_token     = Sys.getenv("X_BEARER_TOKEN")
 ) {
 
   # Make the API request
   while (TRUE) {
-    expr = {
-      request(base_url = "https://api.x.com/2") |>
-      req_url_path_append(
-        endpoint = paste0("tweets/counts/recent")
-      ) |>
-      req_url_query(
-        query            = query,
-        end_time         = end_time,
-        start_time       = start_time,
-        granularity      = granularity
-      ) |>
-      req_auth_bearer_token(token = bearer_token) |>
-      req_perform() |>
-      resp_body_json() ->
-      this_response
+    tryCatch(
+      expr = {
+        request("https://api.x.com/2/tweets/counts/recent") |>
+          req_url_query(
+            query       = query,
+            end_time    = end_time,
+            start_time  = start_time,
+            granularity = granularity
+          ) |>
+          req_auth_bearer_token(token = bearer_token) |>
+          req_perform() |>
+          resp_body_json() ->
+          this_response
 
-      # Exit the loop if successful
-      break
-    }
+        # Exit the loop if successful
+        break
+      },
+      error = function(e) {
+        message(e$message, " Retrying in 60 seconds.")
+        Sys.sleep(60)
+      }
+    )
   }
 
   # Extract per-interval counts
@@ -66,6 +73,19 @@ get_recent_post_count <- function(
     end = ymd_hms(sapply(counts, `[[`, "end")),
     post_count = sapply(counts, `[[`, "tweet_count")
   )
+
+  if (is_local_tz == TRUE) {
+    counts_df <- counts_df |>
+      mutate(
+        start = with_tz(start, tzone = Sys.timezone()),
+        end   = with_tz(end, tzone = Sys.timezone())
+      )
+  }
+
+  if (drop_incomplete == TRUE) {
+    counts_df <- counts_df |>
+      slice(-1, -n())
+  }
   
   return(counts_df)
 }

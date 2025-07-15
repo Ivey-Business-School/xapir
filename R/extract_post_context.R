@@ -38,7 +38,15 @@ extract_post_context <- function(
                     entity_description = map_chr(.x$context_annotations, ~ .x$entity$description %||% NA_character_)
                 )
             } else {
-                NULL
+                tibble(
+                    post_id            = character(0),
+                    domain_id          = character(0),
+                    domain_name        = character(0),
+                    domain_description = character(0),
+                    entity_id          = character(0),
+                    entity_name        = character(0),
+                    entity_description = character(0)
+                )
             }
         }
     ) |>

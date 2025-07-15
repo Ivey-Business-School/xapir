@@ -5,7 +5,9 @@
 #' members](https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of-a-list-by-the-provided-list-id).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_query req_perform resp_body_json
+#' @importFrom purrr map_chr map_lgl map_int
 #' @importFrom stringr str_c
+#' @importFrom tibble tibble
 #' @param list_id A string representing the unique ID of the list.
 #' @template bearer_token 
 #' @template user_fields
@@ -41,7 +43,7 @@ get_list_member <- function(
   users <- json$data
 
   users_tbl <- tibble(
-    list_id          = map_chr(list_id),
+    list_id          = list_id,
     user_id          = map_chr(users, ~ as.character(.x$id)),
     name             = map_chr(users, ~ .x$name %||% NA_character_),
     username         = map_chr(users, ~ .x$username %||% NA_character_),

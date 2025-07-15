@@ -9,6 +9,8 @@ get_recent_post_count(
   start_time = NULL,
   end_time = NULL,
   granularity = "hour",
+  is_local_tz = TRUE,
+  drop_incomplete = TRUE,
   bearer_token = Sys.getenv("X_BEARER_TOKEN")
 )
 }
@@ -23,6 +25,10 @@ Provide the value in ISO 8601 format (i.e., \code{YYYY-MM-DDTHH:mm:ssZ}). The
 the required format (e.g., \code{iso_8601("2024-10-10")}).}
 
 \item{granularity}{The granularity for the search count results. This takes either the value 'minute', 'hour', or 'day'.}
+
+\item{is_local_tz}{Tracks wheather to use the local timezone or default timezone.}
+
+\item{drop_incomplete}{Drops rows that do not contain a full granularity period amount of data.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the

@@ -111,6 +111,9 @@ get_timeline <- function(
   # Make the API request
   while ((call_i == 1 || !is.null(pagination_token)) && post_counter < max_posts) {
 
+    remaining_needed <- max_posts - post_counter
+    max_results_this_call <- min(max_results, remaining_needed)
+
     while (TRUE) {
       tryCatch(
         expr = {
@@ -119,7 +122,7 @@ get_timeline <- function(
               endpoint = paste0("users/", user_id, "/tweets")
             ) |>
             req_url_query(
-              max_results      = max_results,
+              max_results      = max_results_this_call,
               end_time         = end_time,
               start_time       = start_time,
               until_id         = until_id,
