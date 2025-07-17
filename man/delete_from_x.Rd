@@ -4,7 +4,7 @@
 \alias{delete_from_x}
 \title{Delete Post(s) on X}
 \usage{
-delete_from_x(post_ids)
+delete_from_x(post_ids, sleep_time = 900)
 }
 \arguments{
 \item{post_ids}{A character vector of post IDs that are to be deleted from your X account}
