@@ -28,48 +28,45 @@ delete_from_x <- function(
   n <- length(post_ids)
   groups <- split(post_ids, rep(1:ceiling(n/5), each = 5, length.out = n))
 
-  results <- list()
+  all_results <- list()  # To store results from all deletions
 
-  # Loop through and delete each post
   for (i in seq_along(groups)) {
+    group <- groups[[i]]
 
-    results <- lapply(
-      groups[[i]],
-      function(post_id) {
+    # Map over post_ids in the current group
+    group_results <- map(group, function(post_id) {
+      req <- request("https://api.twitter.com/2/tweets") |>
+        req_url_path_append(post_id) |>
+        req_auth_bearer_token(token$access_token) |>
+        req_method("DELETE")
 
-        group_results <- request("https://api.twitter.com/2/tweets") |>
-          req_url_path_append(post_id) |>
-          req_auth_bearer_token(token$access_token) |>
-          req_method("DELETE")
+      tryCatch(
+        {
+          resp <- req_perform(req)
+          json <- resp_body_json(resp)
+          list(
+            post_id = post_id,
+            deleted = json$data$deleted %||% NA,
+            error = NA_character_
+          )
+        },
+        error = function(e) {
+          list(post_id = post_id, deleted = FALSE, error = e$message)
+        }
+      )
+    })
 
-        tryCatch(
-          {
-            resp <- req_perform(req)
-            json <- resp_body_json(resp)
-            list(post_id = post_id, deleted = json$data$deleted %||% NA, error = NA_character_)
-          },
-          error = function(e) {
-            list(post_id = post_id, deleted = FALSE, error = e$message)
-          }
-        )
-      }
-    )
+    # Store results for this group
+    all_results[[i]] <- group_results
 
-    results <- c(results, group_results)
-
-    # Sleep between groups, but not after the last one
+    # Sleep 15 minutes between groups (skip after the last group)
     if (i < length(groups)) {
-      Sys.sleep(sleep_time)
+      message(paste("Sleeping after group", i, "..."))
+      Sys.sleep(sleep_time)  # 15 * 60 = 900 seconds
     }
   }
 
+  all_results_df <- bind_rows(all_results)
 
-  # Convert to tibble
-  responses <- tibble(
-    post_id = map_chr(results, "post_id"),
-    deleted = map_lgl(results, "deleted"),
-    error   = map_chr(results, "error")
-  )
-
-  return(responses)
+  return(all_results_df)
 }
