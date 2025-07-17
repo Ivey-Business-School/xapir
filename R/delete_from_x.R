@@ -4,14 +4,14 @@
 #' Delete one or more Posts (in the path) by ID via the [delete a post 
 #' endpoint](https://docs.x.com/x-api/posts/post-delete-by-post-id).
 #'
-#' @importFrom httr2 request req_url_path_append req_auth_bearer_token req_perform resp_body_json
-#' @importFrom purrr map_chr map_lgl map
+#' @importFrom httr2 request req_url_path_append req_auth_bearer_token req_perform resp_body_json req_method
+#' @importFrom purrr map_chr map_lgl 
 #' @importFrom tibble tibble
-#' @param post_ids The IDs of the posts you want to delete.
-#' @return A tibble with post_id, deleted (TRUE/FALSE), and error (if any).
+#' @param post_ids A character vector of post IDs that are to be deleted from your X account
+#' @return A tibble containing the requested post IDs to delete, whether they were deleted successfully, and any error messages
 #' @examples
 #' \dontrun{
-#' delete_from_x(post_id = targeted_post_ids)
+#' delete_from_x(post_ids =  c("post_id1", "post_id2", "post_id3"))
 #' }
 #' @export
 delete_from_x <- function(
