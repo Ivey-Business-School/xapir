@@ -113,6 +113,7 @@ get_timeline <- function(
 
     remaining_needed <- max_posts - post_counter
     max_results_this_call <- min(max_results, remaining_needed)
+    max_results_this_call <- max(max_results_this_call, 10)
 
     while (TRUE) {
       tryCatch(
