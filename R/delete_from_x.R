@@ -40,21 +40,38 @@ delete_from_x <- function(
         req_auth_bearer_token(token$access_token) |>
         req_method("DELETE")
 
-    tryCatch({
-      resp <- req_perform(req)
-      json <- resp_body_json(resp)
-      list(post_id = post_id, deleted = json$data$deleted %||% NA, error = NA_character_)
-    }, error = function(e) {
-      list(post_id = post_id, deleted = FALSE, error = e$message)
+    tryCatch(
+        {
+          resp <- req_perform(req)
+          json <- resp_body_json(resp)
+          list(
+            post_id = post_id,
+            deleted = json$data$deleted %||% NA,
+            error = NA_character_
+          )
+        },
+        error = function(e) {
+          if (grepl("401", e$message)) {
+            message(sprintf("Token expired or unauthorized while deleting post %s. Refreshing token...", post_id))
+            token <- authenticate_user() 
+            Sys.sleep(5)
+          } else {
+            list(post_id = post_id, deleted = FALSE, error = e$message)}
+        }
+      )
     })
-  })
 
-  # Convert to tibble
-  responses <- tibble(
-    post_id = map_chr(results, "post_id"),
-    deleted = map_lgl(results, "deleted"),
-    error   = map_chr(results, "error")
-  )
+    # Store results for this group
+    all_results[[i]] <- group_results
+
+    # Sleep 15 minutes between groups (skip after the last group)
+    if (i < length(groups)) {
+      message(paste("Sleeping after group", i, "..."))
+      Sys.sleep(sleep_time)  # 15 * 60 = 900 seconds
+    }
+  }
+
+  all_results_df <- bind_rows(all_results)
 
   return(all_results_df)
 }
