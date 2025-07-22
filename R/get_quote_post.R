@@ -15,10 +15,10 @@
 #' @return A list containing the API response.
 #' @examples
 #' \dontrun{
-#' get_quote_posts(tweet_id = "20", max_results = 100)
+#' get_quote_post(tweet_id = "20", max_results = 100)
 #' }
 #' @export
-get_quote_posts <- function(
+get_quote_post <- function(
   post_id,
   max_results      = 100,
   exclude          = NULL,
