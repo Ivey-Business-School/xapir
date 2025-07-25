@@ -53,7 +53,7 @@ delete_from_x <- function(
         error = function(e) {
           if (grepl("401", e$message)) {
             message(sprintf("Token expired or unauthorized while deleting post %s. Refreshing token...", post_id))
-            token <- authenticate_user() 
+            token <<- authenticate_user() 
             Sys.sleep(5)
           } else {
             list(post_id = post_id, deleted = FALSE, error = e$message)}
