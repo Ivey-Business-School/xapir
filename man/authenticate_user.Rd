@@ -15,7 +15,7 @@ stored and accessible without needing to manually input it for each
 session.}
 }
 \value{
-A list containing the token
+A list containing the token and refresh token
 }
 \description{
 Authenticates with the X API using OAuth 2.0 Authorization Code Flow with offline access.

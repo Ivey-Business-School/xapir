@@ -4,9 +4,9 @@
 #' Authenticates with the X API using OAuth 2.0 Authorization Code Flow with offline access.
 #' Falls back to re-authentication if cached token fails.
 #'
-#' @importFrom httr2 oauth_client oauth_flow_auth_code
+#' @importFrom httr2 oauth_client oauth_flow_auth_code oauth_flow_refresh
 #' @template client_id 
-#' @return A list containing the token
+#' @return A list containing the token and refresh token
 #' @keywords internal
 authenticate_user <- function(
   client_id = Sys.getenv("X_CLIENT_ID")
