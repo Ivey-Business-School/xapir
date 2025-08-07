@@ -2,16 +2,16 @@
 #'
 #' @description
 #' Causes the User (in the path) to repost the specified Post. The User in the path must match the User 
-#' context authorizing the request. This is done via the [retweet endpoint](https://docs.x.com/x-api/posts/causes-the-user-in-the-path-to-repost-the-specified-post).
+#' context authorizing the request. This is done via the [retweet endpoint](https://docs.x.com/x-api/posts/repost-post).
 #' 
 #' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_body_json req_perform resp_body_json
 #' @param tweet_id The ID of the post to be reposted.
 #' @examples
 #' \dontrun{
-#' repost_to_x(tweet_id = "20")
+#' create_repost(tweet_id = "20")
 #' }
 #' @export
-repost_to_x <- function(
+create_repost <- function(
   tweet_id
 ) {
 
@@ -31,6 +31,7 @@ repost_to_x <- function(
 
   # Perform repost
   response <- request(url) |>
+    req_method("POST") |>
     req_auth_bearer_token(token$access_token) |>
     req_body_json(list(tweet_id = tweet_id)) |>
     req_perform() |>

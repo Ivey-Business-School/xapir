@@ -1,8 +1,8 @@
-#' Get User Timeline
+#' Get User Account Timeline
 #'
 #' @description
-#' Returns a list of Posts authored by the provided User ID via the [user posts timeline by user ID
-#' endpoint](https://docs.x.com/x-api/posts/get-posts).
+#' Retrieves a reverse chronological list of Posts in the authenticated User’s Timeline via 
+#' the [reverse chronological timeline endpoint](https://docs.x.com/x-api/posts/get-posts).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
@@ -27,7 +27,6 @@
 #'   API. You can adjust this value based on your tier's rate limits, which are
 #'   detailed on the [X API documentation
 #'   website](https://developer.x.com/en/docs/rate-limits).
-#' @template bearer_token
 #' @template post_fields
 #' @template user_fields
 #' @return A \code{list} containing the four elements that make up the API
@@ -48,7 +47,6 @@ get_timeline <- function(
     pagination_token = NULL,
     exclude          = NULL,
     sleep_time       = 90,
-    bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
     post_fields      =
       c("created_at", "text", "public_metrics", "geo", "attachments",
         "context_annotations", "entities", "lang", "referenced_tweets",
@@ -75,6 +73,9 @@ get_timeline <- function(
   response <- NULL
   post_counter <- 0
 
+  # Get cached or refreshed token
+  token <- authenticate_user()
+
   # Get the user_id for the specified username
   while (TRUE) {
     tryCatch(
@@ -83,7 +84,7 @@ get_timeline <- function(
           req_url_path_append(
             endpoint = paste0("users/by/username/", username)
           ) |>
-          req_auth_bearer_token(token = bearer_token) |>
+          req_auth_bearer_token(token = token$access_token) |>
           req_perform() |>
           resp_body_json() |>
           pluck("data", "id") ->
@@ -120,7 +121,7 @@ get_timeline <- function(
         expr = {
           request(base_url = "https://api.x.com/2") |>
             req_url_path_append(
-              endpoint = paste0("users/", user_id, "/tweets")
+              endpoint = paste0("users/", user_id, "/timelines/reverse_chronological")
             ) |>
             req_url_query(
               max_results      = max_results_this_call,
@@ -137,7 +138,7 @@ get_timeline <- function(
               place.fields     = place_fields_str,
               expansions       = expansions_str
             ) |>
-            req_auth_bearer_token(token = bearer_token) |>
+            req_auth_bearer_token(token$access_token) |>
             req_perform() |>
             resp_body_json() ->
             this_response

@@ -11,10 +11,10 @@
 #' @return A tibble containing the requested post IDs to delete, whether they were deleted successfully, and any error messages
 #' @examples
 #' \dontrun{
-#' delete_from_x(post_ids =  c("post_id1", "post_id2", "post_id3"))
+#' delete_post(post_ids =  c("post_id1", "post_id2", "post_id3"))
 #' }
 #' @export
-delete_from_x <- function(
+delete_post <- function(
   post_ids,
   sleep_time = 900
 ) {

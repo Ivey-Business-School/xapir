@@ -1,4 +1,4 @@
-#' Post to X
+#' Create Post on X
 #'
 #' @description
 #' Causes the User to create a Post under the authorized account via the [create a post 
@@ -16,10 +16,10 @@
 #' @param reply_settings Settings to indicate who can reply to the Tweet.
 #' @examples
 #' \dontrun{
-#' post_to_x(text = "Hello, world!")
+#' create_post(text = "Hello, world!")
 #' }
 #' @export
-post_to_x <- function(
+create_post <- function(
   text,
   for_super_followers_only = FALSE,
   geo = NULL,

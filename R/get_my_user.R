@@ -1,0 +1,94 @@
+#' Get My User
+#'
+#' @description
+#' Returns details about the authenticated User
+#' via the [get my user endpoint](https://docs.x.com/x-api/users/get-my-user).
+#'
+#' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
+#' @importFrom stringr str_c
+#' @template user_fields
+#' @return A tibble containing the authenticated user's information and any expansions.
+#' @examples
+#' \dontrun{
+#' my_user <- get_my_user()
+#' }
+#' @export
+get_my_user <- function(
+  user_fields = c("created_at", "description", "protected", "entities", "location",
+                  "profile_image_url", "public_metrics", "verified", "verified_type")
+) {
+
+  # Get cached or refreshed token
+  token <- authenticate_user()
+
+  # Join fields as comma-separated strings
+  user_fields_str <- str_c(user_fields, collapse = ",")
+
+  # Base endpoint URL
+  url <- "https://api.twitter.com/2/users/me"
+
+  # Perform GET request
+  response <- request(url) |>
+    req_auth_bearer_token(token$access_token) |>
+    req_url_query(
+      user.fields = user_fields_str
+    ) |>
+    req_perform() |>
+    resp_body_json()
+
+  # Extract user data directly
+  response |>
+    unlist(recursive = FALSE) ->
+    user_list
+
+  # Define the variable order
+  user_variable <- c(
+    "created_at",
+    "username",
+    "name",
+    "description",
+    "followers_count",
+    "following_count",
+    "post_count",
+    "listed_count",
+    "like_count",
+    "protected",
+    "verified",
+    "verified_type",
+    "location",
+    "profile_image_url",
+    "link_in_bio",
+    "user_id"
+  )
+
+  # Create the user tibble
+  user_list |>
+    map_dfr(
+      ~ tibble(
+        created_at        = .x$created_at,
+        username          = .x$username,
+        name              = .x$name,
+        description       = .x$description %||% NA |> as.character(),
+        followers_count   = .x$public_metrics$followers_count,
+        following_count   = .x$public_metrics$following_count,
+        post_count        = .x$public_metrics$tweet_count,
+        listed_count      = .x$public_metrics$listed_count,
+        like_count        = .x$public_metrics$like_count,
+        protected         = .x$protected,
+        verified          = .x$verified,
+        verified_type     = .x$verified_type,
+        location          = .x$location %||% NA |> as.character(),
+        profile_image_url = .x$profile_image_url,
+        link_in_bio       = .x$entities$url$urls |>
+                              pluck(1, "display_url", .default = NA) |>
+                              as.character(),
+        user_id           = .x$id
+      )
+    ) |>
+    mutate(created_at = ymd_hms(created_at)) |>
+    distinct(user_id, .keep_all = TRUE) |>
+    select(any_of(user_variable)) ->
+    user
+
+  return(user)
+}

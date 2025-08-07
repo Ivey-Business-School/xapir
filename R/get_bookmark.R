@@ -1,8 +1,8 @@
-#' Get User Timeline
+#' Get Bookmark
 #'
 #' @description
-#' Returns a list of Posts authored by the provided User ID via the [user posts timeline by user ID
-#' endpoint](https://docs.x.com/x-api/posts/get-posts).
+#' Retrieves a list of Posts bookmarked by the authenticated user via the [get bookmark
+#' endpoint](https://docs.x.com/x-api/bookmarks/get-bookmarks).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
@@ -27,20 +27,18 @@
 #'   API. You can adjust this value based on your tier's rate limits, which are
 #'   detailed on the [X API documentation
 #'   website](https://developer.x.com/en/docs/rate-limits).
-#' @template bearer_token
 #' @template post_fields
 #' @template user_fields
 #' @return A \code{list} containing the four elements that make up the API
 #'   response
 #' @examples
 #' \dontrun{
-#' tl <- get_timeline("XDevelopers")
+#' tl <- get_bookmark("XDevelopers")
 #' }
 #' @export
 get_timeline <- function(
     username,
     max_results      = 100,
-    max_posts        = 3200,
     end_time         = NULL,
     start_time       = NULL,
     until_id         = NULL,
@@ -48,7 +46,6 @@ get_timeline <- function(
     pagination_token = NULL,
     exclude          = NULL,
     sleep_time       = 90,
-    bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
     post_fields      =
       c("created_at", "text", "public_metrics", "geo", "attachments",
         "context_annotations", "entities", "lang", "referenced_tweets",
@@ -75,6 +72,9 @@ get_timeline <- function(
   response <- NULL
   post_counter <- 0
 
+  # Get cached or refreshed token
+  token <- authenticate_user()
+
   # Get the user_id for the specified username
   while (TRUE) {
     tryCatch(
@@ -83,7 +83,7 @@ get_timeline <- function(
           req_url_path_append(
             endpoint = paste0("users/by/username/", username)
           ) |>
-          req_auth_bearer_token(token = bearer_token) |>
+          req_auth_bearer_token(token = token$access_token) |>
           req_perform() |>
           resp_body_json() |>
           pluck("data", "id") ->
@@ -109,21 +109,17 @@ get_timeline <- function(
   call_i <- 1
 
   # Make the API request
-  while ((call_i == 1 || !is.null(pagination_token)) && post_counter < max_posts) {
-
-    remaining_needed <- max_posts - post_counter
-    max_results_this_call <- min(max_results, remaining_needed)
-    max_results_this_call <- max(max_results_this_call, 10)
+  while (call_i == 1 || !is.null(pagination_token)) {
 
     while (TRUE) {
       tryCatch(
         expr = {
           request(base_url = "https://api.x.com/2") |>
             req_url_path_append(
-              endpoint = paste0("users/", user_id, "/tweets")
+              endpoint = paste0("users/", user_id, "/bookmarks")
             ) |>
             req_url_query(
-              max_results      = max_results_this_call,
+              max_results      = max_results,
               end_time         = end_time,
               start_time       = start_time,
               until_id         = until_id,
@@ -137,7 +133,7 @@ get_timeline <- function(
               place.fields     = place_fields_str,
               expansions       = expansions_str
             ) |>
-            req_auth_bearer_token(token = bearer_token) |>
+            req_auth_bearer_token(token = token$access_token) |>
             req_perform() |>
             resp_body_json() ->
             this_response
@@ -161,10 +157,7 @@ get_timeline <- function(
     message(paste("Finished getting posts on page ", call_i))
 
     call_i <- call_i + 1
-
-    post_counter <- post_counter + length(this_response$data)
-    if (post_counter >= max_posts) break
-
+    
     # Sleep time between API requests
     Sys.sleep(sleep_time)
   }

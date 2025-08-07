@@ -1,49 +1,50 @@
-#' Get Post by IDs
+#' Get Repost by ID
 #'
 #' @description
-#' Returns a variety of information about the Post specified by the requested ID
-#' via the [get posts by IDs endpoint](https://docs.x.com/x-api/posts/get-posts-by-ids).
+#' Retrieves a list of Posts that repost a specific Post by its ID
+#' via the [get repost endpoint](https://docs.x.com/x-api/posts/get-reposts).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom stringr str_c
-#' @param post_ids The IDs of the post to retrieve, stored in a list.
+#' @param post_id The ID of the post to retrieve.
 #' @template bearer_token
 #' @template post_fields
 #' @template user_fields
-#' @return A list containing the retrieved post and any expansions.
+#' @return A \code{list} containing the four elements that make up the API
+#'   response
 #' @examples
 #' \dontrun{
-#' post <- get_post(c("1234567890123456789"))
+#' post <- get_repost("1234567890123456789")
 #' }
 #' @export
-get_post <- function(
-  post_ids,
-  bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
-  post_fields      =
+get_repost <- function(
+  post_id,
+  max_results        = 100,
+  bearer_token       = Sys.getenv("X_BEARER_TOKEN"),
+  post_fields        =
       c("created_at", "text", "public_metrics", "geo", "attachments",
         "context_annotations", "entities", "lang", "referenced_tweets",
         "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
         "edit_history_tweet_ids", "id"),
-  user_fields      =
-    c("created_at", "description", "protected", "entities", "location",
-      "profile_image_url", "public_metrics", "verified", "verified_type"),
-  media_fields     =
-    c("duration_ms", "height", "width", "preview_image_url", "type", "url",
-      "public_metrics", "variants", "media_key"),
-  poll_fields      =
-    c("end_datetime", "duration_minutes", "options", "voting_status", "id"),
-  place_fields     =
-    c("contained_within", "country", "country_code", "full_name", "geo", "id",
-      "name", "place_type"),
-  expansions       =
-    c("author_id", "entities.mentions.username",
-      "referenced_tweets.id.author_id", "referenced_tweets.id",
-      "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids",
-      "geo.place_id")
+    user_fields      =
+      c("created_at", "description", "protected", "entities", "location",
+        "profile_image_url", "public_metrics", "verified", "verified_type"),
+    media_fields     =
+      c("duration_ms", "height", "width", "preview_image_url", "type", "url",
+        "public_metrics", "variants", "media_key"),
+    poll_fields      =
+      c("end_datetime", "duration_minutes", "options", "voting_status", "id"),
+    place_fields     =
+      c("contained_within", "country", "country_code", "full_name", "geo", "id",
+        "name", "place_type"),
+    expansions       =
+      c("author_id", "entities.mentions.username",
+        "referenced_tweets.id.author_id", "referenced_tweets.id",
+        "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids",
+        "geo.place_id")
 ) {
 
   # Join fields as comma-separated strings
-  post_ids_str     <- str_c(post_ids, collapse = ",")
   post_fields_str  <- str_c(post_fields, collapse = ",")
   user_fields_str  <- str_c(user_fields, collapse = ",")
   media_fields_str <- str_c(media_fields, collapse = ",")
@@ -56,10 +57,10 @@ get_post <- function(
       expr = {
         request(base_url = "https://api.x.com/2") |>
           req_url_path_append(
-            endpoint = paste0("tweets")
+            endpoint = paste0("tweets/", post_id, "/retweets")
           ) |>
           req_url_query(
-            ids          = post_ids_str,
+            max_results  = max_results,
             tweet.fields = post_fields_str,
             user.fields  = user_fields_str,
             media.fields = media_fields_str,

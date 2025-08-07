@@ -1,15 +1,14 @@
-#' Get User Timeline
+#' Get User Mention Timeline
 #'
 #' @description
-#' Returns a list of Posts authored by the provided User ID via the [user posts timeline by user ID
-#' endpoint](https://docs.x.com/x-api/posts/get-posts).
+#' Retrieves a list of Posts that mention a specific User by their ID via the [user 
+#' mentions endpoint](https://docs.x.com/x-api/posts/get-mentions).
 #'
 #' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
 #' @importFrom purrr pluck
 #' @importFrom stringr str_c
 #' @template username
 #' @template max_results
-#' @param max_posts The maximum number of posts to obtain from X.
 #' @param end_time The latest date-time from which you want to get posts.
 #'   Provide the value in ISO 8601 format (i.e., `YYYY-MM-DDTHH:mm:ssZ`). The
 #'   `iso_8601()` function will convert a string, date, or date-time object to
@@ -40,13 +39,11 @@
 get_timeline <- function(
     username,
     max_results      = 100,
-    max_posts        = 3200,
     end_time         = NULL,
     start_time       = NULL,
     until_id         = NULL,
     since_id         = NULL,
     pagination_token = NULL,
-    exclude          = NULL,
     sleep_time       = 90,
     bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
     post_fields      =
@@ -109,21 +106,17 @@ get_timeline <- function(
   call_i <- 1
 
   # Make the API request
-  while ((call_i == 1 || !is.null(pagination_token)) && post_counter < max_posts) {
-
-    remaining_needed <- max_posts - post_counter
-    max_results_this_call <- min(max_results, remaining_needed)
-    max_results_this_call <- max(max_results_this_call, 10)
+  while ((call_i == 1 || !is.null(pagination_token))) {
 
     while (TRUE) {
       tryCatch(
         expr = {
           request(base_url = "https://api.x.com/2") |>
             req_url_path_append(
-              endpoint = paste0("users/", user_id, "/tweets")
+              endpoint = paste0("users/", user_id, "/mentions")
             ) |>
             req_url_query(
-              max_results      = max_results_this_call,
+              max_results      = max_results,
               end_time         = end_time,
               start_time       = start_time,
               until_id         = until_id,
@@ -161,9 +154,6 @@ get_timeline <- function(
     message(paste("Finished getting posts on page ", call_i))
 
     call_i <- call_i + 1
-
-    post_counter <- post_counter + length(this_response$data)
-    if (post_counter >= max_posts) break
 
     # Sleep time between API requests
     Sys.sleep(sleep_time)
