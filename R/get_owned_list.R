@@ -1,4 +1,4 @@
-#' Get List
+#' Get Owned List
 #' 
 #' @description
 #' Get a User’s Owned Lists via the [owned list endpoint](https://docs.x.com/x-api/lists/get-a-users-owned-lists).
@@ -11,10 +11,10 @@
 #' @return A tibble containing the IDs of the lists and their names, or NULL if none found.
 #' @examples
 #' \dontrun{
-#' lists <- get_list(username = "Tesla")
+#' lists <- get_owned_list(username = "Tesla")
 #' }
 #' @export
-get_list <- function(
+get_owned_list <- function(
   username,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   list_fields     =

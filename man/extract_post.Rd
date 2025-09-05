@@ -4,10 +4,17 @@
 \alias{extract_post}
 \title{Extract Post Data from Timeline}
 \usage{
-extract_post(timeline, tz = Sys.timezone(), include_referenced_posts = TRUE)
+extract_post(
+  timeline,
+  additional_cols = c("post_type", "post_url"),
+  tz = Sys.timezone(),
+  include_referenced_posts = TRUE
+)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{additional_cols}{A list of extra columns to be included in the tibble}
 
 \item{include_referenced_posts}{Logical. Whether to include referenced posts in the output. Defaults to TRUE.}
 }
