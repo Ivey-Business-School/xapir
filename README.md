@@ -18,12 +18,12 @@ Package features include:
 -   Search for posts with keywords using `get_recent_post()`
 -   See how many posts have been posted under a query using
     `get_recent_post_count()`
--   Retrieve quote posts for a given post using `get_quote_posts()`
--   Retrieve owned lists using `get_list()`
+-   Retrieve quote posts for a given post using `get_quote_post()`
+-   Retrieve owned lists using `get_owned_list()`
 -   Obtain the accounts in a list using `get_list_member()`
--   Create a post on X using `post_to_x()`
--   Delete a post on X using `delete_from_x()`
--   Repost a post on X using `repost_to_x()`
+-   Create a post on X using `create_post()`
+-   Delete a post on X using `delete_post()`
+-   Repost a post on X using `create_repost()`
 -   Follow a user on X using `follow_user()`
 -   Unfollow a user on X using `unfollow_user()`
 -   Extract post data using `extract_post()`
@@ -35,21 +35,20 @@ Package features include:
 ## Table of Contents
 
 -   [Installation](#installation)
--   [Vignettes](#vignettes)
 -   [Usage](#usage)
     -   [Authenticate](#authenticate)
     -   [Get Timeline](#get-timeline)
     -   [Get Recent Post](#get-recent-post)
     -   [Get Recent Post Count](#get-recent-post-count)
-    -   [Get Quote Posts](#get-quote-posts)
-    -   [Get List](#get-list)
+    -   [Get Quote Post](#get-quote-post)
+    -   [Get Owned List](#get-owned-list)
     -   [Get List Member](#get-list-member)
-    -   [Post to X](#post-to-X)
-    -   [Delete From X](#delete-from-x)
-    -   [Repost to X](#repost-to-x)
+    -   [Create Post](#create-post)
+    -   [Delete Post](#delete-post)
+    -   [Create Repost](#create-repost)
     -   [Follow User](#follow-user)
     -   [Unfollow User](#unfollow-user)
-    -   [Extract Posts](#extract-posts)
+    -   [Extract Post](#extract-post)
     -   [Extract Post Media](#extract-post-media)
     -   [Extract Post Place](#extract-post-place)
     -   [Extract Post Poll](#extract-post-poll)
@@ -70,16 +69,6 @@ remotes::install_github("Ivey-Business-School/xapir")
 If you encounter an issue while using this package, please file a
 minimal reproducible example on
 [GitHub](https://github.com/Ivey-Business-School/xapir/issues).
-
-## Vignettes
-
-The README below outlines the basic package functionality. For more
-information please feel free to browse the {xapir} website at
-<https://Ivey-Business-School.github.io/xapir/> which contains the
-following vignettes:
-
--   [Getting
-    Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.html)
 
 ## Usage
 
@@ -146,28 +135,28 @@ post_count <- get_recent_post_count(
 )
 ```
 
-### Get Quote Posts
+### Get Quote Post
 
-`get_quote_posts()` allows for the user to retrieve information about
+`get_quote_post()` allows for the user to retrieve information about
 posts that quote a specific post. The following example uses the
 function to retrieve up to 100 posts that quote post the first post on
 X.
 
 ``` r
-response <- get_quote_posts(
+response <- get_quote_post(
   post_id = "20",
   max_results = 100
 )
 ```
 
-### Get List
+### Get Owned List
 
-`get_list()` allows for the user to extract the IDs of their owned
+`get_owned_list()` allows for the user to extract the IDs of their owned
 lists. The following example uses the function to retrieve the lists
 owned by Tesla.
 
 ``` r
-list_IDs <- get_list(
+list_IDs <- get_owned_list(
   username = "Tesla"
 )
 ```
@@ -184,38 +173,38 @@ response <- get_list_member(
 )
 ```
 
-### Post to X
+### Create Post
 
-`post_to_x()` allows the user to create a post on their X account. The
+`create_post()` allows the user to create a post on their X account. The
 following example uses the function to post the phrase “Hello world!” on
 X.
 
 ``` r
-post_to_x(
+create_post(
   text = "Hello world!"
 )
 ```
 
-### Delete From X
+### Delete Post
 
-`delete_from_x()` allows the user to delete a specific post on their X
+`delete_post()` allows the user to delete a specific post on their X
 account using its post ID. The following example uses the function to
 delete a post with a post ID value of “20”.
 
 ``` r
-delete_from_x(
+delete_post(
   post_id = "20"
 )
 ```
 
-### Repost To X
+### Create Repost
 
-`repost_to_x()` allows the user to repost a specific post on their X
+`create_repost()` allows the user to repost a specific post on their X
 account using its post ID. The following example uses the function to
 repost the first ever post on X.
 
 ``` r
-repost_to_x(
+create_repost(
   post_id = "20"
 )
 ```
@@ -246,7 +235,7 @@ unfollow_user(
 )
 ```
 
-### Extract Posts
+### Extract Post
 
 `extract_post()` uses the results from the API call and cleans the data
 to return a tibble of all tweets.
@@ -317,8 +306,8 @@ the API call will return. X’s documentation is available here:
 
 ------------------------------------------------------------------------
 
-Please note that this project is released with a [Contributor Code of
-Conduct](https://github.com/Ivey-Business-School.github.io/xapir/blob/master/.github/CODE_OF_CONDUCT.md).
-By participating in this project you agree to abide by its terms.
+Please note that this project is released with a Contributor Code of
+Conduct. By participating in this project you agree to abide by its
+terms.
 
 [Top](#xapir)
