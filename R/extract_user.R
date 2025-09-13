@@ -27,22 +27,13 @@ extract_user <- function(timeline) {
   
   # Extract user data with robust handling - accounting for nested structure
   user_list <- timeline |>
-    # Remove NULL entries
     discard(is.null) |>
-    # Flatten one level (each timeline entry contains a list with one element)
-    map(~ if(is.list(.x) && length(.x) > 0) .x[[1]] else NULL) |>
-    # Remove NULL results
-    discard(is.null) |>
-    # Check if entry has includes and users data
     keep(~ {
-      includes <- pluck(.x, "includes", .default = NULL)
-      users <- pluck(includes, "users", .default = NULL)
+      users <- pluck(.x, "includes", "users", .default = NULL)
       !is.null(users) && length(users) > 0
     }) |>
-    # Extract the users from includes
-    map(~ pluck(.x, "includes", "users")) |>
-    # Flatten the user lists
-    unlist(recursive = FALSE)
+    map(~ pluck(.x, "includes", "users", .default = list())) |>
+    flatten()
   
   # Check if we have any user data
   if (length(user_list) == 0) {
@@ -129,3 +120,4 @@ extract_user <- function(timeline) {
   
   return(user)
 }
+# 
