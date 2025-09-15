@@ -75,7 +75,7 @@ extract_post_media <- function(
         height            = .x$height,
         width             = .x$width,
         preview_image_url = .x$preview_image_url %||% NA |> as.character(),
-        url               = first_mp4$url %||% NA_character_,
+        url               = first_mp4$url %||% .x$url %||% NA_character_,
         bit_rate          = first_mp4$bit_rate %||% NA_integer_
       )
     }
