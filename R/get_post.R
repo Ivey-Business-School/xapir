@@ -83,7 +83,7 @@ get_post <- function(
 
   # Wrap response in timeline-compatible format
   wrapped_post <- list(
-    data = list(this_post$data),
+    data = this_post$data,
     includes = list(
       tweets = this_post$includes$tweets %||% list()
     )
