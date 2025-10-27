@@ -205,7 +205,7 @@ post |>
     # post_url ---------------------------------------------------
     post |> 
       mutate    (
-        post_url = str_c("https://twitter.com/tesla/status/", post_id)
+        post_url = str_c("https://x.com/i/web/status/", post_id)
       ) |> 
       relocate(post_url, .before = post_id) ->
       post
