@@ -15,11 +15,6 @@ home:
 navbar:
   type: default
   left:
-    - text: "Articles"
-      icon: fas fa-book
-      menu:
-      -  text: Getting Started
-         href: articles/getting-started.html
     - text: Reference
       icon: fa-file-code-o
       href: reference/index.html
@@ -32,9 +27,60 @@ navbar:
       href: https://github.com/Ivey-Business-School/xapir
 
 reference:
-  - title: Timeline Functions
-    desc: Functions to query timlines
+  - title: Reading posts
+    desc: One request to the X API, saved whole as a frozen file you unfold later.
     contents:
-      - '`get_timeline`'
-      - '`iso_8601`'
-      - '`extract_post`'
+      - get_timeline
+      - get_recent_post
+      - get_recent_post_count
+      - get_post
+      - get_quote_post
+      - get_repost
+      - get_mentions
+      - get_account_timeline
+      - get_bookmark
+      - get_liked_posts
+      - get_liking_users
+      - get_repost_of_me
+      - iso_8601
+  - title: Unfolding a pull into tables
+    desc: The twelve tables of the course's data model, each from a saved pull. None of these calls the API.
+    contents:
+      - extract_post
+      - extract_user
+      - extract_post_media
+      - extract_post_url
+      - extract_post_mention
+      - extract_post_hashtag
+      - extract_post_cashtag
+      - extract_post_context
+      - extract_post_entity_annotation
+      - extract_post_poll_option
+      - extract_post_place
+      - extract_post_edited_post_id
+  - title: Accounts and lists
+    contents:
+      - get_users_by_usernames
+      - get_users_by_ids
+      - get_my_user
+      - get_blocking
+      - get_muting
+      - get_owned_list
+      - get_followed_lists
+      - get_list_by_id
+      - get_list_member
+      - get_trends_by_woeid
+  - title: Writing to X
+    desc: These act on your own account and need a user token.
+    contents:
+      - create_post
+      - delete_post
+      - create_repost
+      - delete_repost
+      - create_bookmark
+      - delete_bookmark
+      - hide_reply
+      - follow_user
+      - unfollow_user
+      - mute_user
+      - unmute_user
