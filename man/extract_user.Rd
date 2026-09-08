@@ -14,7 +14,10 @@ A tibble containing structured user data.
 }
 \description{
 Processes the timeline data retrieved from the X API to extract user metadata,
-including profile details and public metrics.
+including profile details and public metrics. \code{created_at} is in UTC.
+\code{is_identity_verified} says whether X has checked the account holder's
+identity document; \code{url} is the profile link as the API returns it
+(a t.co address), and \code{link_in_bio} is its display form.
 }
 \examples{
 \dontrun{

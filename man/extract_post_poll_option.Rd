@@ -14,7 +14,8 @@ A tibble containing structured poll data.
 }
 \description{
 Processes the timeline data retrieved from the X API to wrangle poll option information,
-such as poll IDs, options, and voting details.
+such as poll IDs, options, and voting details. Posts are read from \code{data}
+and from \code{includes$tweets}, so a poll on a quoted post keeps its \code{post_id}.
 }
 \examples{
 \dontrun{

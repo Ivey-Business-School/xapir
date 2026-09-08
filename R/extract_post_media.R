@@ -2,7 +2,8 @@
 #'
 #' @description
 #' Processes the timeline data retrieved from the X API to wrangle media information,
-#' such as images, videos, and GIFs attached to posts.
+#' such as images, videos, and GIFs attached to posts. `alt_text` is the
+#' author's description of the media and is `NA` when none was written.
 #'
 #' @importFrom purrr map map_dfr pluck detect
 #' @importFrom dplyr select any_of distinct left_join
@@ -17,7 +18,7 @@
 #'   max_results = 100,
 #'   start_time = iso_8601(Sys.Date() - 7)
 #' )
-#' post_mediat <- extract_post_media(timeline)
+#' post_media <- extract_post_media(timeline)
 #' }
 #' @export
 extract_post_media <- function(
@@ -26,7 +27,7 @@ extract_post_media <- function(
 
   media_variables <-  c(
     "post_id", "media_id", "type", "view_count", "duration_ms", "height", 
-    "width", "preview_image_url", "url", "bit_rate"
+    "width", "preview_image_url", "url", "alt_text", "bit_rate"
   )
 
   post_media_map <- timeline |>
@@ -76,6 +77,7 @@ extract_post_media <- function(
         width             = .x$width,
         preview_image_url = .x$preview_image_url %||% NA |> as.character(),
         url               = first_mp4$url %||% .x$url %||% NA_character_,
+        alt_text          = .x$alt_text %||% NA_character_,
         bit_rate          = first_mp4$bit_rate %||% NA_integer_
       )
     }

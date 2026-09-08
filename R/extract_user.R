@@ -2,12 +2,15 @@
 #'
 #' @description
 #' Processes the timeline data retrieved from the X API to extract user metadata,
-#' including profile details and public metrics.
+#' including profile details and public metrics. `created_at` is in UTC.
+#' `is_identity_verified` says whether X has checked the account holder's
+#' identity document; `url` is the profile link as the API returns it
+#' (a t.co address), and `link_in_bio` is its display form.
 #'
 #' @param timeline A list containing the timeline data retrieved from the X API.
 #' @return A tibble containing structured user data.
-#' @importFrom purrr map_dfr pluck
-#' @importFrom dplyr select distinct mutate any_of
+#' @importFrom purrr map map_dfr pluck keep discard flatten
+#' @importFrom dplyr select distinct mutate any_of filter na_if
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -55,9 +58,11 @@ extract_user <- function(timeline) {
     "protected",
     "verified",
     "verified_type",
+    "is_identity_verified",
     "location",
     "profile_image_url",
     "link_in_bio",
+    "url",
     "user_id"
   )
   
@@ -91,9 +96,11 @@ extract_user <- function(timeline) {
           protected = pluck(.x, "protected", .default = NA),
           verified = pluck(.x, "verified", .default = NA),
           verified_type = pluck(.x, "verified_type", .default = NA_character_),
+          is_identity_verified = pluck(.x, "is_identity_verified", .default = NA),
           location = pluck(.x, "location", .default = NA_character_) |> as.character(),
           profile_image_url = pluck(.x, "profile_image_url", .default = NA_character_),
           link_in_bio = link_in_bio,
+          url = pluck(.x, "url", .default = NA_character_) |> as.character(),
           user_id = pluck(.x, "id", .default = NA_character_)
         )
       }
@@ -109,9 +116,11 @@ extract_user <- function(timeline) {
   user <- user |>
     mutate(
       created_at = tryCatch(
-        ymd_hms(created_at), 
+        ymd_hms(created_at, tz = "UTC"),
         error = function(e) as.POSIXct(NA)
-      )
+      ),
+      # The API sends "" for an account with no profile link.
+      url = na_if(url, "")
     ) |>
     # Remove rows where user_id is NA (invalid entries)
     filter(!is.na(user_id)) |>

@@ -2,11 +2,13 @@
 #'
 #' @description
 #' Processes the timeline data retrieved from the X API to retrieve data on previous
-#' versions of posts. 
+#' versions of posts. The API lists a post's own id in its edit history, so an
+#' unedited post lists only itself. Those self rows are dropped: a row here
+#' means the post was edited, and `edited_post_id` is an earlier version.
 #'
 #' @importFrom purrr map pluck map_dfr
 #' @importFrom tibble tibble
-#' @importFrom dplyr distinct
+#' @importFrom dplyr distinct filter
 #' @importFrom tidyr unnest
 #' @param timeline A list containing the timeline data retrieved from the X API.
 #' @return A tibble containing structured edited post ID data.
@@ -40,6 +42,7 @@ extract_post_edited_post_id <- function(
       }
     }) |>
     unnest(cols = edited_post_id) |>
+    filter(edited_post_id != post_id) |>
     distinct() ->
     post_edited_post_id
 

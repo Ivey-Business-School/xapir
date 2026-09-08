@@ -7,23 +7,46 @@
 extract_post(
   timeline,
   additional_cols = c("post_type", "post_url"),
-  tz = Sys.timezone(),
+  tz = "UTC",
   include_referenced_posts = TRUE
 )
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
 
-\item{additional_cols}{A list of extra columns to be included in the tibble}
+\item{additional_cols}{A character vector of derived columns to add.
+\code{"post_type"} classifies each post as Thread, Post, Quote post, Reply or
+Repost. \code{"post_url"} builds the address
+\verb{https://x.com/<username>/status/<post_id>} from the author's handle in
+\code{includes$users}, falling back to \verb{https://x.com/i/web/status/<post_id>}
+when the author is not there.}
 
-\item{include_referenced_posts}{Logical. Whether to include referenced posts in the output. Defaults to TRUE.}
+\item{tz}{The time zone for \code{created_at}. The API returns UTC, and the
+default keeps it. Pass \code{Sys.timezone()} or a name such as
+\code{"America/Toronto"} to convert.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured post data.
+A tibble with one row per post. \code{article_title} is present only
+when at least one post in the timeline is an X article.
 }
 \description{
 Processes the timeline data retrieved from the X API to wrangle post data,
-including metadata such as likes, retweets, replies, and impressions.
+including metadata such as likes, reposts, replies, and impressions.
+
+Long posts (over 280 characters) arrive from the API with a truncated
+\code{text} and the full text in \code{note_tweet}. This function puts the full text
+in \code{text} and marks the row with \code{is_long_post = TRUE}.
+
+A repost carries the original post's like, reply, quote, bookmark and
+repost counts, so those five are set to \code{NA} on reposts. Its impression
+count is its own and is kept.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{

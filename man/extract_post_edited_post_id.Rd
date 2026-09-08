@@ -14,7 +14,9 @@ A tibble containing structured edited post ID data.
 }
 \description{
 Processes the timeline data retrieved from the X API to retrieve data on previous
-versions of posts.
+versions of posts. The API lists a post's own id in its edit history, so an
+unedited post lists only itself. Those self rows are dropped: a row here
+means the post was edited, and \code{edited_post_id} is an earlier version.
 }
 \examples{
 \dontrun{

@@ -2,10 +2,11 @@
 #'
 #' @description
 #' Processes the timeline data retrieved from the X API to wrangle poll option information,
-#' such as poll IDs, options, and voting details.
+#' such as poll IDs, options, and voting details. Posts are read from `data`
+#' and from `includes$tweets`, so a poll on a quoted post keeps its `post_id`.
 #'
 #' @importFrom purrr map map_dfr pluck compact flatten
-#' @importFrom dplyr select distinct left_join
+#' @importFrom dplyr select distinct left_join filter any_of
 #' @importFrom tibble tibble
 #' @importFrom tidyr unnest
 #' @importFrom lubridate ymd_hms
@@ -29,10 +30,9 @@ extract_post_poll_option <- function(
     "duration_minutes", "end_datetime", "voting_status"
   )
 
-  # Step 1: Map post_id to poll_id
+  # Step 1: Map post_id to poll_id, from data and from includes$tweets
   post_poll_map <- timeline |>
-    map(pluck("data")) |>
-    unlist(recursive = FALSE) |>
+    post_list(include_referenced_posts = TRUE) |>
     map_dfr(~ {
       poll_ids <- .x$attachments$poll_ids %||% NULL
       if (is.null(poll_ids)) return(NULL)
@@ -46,7 +46,9 @@ extract_post_poll_option <- function(
     return(tibble(!!!setNames(rep(list(logical(0)), length(poll_columns)), poll_columns)))
   }
 
-  post_poll_map <- unnest(post_poll_map, poll_id)
+  post_poll_map <- post_poll_map |>
+    unnest(poll_id) |>
+    distinct()
 
   # Step 2: Extract and flatten includes$polls
   poll_list <- timeline |>
@@ -93,8 +95,11 @@ extract_post_poll_option <- function(
       }
     })
 
-  # Step 4: Join post_id with poll options
+  # Step 4: Join post_id with poll options. A poll whose post is not in the
+  # response has nothing to attach to, so it is dropped rather than kept with
+  # an NA post_id.
   post_polls <- left_join(poll_tbl, post_poll_map, by = "poll_id") |>
+    filter(!is.na(post_id)) |>
     select(any_of(poll_columns)) |>
     distinct()
 
