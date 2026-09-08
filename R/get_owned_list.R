@@ -9,6 +9,8 @@
 #' @param username Username of the account that owns the lists
 #' @template bearer_token 
 #' @return A tibble containing the IDs of the lists and their names, or NULL if none found.
+#' @param list_fields \code{character}, \code{vector}; the fields to return
+#'   for each list.
 #' @examples
 #' \dontrun{
 #' lists <- get_owned_list(username = "Tesla")

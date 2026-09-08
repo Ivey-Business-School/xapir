@@ -24,6 +24,9 @@ scripts and available in every session.}
 for each user. Default: \code{c("created_at", "description", "protected",
   "entities", "location", "profile_image_url", "public_metrics",
   "verified", "verified_type", "is_identity_verified", "url")}.}
+
+\item{expansions}{Not used by this endpoint. Accepted so that older code
+keeps running.}
 }
 \value{
 A tibble containing the user information

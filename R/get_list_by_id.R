@@ -49,9 +49,6 @@ get_list_by_id <- function(
   ld <- resp$data
 
   # Convert to tibble
-  library(tibble)
-  library(dplyr)
-
   tib <- tibble(
     id             = ld$id,
     name           = ld$name %||% NA_character_,

@@ -8,6 +8,9 @@ delete_post(post_ids, sleep_time = 900)
 }
 \arguments{
 \item{post_ids}{A character vector of post IDs that are to be deleted from your X account}
+
+\item{sleep_time}{Seconds to pause between deletions when more than one
+post id is given.}
 }
 \value{
 A tibble containing the requested post IDs to delete, whether they were deleted successfully, and any error messages

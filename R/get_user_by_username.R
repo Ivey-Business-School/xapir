@@ -9,6 +9,8 @@
 #' @template bearer_token
 #' @template user_fields
 #' @return A tibble containing the user information 
+#' @param expansions Not used by this endpoint. Accepted so that older code
+#'   keeps running.
 #' @examples
 #' \dontrun{
 #' # Get basic user info for multiple users

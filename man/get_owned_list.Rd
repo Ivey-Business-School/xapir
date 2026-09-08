@@ -19,6 +19,9 @@ with the X API. By default, this argument retrieves the token from the
 environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN")}).
 Adding your bearer token to your \code{.Renviron} file keeps it out of your
 scripts and available in every session.}
+
+\item{list_fields}{\code{character}, \code{vector}; the fields to return
+for each list.}
 }
 \value{
 A tibble containing the IDs of the lists and their names, or NULL if none found.

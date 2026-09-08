@@ -53,6 +53,7 @@ get_mentions <- function(
     expansions       = default_expansions()
 ) {
 
+  check_token(bearer_token)
   check_max_results(max_results)
   check_max_posts(max_posts)
   announce_cap(max_posts)

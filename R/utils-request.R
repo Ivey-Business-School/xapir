@@ -103,15 +103,21 @@ announce_cap <- function(max_posts, price = x_price_per_post) {
 
 # Requests -------------------------------------------------------------------
 
-# The base request every reader starts from.
-x_request <- function(token) {
-  if (is.null(token) || !nzchar(token)) {
+# Stops before anything is announced or requested when the token is empty.
+check_token <- function(token) {
+  if (is.null(token) || length(token) != 1 || is.na(token) || !nzchar(token)) {
     stop(
       "No token. Put X_BEARER_TOKEN=<your token> in your .Renviron file, ",
       "restart R, and try again.",
       call. = FALSE
     )
   }
+  invisible(token)
+}
+
+# The base request every reader starts from.
+x_request <- function(token) {
+  check_token(token)
   request("https://api.x.com/2") |>
     req_auth_bearer_token(token) |>
     req_user_agent("xapir (https://github.com/Ivey-Business-School/xapir)")

@@ -9,6 +9,8 @@
 #' @importFrom tibble tibble
 #' @param post_ids A character vector of post IDs that are to be deleted from your X account
 #' @return A tibble containing the requested post IDs to delete, whether they were deleted successfully, and any error messages
+#' @param sleep_time Seconds to pause between deletions when more than one
+#'   post id is given.
 #' @examples
 #' \dontrun{
 #' delete_post(post_ids =  c("post_id1", "post_id2", "post_id3"))
