@@ -30,8 +30,8 @@ default keeps it. Pass \code{Sys.timezone()} or a name such as
 Defaults to TRUE.}
 }
 \value{
-A tibble with one row per post. \code{article_title} is present only
-when at least one post in the timeline is an X article.
+A tibble with one row per post, always with the same 22 columns.
+\code{article_title} is NA unless the post is an X article.
 }
 \description{
 Processes the timeline data retrieved from the X API to wrangle post data,

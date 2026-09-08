@@ -74,8 +74,10 @@ test_that("lang, possibly_sensitive and article_title are present", {
   # the fixture holds at least one X article
   expect_true("article_title" %in% names(post))
   expect_gt(sum(!is.na(post$article_title)), 0)
-  # a page with no article has no article_title column
-  expect_false("article_title" %in% names(extract_post(list(poll_page()))))
+  # a page with no article still has the column, all NA
+  no_article <- extract_post(list(poll_page()))
+  expect_true("article_title" %in% names(no_article))
+  expect_true(all(is.na(no_article$article_title)))
 })
 
 test_that("ids are character", {

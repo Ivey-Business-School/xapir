@@ -28,8 +28,8 @@
 #' @param include_referenced_posts Logical. Whether to include the posts in
 #'   `includes$tweets` (the posts that were quoted, replied to or reposted).
 #'   Defaults to TRUE.
-#' @return A tibble with one row per post. `article_title` is present only
-#'   when at least one post in the timeline is an X article.
+#' @return A tibble with one row per post, always with the same 22 columns.
+#'   `article_title` is NA unless the post is an X article.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -97,10 +97,6 @@ extract_post <- function(
       )
     )
 
-  # article_title only earns a column when the timeline holds an article.
-  if (all(is.na(post$article_title))) {
-    post <- select(post, -article_title)
-  }
 
   if ("post_type" %in% additional_cols) {
     post <- add_post_type(post)
