@@ -7,30 +7,29 @@
 get_liked_posts(
   username,
   max_results = 100,
+  max_posts = 500,
   pagination_token = NULL,
   sleep_time = 90,
-  post_fields = c("created_at", "text", "public_metrics", "geo", "attachments",
-    "context_annotations", "entities", "lang", "referenced_tweets", "reply_settings",
-    "conversation_id", "in_reply_to_user_id", "author_id", "edit_history_tweet_ids",
-    "id"),
-  user_fields = c("created_at", "description", "protected", "entities", "location",
-    "profile_image_url", "public_metrics", "verified", "verified_type"),
-  media_fields = c("duration_ms", "height", "width", "preview_image_url", "type", "url",
-    "public_metrics", "variants", "media_key"),
-  poll_fields = c("end_datetime", "duration_minutes", "options", "voting_status", "id"),
-  place_fields = c("contained_within", "country", "country_code", "full_name", "geo",
-    "id", "name", "place_type"),
-  expansions = c("author_id", "entities.mentions.username",
-    "referenced_tweets.id.author_id", "referenced_tweets.id", "in_reply_to_user_id",
-    "attachments.media_keys", "attachments.poll_ids", "geo.place_id")
+  post_fields = default_post_fields(),
+  user_fields = default_user_fields(),
+  media_fields = default_media_fields(),
+  poll_fields = default_poll_fields(),
+  place_fields = default_place_fields(),
+  expansions = default_expansions()
 )
 }
 \arguments{
 \item{username}{\code{character}; the name of the account on X without the
 "@" symbol.}
 
-\item{max_results}{\code{numeric}; a number between 10 and 100 indicating the
-number of posts returned per API call.}
+\item{max_results}{\code{numeric}; the number of posts per API call, between
+10 and 100. The function stops before any request if the value is outside
+that range.}
+
+\item{max_posts}{The most posts to read in this call. The API bills every
+post it returns (US$0.005 each in September 2026), so the function prints
+the cap in posts and dollars before its first request. The last page is
+trimmed so the result never holds more than this many posts.}
 
 \item{pagination_token}{A string used to navigate backward through result
 pages. The X API provides this token when more results are available.
@@ -38,28 +37,51 @@ Typically, you won’t need to set this manually as the function handles it,
 but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
 
-\item{sleep_time}{A numeric value specifying the number of seconds to wait
-between API calls. This helps avoid hitting rate limits imposed by the X
-API. You can adjust this value based on your tier's rate limits, which are
-detailed on the \href{https://developer.x.com/en/docs/rate-limits}{X API documentation website}.}
+\item{sleep_time}{Seconds to pause between pages. Rate limits are handled
+for you: a 429 or a 5xx response is retried up to three times, waiting as
+long as the API asks. Any other error stops at once with the API's own
+message, so a mistyped handle or a bad token fails in seconds.}
 
-\item{post_fields}{\code{character}, \code{vector}; a list of fields to
-return for each post \code{c("created_at", "text", "public_metrics", "geo",
-  "attachments","context_annotations", "entities", "lang",
-  "referenced_tweets", "reply_settings", "conversation_id",
-  "in_reply_to_user_id", "author_id", "edit_history_tweet_ids", "id")}}
+\item{post_fields}{\code{character}, \code{vector}; the fields to return
+for each post. The default asks for everything the twelve tables need:
+\code{c("created_at", "text", "note_tweet", "article", "public_metrics",
+  "geo", "attachments", "context_annotations", "entities", "lang",
+  "possibly_sensitive", "edit_controls", "referenced_tweets",
+  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+is nothing to save by trimming this.}
 
-\item{user_fields}{\code{character}, \code{vector}; a list of fields to return
-for each user \code{c("created_at", "description", "protected", "entities",
-"location", "profile_image_url", "public_metrics", "verified",
-"verified_type")}}
+\item{user_fields}{\code{character}, \code{vector}; the fields to return
+for each user. Default: \code{c("created_at", "description", "protected",
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
+
+\item{media_fields}{\code{character}, \code{vector}; the fields to return
+for each media item. Default: \code{c("duration_ms", "height", "width",
+  "preview_image_url", "type", "url", "alt_text", "public_metrics",
+  "variants", "media_key")}.}
+
+\item{poll_fields}{\code{character}, \code{vector}; the fields to return
+for each poll. Default: \code{c("end_datetime", "duration_minutes",
+  "options", "voting_status", "id")}.}
+
+\item{place_fields}{\code{character}, \code{vector}; the fields to return
+for each tagged place. Default: \code{c("country", "country_code",
+  "full_name", "geo", "id", "place_type")}.}
+
+\item{expansions}{\code{character}, \code{vector}; the related objects to
+return alongside each post. Default: \code{c("author_id",
+  "entities.mentions.username", "referenced_tweets.id.author_id",
+  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 }
 \value{
-A \code{list} containing the four elements that make up the API
-response
+A \code{list} of pages. Each page holds \code{data}, \code{includes} and
+\code{meta} as the API returned them. Pass it to the \verb{extract_*()} functions.
 }
 \description{
-Retrieves a list of Posts liked by a specific User by their ID via the \href{https://docs.x.com/x-api/posts/get-liked-posts}{get liked posts endpoint}.
+Retrieves a list of Posts liked by a specific User via the \href{https://docs.x.com/x-api/posts/get-liked-posts}{get liked posts endpoint}.
+Needs a user token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{

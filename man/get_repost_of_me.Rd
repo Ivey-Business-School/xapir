@@ -5,44 +5,61 @@
 \title{Get Reposts of Me}
 \usage{
 get_repost_of_me(
-  post_id,
   max_results = 100,
-  bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  post_fields = c("created_at", "text", "public_metrics", "geo", "attachments",
-    "context_annotations", "entities", "lang", "referenced_tweets", "reply_settings",
-    "conversation_id", "in_reply_to_user_id", "author_id", "edit_history_tweet_ids",
-    "id"),
-  user_fields = c("created_at", "description", "protected", "entities", "location",
-    "profile_image_url", "public_metrics", "verified", "verified_type"),
-  media_fields = c("duration_ms", "height", "width", "preview_image_url", "type", "url",
-    "public_metrics", "variants", "media_key"),
-  poll_fields = c("end_datetime", "duration_minutes", "options", "voting_status", "id"),
-  place_fields = c("contained_within", "country", "country_code", "full_name", "geo",
-    "id", "name", "place_type"),
-  expansions = c("author_id", "entities.mentions.username",
-    "referenced_tweets.id.author_id", "referenced_tweets.id", "in_reply_to_user_id",
-    "attachments.media_keys", "attachments.poll_ids", "geo.place_id")
+  post_fields = default_post_fields(),
+  user_fields = default_user_fields(),
+  media_fields = default_media_fields(),
+  poll_fields = default_poll_fields(),
+  place_fields = default_place_fields(),
+  expansions = default_expansions()
 )
 }
 \arguments{
-\item{post_fields}{\code{character}, \code{vector}; a list of fields to
-return for each post \code{c("created_at", "text", "public_metrics", "geo",
-  "attachments","context_annotations", "entities", "lang",
-  "referenced_tweets", "reply_settings", "conversation_id",
-  "in_reply_to_user_id", "author_id", "edit_history_tweet_ids", "id")}}
+\item{max_results}{\code{numeric}; the number of posts per API call, between
+10 and 100. The function stops before any request if the value is outside
+that range.}
 
-\item{user_fields}{\code{character}, \code{vector}; a list of fields to return
-for each user \code{c("created_at", "description", "protected", "entities",
-"location", "profile_image_url", "public_metrics", "verified",
-"verified_type")}}
+\item{post_fields}{\code{character}, \code{vector}; the fields to return
+for each post. The default asks for everything the twelve tables need:
+\code{c("created_at", "text", "note_tweet", "article", "public_metrics",
+  "geo", "attachments", "context_annotations", "entities", "lang",
+  "possibly_sensitive", "edit_controls", "referenced_tweets",
+  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+is nothing to save by trimming this.}
+
+\item{user_fields}{\code{character}, \code{vector}; the fields to return
+for each user. Default: \code{c("created_at", "description", "protected",
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
+
+\item{media_fields}{\code{character}, \code{vector}; the fields to return
+for each media item. Default: \code{c("duration_ms", "height", "width",
+  "preview_image_url", "type", "url", "alt_text", "public_metrics",
+  "variants", "media_key")}.}
+
+\item{poll_fields}{\code{character}, \code{vector}; the fields to return
+for each poll. Default: \code{c("end_datetime", "duration_minutes",
+  "options", "voting_status", "id")}.}
+
+\item{place_fields}{\code{character}, \code{vector}; the fields to return
+for each tagged place. Default: \code{c("country", "country_code",
+  "full_name", "geo", "id", "place_type")}.}
+
+\item{expansions}{\code{character}, \code{vector}; the related objects to
+return alongside each post. Default: \code{c("author_id",
+  "entities.mentions.username", "referenced_tweets.id.author_id",
+  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 }
 \value{
-A \code{list} containing the four elements that make up the API
-response
+A \code{list} holding one page, in the same shape as
+\code{\link[=get_timeline]{get_timeline()}} returns, so the \verb{extract_*()} functions accept it.
 }
 \description{
 Retrieves a list of Posts that repost content from the authenticated user
 via the \href{https://docs.x.com/x-api/users/get-reposts-of-me}{get reposts of me endpoint}.
+Needs a user token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{

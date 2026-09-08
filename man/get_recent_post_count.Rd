@@ -26,16 +26,15 @@ the required format (e.g., \code{iso_8601("2024-10-10")}).}
 
 \item{granularity}{The granularity for the search count results. This takes either the value 'minute', 'hour', or 'day'.}
 
-\item{is_local_tz}{Tracks wheather to use the local timezone or default timezone.}
+\item{is_local_tz}{Logical. Convert \code{start} and \code{end} from UTC to the system time zone.}
 
 \item{drop_incomplete}{Drops rows that do not contain a full granularity period amount of data.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
 environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN")}).
-Adding your bearer token to your \code{.Renviron} file ensures it is securely
-stored and accessible without needing to manually input it for each
-session.}
+Adding your bearer token to your \code{.Renviron} file keeps it out of your
+scripts and available in every session.}
 }
 \value{
 A tibble containing the number of posts.

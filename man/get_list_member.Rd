@@ -7,8 +7,7 @@
 get_list_member(
   list_id,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  user_fields = c("created_at", "description", "protected", "entities", "location",
-    "profile_image_url", "public_metrics", "verified", "verified_type")
+  user_fields = default_user_fields()
 )
 }
 \arguments{
@@ -17,14 +16,13 @@ get_list_member(
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
 environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN")}).
-Adding your bearer token to your \code{.Renviron} file ensures it is securely
-stored and accessible without needing to manually input it for each
-session.}
+Adding your bearer token to your \code{.Renviron} file keeps it out of your
+scripts and available in every session.}
 
-\item{user_fields}{\code{character}, \code{vector}; a list of fields to return
-for each user \code{c("created_at", "description", "protected", "entities",
-"location", "profile_image_url", "public_metrics", "verified",
-"verified_type")}}
+\item{user_fields}{\code{character}, \code{vector}; the fields to return
+for each user. Default: \code{c("created_at", "description", "protected",
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 }
 \value{
 A list containing the API response.

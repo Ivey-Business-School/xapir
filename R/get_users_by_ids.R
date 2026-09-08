@@ -20,9 +20,7 @@
 get_users_by_ids <- function(
   user_ids,
   bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
-  user_fields      =
-      c("created_at", "description", "protected", "entities", "location",
-        "profile_image_url", "public_metrics", "verified", "verified_type"),
+  user_fields = default_user_fields(),
   expansions       = NULL
 ) {
   
@@ -62,9 +60,11 @@ get_users_by_ids <- function(
     "protected",
     "verified",
     "verified_type",
+    "is_identity_verified",
     "location",
     "profile_image_url",
     "link_in_bio",
+    "url",
     "user_id"
   )
 
@@ -84,11 +84,13 @@ get_users_by_ids <- function(
         protected         = .x$protected,
         verified          = .x$verified,
         verified_type     = .x$verified_type,
+        is_identity_verified = .x$is_identity_verified %||% NA,
         location          = .x$location %||% NA |> as.character(),
         profile_image_url = .x$profile_image_url,
         link_in_bio       = .x$entities$url$urls |>
                               pluck(1, "display_url", .default = NA) |>
                               as.character(),
+        url               = na_if(.x$url %||% NA_character_, ""),
         user_id           = .x$id
       )
     ) |>

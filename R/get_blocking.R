@@ -20,8 +20,7 @@
 #' }
 #' @export
 get_blocking <- function(
-  user_fields = c("created_at", "description", "protected", "entities", "location",
-                  "profile_image_url", "public_metrics", "verified", "verified_type"),
+  user_fields = default_user_fields(),
   max_results = 100,
   pagination_token = NULL
 ) {
@@ -77,9 +76,11 @@ get_blocking <- function(
     "protected",
     "verified",
     "verified_type",
+    "is_identity_verified",
     "location",
     "profile_image_url",
     "link_in_bio",
+    "url",
     "user_id"
   )
   
@@ -99,11 +100,13 @@ get_blocking <- function(
         protected = .x$protected,
         verified = .x$verified,
         verified_type = .x$verified_type,
+        is_identity_verified = .x$is_identity_verified %||% NA,
         location = .x$location %||% NA |> as.character(),
         profile_image_url = .x$profile_image_url,
         link_in_bio = .x$entities$url$urls |>
           pluck(1, "display_url", .default = NA) |>
           as.character(),
+        url = na_if(.x$url %||% NA_character_, ""),
         user_id = .x$id
       )
     ) |>

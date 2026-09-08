@@ -5,17 +5,16 @@
 \title{Get Blocking}
 \usage{
 get_blocking(
-  user_fields = c("created_at", "description", "protected", "entities", "location",
-    "profile_image_url", "public_metrics", "verified", "verified_type"),
+  user_fields = default_user_fields(),
   max_results = 100,
   pagination_token = NULL
 )
 }
 \arguments{
-\item{user_fields}{\code{character}, \code{vector}; a list of fields to return
-for each user \code{c("created_at", "description", "protected", "entities",
-"location", "profile_image_url", "public_metrics", "verified",
-"verified_type")}}
+\item{user_fields}{\code{character}, \code{vector}; the fields to return
+for each user. Default: \code{c("created_at", "description", "protected",
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{max_results}{The maximum number of results to return per page. Must be between 1 and 1000. Default is 100.}
 

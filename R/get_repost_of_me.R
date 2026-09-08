@@ -3,90 +3,44 @@
 #' @description
 #' Retrieves a list of Posts that repost content from the authenticated user
 #' via the [get reposts of me endpoint](https://docs.x.com/x-api/users/get-reposts-of-me).
+#' Needs a user token, so the first call opens a browser window to sign in.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
-#' @importFrom stringr str_c
+#' @template max_results
 #' @template post_fields
 #' @template user_fields
-#' @return A \code{list} containing the four elements that make up the API
-#'   response
+#' @template media_fields
+#' @template poll_fields
+#' @template place_fields
+#' @template expansions
+#' @return A \code{list} holding one page, in the same shape as
+#'   [get_timeline()] returns, so the `extract_*()` functions accept it.
 #' @examples
 #' \dontrun{
 #' post <- get_repost_of_me()
 #' }
 #' @export
 get_repost_of_me <- function(
-  post_id,
-  max_results        = 100,
-  bearer_token       = Sys.getenv("X_BEARER_TOKEN"),
-  post_fields        =
-      c("created_at", "text", "public_metrics", "geo", "attachments",
-        "context_annotations", "entities", "lang", "referenced_tweets",
-        "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-        "edit_history_tweet_ids", "id"),
-    user_fields      =
-      c("created_at", "description", "protected", "entities", "location",
-        "profile_image_url", "public_metrics", "verified", "verified_type"),
-    media_fields     =
-      c("duration_ms", "height", "width", "preview_image_url", "type", "url",
-        "public_metrics", "variants", "media_key"),
-    poll_fields      =
-      c("end_datetime", "duration_minutes", "options", "voting_status", "id"),
-    place_fields     =
-      c("contained_within", "country", "country_code", "full_name", "geo", "id",
-        "name", "place_type"),
-    expansions       =
-      c("author_id", "entities.mentions.username",
-        "referenced_tweets.id.author_id", "referenced_tweets.id",
-        "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids",
-        "geo.place_id")
+  max_results      = 100,
+  post_fields      = default_post_fields(),
+  user_fields      = default_user_fields(),
+  media_fields     = default_media_fields(),
+  poll_fields      = default_poll_fields(),
+  place_fields     = default_place_fields(),
+  expansions       = default_expansions()
 ) {
 
-  # Get cached or refreshed token
+  check_max_results(max_results)
+
   token <- authenticate_user()
 
-  # Join fields as comma-separated strings
-  post_fields_str  <- str_c(post_fields, collapse = ",")
-  user_fields_str  <- str_c(user_fields, collapse = ",")
-  media_fields_str <- str_c(media_fields, collapse = ",")
-  poll_fields_str  <- str_c(poll_fields, collapse = ",")
-  place_fields_str <- str_c(place_fields, collapse = ",")
-  expansions_str   <- str_c(expansions, collapse = ",")
+  page <- x_request(token$access_token) |>
+    req_url_path_append("users", "reposts_of_me") |>
+    req_url_query(
+      max_results = max_results,
+      !!!field_query(post_fields, user_fields, media_fields, poll_fields,
+                     place_fields, expansions)
+    ) |>
+    x_perform()
 
-  while (TRUE) {
-    tryCatch(
-      expr = {
-        request(base_url = "https://api.x.com/2/users/reposts_of_me") |>
-          req_url_query(
-            max_results  = max_results,
-            tweet.fields = post_fields_str,
-            user.fields  = user_fields_str,
-            media.fields = media_fields_str,
-            poll.fields  = poll_fields_str,
-            place.fields = place_fields_str,
-            expansions   = expansions_str
-          ) |>
-          req_auth_bearer_token(token = token$access_token) |>
-          req_perform() |>
-          resp_body_json() ->
-          this_post
-
-        break
-      },
-      error = function(e) {
-        message(e$message, " Retrying in 60 seconds.")
-        Sys.sleep(60)
-      }
-    )
-  }
-
-  # Wrap response in timeline-compatible format
-  wrapped_post <- list(
-    data = list(this_post$data),
-    includes = list(
-      tweets = this_post$includes$tweets %||% list()
-    )
-  )
-
-  return(list(wrapped_post))
+  list(page)
 }

@@ -9,28 +9,21 @@ get_quote_post(
   max_results = 100,
   exclude = NULL,
   pagination_token = NULL,
-  post_fields = c("created_at", "text", "public_metrics", "geo", "attachments",
-    "context_annotations", "entities", "lang", "referenced_tweets", "reply_settings",
-    "conversation_id", "in_reply_to_user_id", "author_id", "edit_history_tweet_ids",
-    "id"),
-  user_fields = c("created_at", "description", "protected", "entities", "location",
-    "profile_image_url", "public_metrics", "verified", "verified_type"),
-  media_fields = c("duration_ms", "height", "width", "preview_image_url", "type", "url",
-    "public_metrics", "variants", "media_key"),
-  poll_fields = c("end_datetime", "duration_minutes", "options", "voting_status", "id"),
-  place_fields = c("contained_within", "country", "country_code", "full_name", "geo",
-    "id", "name", "place_type"),
-  expansions = c("author_id", "entities.mentions.username",
-    "referenced_tweets.id.author_id", "referenced_tweets.id", "in_reply_to_user_id",
-    "attachments.media_keys", "attachments.poll_ids"),
+  post_fields = default_post_fields(),
+  user_fields = default_user_fields(),
+  media_fields = default_media_fields(),
+  poll_fields = default_poll_fields(),
+  place_fields = default_place_fields(),
+  expansions = default_expansions(),
   bearer_token = Sys.getenv("X_BEARER_TOKEN")
 )
 }
 \arguments{
-\item{post_id}{The ID of the tweet to retrieve quote tweets for.}
+\item{post_id}{The ID of the post whose quote posts you want.}
 
-\item{max_results}{\code{numeric}; a number between 10 and 100 indicating the
-number of posts returned per API call.}
+\item{max_results}{\code{numeric}; the number of posts per API call, between
+10 and 100. The function stops before any request if the value is outside
+that range.}
 
 \item{exclude}{A comma-separated list of the types of posts to exclude from
 the response (e.g., "retweets", "replies", or "retweets,replies").}
@@ -41,26 +34,48 @@ Typically, you won’t need to set this manually as the function handles it,
 but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
 
-\item{post_fields}{\code{character}, \code{vector}; a list of fields to
-return for each post \code{c("created_at", "text", "public_metrics", "geo",
-  "attachments","context_annotations", "entities", "lang",
-  "referenced_tweets", "reply_settings", "conversation_id",
-  "in_reply_to_user_id", "author_id", "edit_history_tweet_ids", "id")}}
+\item{post_fields}{\code{character}, \code{vector}; the fields to return
+for each post. The default asks for everything the twelve tables need:
+\code{c("created_at", "text", "note_tweet", "article", "public_metrics",
+  "geo", "attachments", "context_annotations", "entities", "lang",
+  "possibly_sensitive", "edit_controls", "referenced_tweets",
+  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+is nothing to save by trimming this.}
 
-\item{user_fields}{\code{character}, \code{vector}; a list of fields to return
-for each user \code{c("created_at", "description", "protected", "entities",
-"location", "profile_image_url", "public_metrics", "verified",
-"verified_type")}}
+\item{user_fields}{\code{character}, \code{vector}; the fields to return
+for each user. Default: \code{c("created_at", "description", "protected",
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
+
+\item{media_fields}{\code{character}, \code{vector}; the fields to return
+for each media item. Default: \code{c("duration_ms", "height", "width",
+  "preview_image_url", "type", "url", "alt_text", "public_metrics",
+  "variants", "media_key")}.}
+
+\item{poll_fields}{\code{character}, \code{vector}; the fields to return
+for each poll. Default: \code{c("end_datetime", "duration_minutes",
+  "options", "voting_status", "id")}.}
+
+\item{place_fields}{\code{character}, \code{vector}; the fields to return
+for each tagged place. Default: \code{c("country", "country_code",
+  "full_name", "geo", "id", "place_type")}.}
+
+\item{expansions}{\code{character}, \code{vector}; the related objects to
+return alongside each post. Default: \code{c("author_id",
+  "entities.mentions.username", "referenced_tweets.id.author_id",
+  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
 environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN")}).
-Adding your bearer token to your \code{.Renviron} file ensures it is securely
-stored and accessible without needing to manually input it for each
-session.}
+Adding your bearer token to your \code{.Renviron} file keeps it out of your
+scripts and available in every session.}
 }
 \value{
-A list containing the API response.
+A \code{list} holding one page, in the same shape as
+\code{\link[=get_timeline]{get_timeline()}} returns, so the \verb{extract_*()} functions accept it.
 }
 \description{
 Returns a variety of information about each Post that quotes the Post specified by the requested ID
@@ -68,6 +83,6 @@ via the \href{https://docs.x.com/x-api/posts/retrieve-posts-that-quote-a-post}{q
 }
 \examples{
 \dontrun{
-get_quote_post(tweet_id = "20", max_results = 100)
+get_quote_post(post_id = "20", max_results = 100)
 }
 }
