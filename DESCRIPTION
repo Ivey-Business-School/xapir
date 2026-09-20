@@ -1,6 +1,6 @@
 Package: xapir
 Title: An Implementation of X APIs for Social Media Engagement Research
-Version: 0.1.0
+Version: 0.1.1
 Description: Functions connecting to the 'X' APIs <https://developer.x.com/en/docs/x-api>.
     This package is tailored to students learning about social media and marketing.
 Authors@R: 
@@ -39,4 +39,4 @@ ByteCompile: true
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.1.0

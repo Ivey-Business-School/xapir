@@ -9,10 +9,14 @@ test_that("check_max_results accepts 10 to 100 and refuses the rest", {
 
 test_that("a bad max_results stops before any request is made", {
   httr2::local_mocked_responses(function(req) stop("a request was made"))
-  expect_error(get_timeline("tesla", max_results = 200, bearer_token = "tok"),
-               "between 10 and 100")
-  expect_error(get_recent_post("tesla", max_results = 5, bearer_token = "tok"),
-               "between 10 and 100")
+  expect_error(
+    get_timeline("tesla", max_results = 200, bearer_token = "tok"),
+    "between 10 and 100"
+  )
+  expect_error(
+    get_recent_post("tesla", max_results = 5, bearer_token = "tok"),
+    "between 10 and 100"
+  )
 })
 
 test_that("a missing token stops with advice", {
@@ -100,10 +104,65 @@ test_that("get_recent_post never returns more than max_posts", {
 })
 
 test_that("the default post fields include the long-post and article fields", {
-  expect_true(all(c("note_tweet", "article", "edit_controls", "possibly_sensitive")
-                  %in% default_post_fields()))
+  long_post_fields <- c(
+    "note_tweet", "article", "edit_controls", "possibly_sensitive"
+  )
+  expect_true(all(long_post_fields %in% default_post_fields()))
   expect_true(all(c("is_identity_verified", "url") %in% default_user_fields()))
   expect_true("alt_text" %in% default_media_fields())
   expect_true("geo.place_id" %in% default_expansions())
   expect_false(any(c("contained_within", "name") %in% default_place_fields()))
+})
+
+test_that("get_timeline by user_id makes no user read", {
+  urls <- character(0)
+  httr2::local_mocked_responses(function(req) {
+    urls <<- c(urls, req$url)
+    posts_page(1:10)
+  })
+  pages <- suppressMessages(
+    get_timeline(user_id = "42", max_posts = 10, bearer_token = "tok")
+  )
+  expect_equal(length(urls), 1)
+  expect_match(urls[1], "/users/42/tweets", fixed = TRUE)
+  expect_false(any(grepl("/users/by/username", urls, fixed = TRUE)))
+  expect_equal(length(pages[[1]]$data), 10)
+})
+
+test_that("get_timeline by username still pays the lookup first", {
+  urls <- character(0)
+  httr2::local_mocked_responses(function(req) {
+    urls <<- c(urls, req$url)
+    if (grepl("/users/by/username", req$url, fixed = TRUE)) {
+      json_response(200, list(data = list(id = "42", username = "tesla")))
+    } else {
+      posts_page(1:10)
+    }
+  })
+  suppressMessages(
+    get_timeline("tesla", max_posts = 10, bearer_token = "tok")
+  )
+  expect_equal(length(urls), 2)
+  expect_match(urls[1], "/users/by/username/tesla", fixed = TRUE)
+  expect_match(urls[2], "/users/42/tweets", fixed = TRUE)
+})
+
+test_that("get_timeline wants exactly one of username and user_id", {
+  httr2::local_mocked_responses(function(req) stop("a request was made"))
+  expect_error(
+    get_timeline(bearer_token = "tok"),
+    "either `username` or `user_id`"
+  )
+  expect_error(
+    get_timeline("tesla", user_id = "42", bearer_token = "tok"),
+    "either `username` or `user_id`"
+  )
+  expect_error(
+    get_timeline(user_id = 42, bearer_token = "tok"),
+    "string of digits"
+  )
+  expect_error(
+    get_timeline(user_id = "tesla", bearer_token = "tok"),
+    "string of digits"
+  )
 })

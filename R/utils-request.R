@@ -12,22 +12,28 @@ NULL
 # Change them here and every reader follows.
 
 default_post_fields <- function() {
-  c("created_at", "text", "note_tweet", "article", "public_metrics", "geo",
+  c(
+    "created_at", "text", "note_tweet", "article", "public_metrics", "geo",
     "attachments", "context_annotations", "entities", "lang",
     "possibly_sensitive", "edit_controls", "referenced_tweets",
     "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-    "edit_history_tweet_ids", "id")
+    "edit_history_tweet_ids", "id"
+  )
 }
 
 default_user_fields <- function() {
-  c("created_at", "description", "protected", "entities", "location",
+  c(
+    "created_at", "description", "protected", "entities", "location",
     "profile_image_url", "public_metrics", "verified", "verified_type",
-    "is_identity_verified", "url")
+    "is_identity_verified", "url"
+  )
 }
 
 default_media_fields <- function() {
-  c("duration_ms", "height", "width", "preview_image_url", "type", "url",
-    "alt_text", "public_metrics", "variants", "media_key")
+  c(
+    "duration_ms", "height", "width", "preview_image_url", "type", "url",
+    "alt_text", "public_metrics", "variants", "media_key"
+  )
 }
 
 default_poll_fields <- function() {
@@ -39,15 +45,19 @@ default_place_fields <- function() {
 }
 
 default_expansions <- function() {
-  c("author_id", "entities.mentions.username",
+  c(
+    "author_id", "entities.mentions.username",
     "referenced_tweets.id.author_id", "referenced_tweets.id",
     "in_reply_to_user_id", "attachments.media_keys", "attachments.poll_ids",
-    "geo.place_id")
+    "geo.place_id"
+  )
 }
 
 # The API wants each field set as one comma-separated string.
 join_fields <- function(x) {
-  if (is.null(x) || length(x) == 0) return(NULL)
+  if (is.null(x) || length(x) == 0) {
+    return(NULL)
+  }
   str_c(x, collapse = ",")
 }
 
@@ -115,6 +125,29 @@ check_token <- function(token) {
   invisible(token)
 }
 
+# Exactly one of username and user_id, so a call never pays for a lookup it
+# did not ask for and never addresses the wrong account.
+check_one_of_user <- function(username, user_id) {
+  if (is.null(username) == is.null(user_id)) {
+    stop(
+      "Give either `username` or `user_id`, not both and not neither.",
+      call. = FALSE
+    )
+  }
+  if (!is.null(user_id)) {
+    ok <- is.character(user_id) && length(user_id) == 1 &&
+      !is.na(user_id) && grepl("^[0-9]+$", user_id)
+    if (!ok) {
+      stop(
+        "`user_id` must be one string of digits, such as \"2244994945\". ",
+        "Keep ids as text: as numbers they lose digits.",
+        call. = FALSE
+      )
+    }
+  }
+  invisible(NULL)
+}
+
 # The base request every reader starts from.
 x_request <- function(token) {
   check_token(token)
@@ -163,7 +196,9 @@ x_retry_after <- function(resp) {
 # The API's own words, pulled from the error body for the message.
 x_error_body <- function(resp) {
   body <- tryCatch(resp_body_json(resp), error = function(e) NULL)
-  if (is.null(body)) return(NULL)
+  if (is.null(body)) {
+    return(NULL)
+  }
   from_errors <- unlist(lapply(body$errors, function(e) {
     e$message %||% e$detail %||% e$title
   }))
@@ -197,9 +232,9 @@ lookup_user_id <- function(username, token) {
 # trimmed so the pull never holds more than max_posts posts.
 fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
                         pagination_token = NULL, what = "posts") {
-  response     <- list()
+  response <- list()
   post_counter <- 0
-  call_i       <- 1
+  call_i <- 1
 
   repeat {
     remaining <- max_posts - post_counter
@@ -217,7 +252,7 @@ fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
       n <- remaining
     }
 
-    response     <- c(response, list(page))
+    response <- c(response, list(page))
     post_counter <- post_counter + n
     message("Finished getting ", what, " on page ", call_i)
 

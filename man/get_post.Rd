@@ -28,35 +28,35 @@ scripts and available in every session.}
 \item{post_fields}{\code{character}, \code{vector}; the fields to return
 for each post. The default asks for everything the twelve tables need:
 \code{c("created_at", "text", "note_tweet", "article", "public_metrics",
-  "geo", "attachments", "context_annotations", "entities", "lang",
-  "possibly_sensitive", "edit_controls", "referenced_tweets",
-  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+"geo", "attachments", "context_annotations", "entities", "lang",
+"possibly_sensitive", "edit_controls", "referenced_tweets",
+"reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+"edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
 is nothing to save by trimming this.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-  "entities", "location", "profile_image_url", "public_metrics",
-  "verified", "verified_type", "is_identity_verified", "url")}.}
+"entities", "location", "profile_image_url", "public_metrics",
+"verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{media_fields}{\code{character}, \code{vector}; the fields to return
 for each media item. Default: \code{c("duration_ms", "height", "width",
-  "preview_image_url", "type", "url", "alt_text", "public_metrics",
-  "variants", "media_key")}.}
+"preview_image_url", "type", "url", "alt_text", "public_metrics",
+"variants", "media_key")}.}
 
 \item{poll_fields}{\code{character}, \code{vector}; the fields to return
 for each poll. Default: \code{c("end_datetime", "duration_minutes",
-  "options", "voting_status", "id")}.}
+"options", "voting_status", "id")}.}
 
 \item{place_fields}{\code{character}, \code{vector}; the fields to return
 for each tagged place. Default: \code{c("country", "country_code",
-  "full_name", "geo", "id", "place_type")}.}
+"full_name", "geo", "id", "place_type")}.}
 
 \item{expansions}{\code{character}, \code{vector}; the related objects to
 return alongside each post. Default: \code{c("author_id",
-  "entities.mentions.username", "referenced_tweets.id.author_id",
-  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
-  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
+"entities.mentions.username", "referenced_tweets.id.author_id",
+"referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+"attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 }
 \value{
 A \code{list} holding one page, in the same shape as

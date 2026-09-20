@@ -5,7 +5,8 @@
 \title{Get User Timeline}
 \usage{
 get_timeline(
-  username,
+  username = NULL,
+  user_id = NULL,
   max_results = 100,
   max_posts = 500,
   end_time = NULL,
@@ -27,6 +28,10 @@ get_timeline(
 \arguments{
 \item{username}{\code{character}; the name of the account on X without the
 "@" symbol.}
+
+\item{user_id}{\code{character}; the account's X user id, as a string of
+digits. When given, the handle lookup is skipped and \code{username} must be
+\code{NULL}.}
 
 \item{max_results}{\code{numeric}; the number of posts per API call, between
 10 and 100. The function stops before any request if the value is outside
@@ -73,35 +78,35 @@ scripts and available in every session.}
 \item{post_fields}{\code{character}, \code{vector}; the fields to return
 for each post. The default asks for everything the twelve tables need:
 \code{c("created_at", "text", "note_tweet", "article", "public_metrics",
-  "geo", "attachments", "context_annotations", "entities", "lang",
-  "possibly_sensitive", "edit_controls", "referenced_tweets",
-  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+"geo", "attachments", "context_annotations", "entities", "lang",
+"possibly_sensitive", "edit_controls", "referenced_tweets",
+"reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+"edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
 is nothing to save by trimming this.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-  "entities", "location", "profile_image_url", "public_metrics",
-  "verified", "verified_type", "is_identity_verified", "url")}.}
+"entities", "location", "profile_image_url", "public_metrics",
+"verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{media_fields}{\code{character}, \code{vector}; the fields to return
 for each media item. Default: \code{c("duration_ms", "height", "width",
-  "preview_image_url", "type", "url", "alt_text", "public_metrics",
-  "variants", "media_key")}.}
+"preview_image_url", "type", "url", "alt_text", "public_metrics",
+"variants", "media_key")}.}
 
 \item{poll_fields}{\code{character}, \code{vector}; the fields to return
 for each poll. Default: \code{c("end_datetime", "duration_minutes",
-  "options", "voting_status", "id")}.}
+"options", "voting_status", "id")}.}
 
 \item{place_fields}{\code{character}, \code{vector}; the fields to return
 for each tagged place. Default: \code{c("country", "country_code",
-  "full_name", "geo", "id", "place_type")}.}
+"full_name", "geo", "id", "place_type")}.}
 
 \item{expansions}{\code{character}, \code{vector}; the related objects to
 return alongside each post. Default: \code{c("author_id",
-  "entities.mentions.username", "referenced_tweets.id.author_id",
-  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
-  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
+"entities.mentions.username", "referenced_tweets.id.author_id",
+"referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+"attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 }
 \value{
 A \code{list} of pages. Each page holds \code{data}, \code{includes} and
@@ -109,9 +114,17 @@ A \code{list} of pages. Each page holds \code{data}, \code{includes} and
 }
 \description{
 Returns a list of Posts authored by the provided User ID via the \href{https://docs.x.com/x-api/posts/get-posts}{user posts timeline by user ID endpoint}.
+
+Give either \code{username} or \code{user_id}, not both. A \code{username} costs one
+user read to turn the handle into an id before the posts are read. When
+you already know the account's id, pass \code{user_id} and that read is
+skipped.
 }
 \examples{
 \dontrun{
 tl <- get_timeline("XDevelopers")
+
+# The same timeline by id, with no user read for the handle
+tl <- get_timeline(user_id = "2244994945")
 }
 }

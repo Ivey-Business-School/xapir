@@ -1,3 +1,16 @@
+# xapir 0.1.1
+
+Install it with `pak::pak("Ivey-Business-School/xapir@v0.1.1")`.
+
+## Reading from the API
+
+* `get_timeline()` takes `user_id` as an alternative to `username`. A
+  handle costs one user read ($0.010) to turn it into an id before the
+  posts are read. When you already know the id, pass `user_id` and that
+  read is skipped; the posts cost the same as before. Give one of the
+  two, not both, or the function stops before it spends anything. Keep
+  the id as text: `user_id = "2244994945"`.
+
 # xapir 0.1.0
 
 The first numbered release. Install it with

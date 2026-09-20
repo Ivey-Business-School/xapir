@@ -4,7 +4,15 @@
 #' Returns a list of Posts authored by the provided User ID via the [user posts timeline by user ID
 #' endpoint](https://docs.x.com/x-api/posts/get-posts).
 #'
+#' Give either `username` or `user_id`, not both. A `username` costs one
+#' user read to turn the handle into an id before the posts are read. When
+#' you already know the account's id, pass `user_id` and that read is
+#' skipped.
+#'
 #' @template username
+#' @param user_id \code{character}; the account's X user id, as a string of
+#'   digits. When given, the handle lookup is skipped and `username` must be
+#'   `NULL`.
 #' @template max_results
 #' @template max_posts
 #' @param end_time The latest date-time from which you want to get posts.
@@ -32,45 +40,55 @@
 #' @examples
 #' \dontrun{
 #' tl <- get_timeline("XDevelopers")
+#'
+#' # The same timeline by id, with no user read for the handle
+#' tl <- get_timeline(user_id = "2244994945")
 #' }
 #' @export
 get_timeline <- function(
-    username,
-    max_results      = 100,
-    max_posts        = 500,
-    end_time         = NULL,
-    start_time       = NULL,
-    until_id         = NULL,
-    since_id         = NULL,
-    pagination_token = NULL,
-    exclude          = NULL,
-    sleep_time       = 90,
-    bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
-    post_fields      = default_post_fields(),
-    user_fields      = default_user_fields(),
-    media_fields     = default_media_fields(),
-    poll_fields      = default_poll_fields(),
-    place_fields     = default_place_fields(),
-    expansions       = default_expansions()
+  username = NULL,
+  user_id = NULL,
+  max_results = 100,
+  max_posts = 500,
+  end_time = NULL,
+  start_time = NULL,
+  until_id = NULL,
+  since_id = NULL,
+  pagination_token = NULL,
+  exclude = NULL,
+  sleep_time = 90,
+  bearer_token = Sys.getenv("X_BEARER_TOKEN"),
+  post_fields = default_post_fields(),
+  user_fields = default_user_fields(),
+  media_fields = default_media_fields(),
+  poll_fields = default_poll_fields(),
+  place_fields = default_place_fields(),
+  expansions = default_expansions()
 ) {
-
   check_token(bearer_token)
+  check_one_of_user(username, user_id)
   check_max_results(max_results)
   check_max_posts(max_posts)
   announce_cap(max_posts)
 
-  user_id <- lookup_user_id(username, bearer_token)
+  # A handle costs a user read to resolve; an id addresses the timeline
+  # directly and costs nothing extra.
+  if (is.null(user_id)) {
+    user_id <- lookup_user_id(username, bearer_token)
+  }
 
   req <- x_request(bearer_token) |>
     req_url_path_append("users", user_id, "tweets") |>
     req_url_query(
-      end_time   = end_time,
+      end_time = end_time,
       start_time = start_time,
-      until_id   = until_id,
-      since_id   = since_id,
-      exclude    = exclude,
-      !!!field_query(post_fields, user_fields, media_fields, poll_fields,
-                     place_fields, expansions)
+      until_id = until_id,
+      since_id = since_id,
+      exclude = exclude,
+      !!!field_query(
+        post_fields, user_fields, media_fields, poll_fields,
+        place_fields, expansions
+      )
     )
 
   fetch_pages(
