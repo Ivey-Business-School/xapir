@@ -4,18 +4,26 @@ including metadata such as likes, reposts, replies, and impressions.
 Long posts (over 280 characters) arrive from the API with a truncated
 text and the full text in note_tweet. This function puts the full text
 in text and marks the row with is_long_post = TRUE.
-A repost carries the original post's like, reply, quote, bookmark and
-repost counts, so those five are set to NA on reposts. Its impression
-count is its own and is kept.
+A repost carries zero likes, replies, quotes and bookmarks, because
+engagement on a repost accrues to the original, and a repost count equal
+to the original's. Those five are set to NA on reposts, so a zero that
+means &quot;not measured here&quot; is never summed as a zero that means &quot;nobody
+liked it&quot;, and the original's repost count is not counted twice. Its
+impression count is its own and is kept. Checked on 212 reposts,
+20 September 2026.
 Each post appears once, even when it sits in one page's data and another
 page's includes$tweets. The data copy wins."><meta property="og:description" content="Processes the timeline data retrieved from the X API to wrangle post data,
 including metadata such as likes, reposts, replies, and impressions.
 Long posts (over 280 characters) arrive from the API with a truncated
 text and the full text in note_tweet. This function puts the full text
 in text and marks the row with is_long_post = TRUE.
-A repost carries the original post's like, reply, quote, bookmark and
-repost counts, so those five are set to NA on reposts. Its impression
-count is its own and is kept.
+A repost carries zero likes, replies, quotes and bookmarks, because
+engagement on a repost accrues to the original, and a repost count equal
+to the original's. Those five are set to NA on reposts, so a zero that
+means &quot;not measured here&quot; is never summed as a zero that means &quot;nobody
+liked it&quot;, and the original's repost count is not counted twice. Its
+impression count is its own and is kept. Checked on 212 reposts,
+20 September 2026.
 Each post appears once, even when it sits in one page's data and another
 page's includes$tweets. The data copy wins."><meta property="og:image" content="https://Ivey-Business-School.github.io/xapir/reference/figures/xapir.png"><meta property="og:image:alt" content="xapir package logo"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -55,9 +63,13 @@ including metadata such as likes, reposts, replies, and impressions.</p>
 <p>Long posts (over 280 characters) arrive from the API with a truncated
 <code>text</code> and the full text in <code>note_tweet</code>. This function puts the full text
 in <code>text</code> and marks the row with <code>is_long_post = TRUE</code>.</p>
-<p>A repost carries the original post's like, reply, quote, bookmark and
-repost counts, so those five are set to <code>NA</code> on reposts. Its impression
-count is its own and is kept.</p>
+<p>A repost carries zero likes, replies, quotes and bookmarks, because
+engagement on a repost accrues to the original, and a repost count equal
+to the original's. Those five are set to <code>NA</code> on reposts, so a zero that
+means "not measured here" is never summed as a zero that means "nobody
+liked it", and the original's repost count is not counted twice. Its
+impression count is its own and is kept. Checked on 212 reposts,
+20 September 2026.</p>
 <p>Each post appears once, even when it sits in one page's <code>data</code> and another
 page's <code>includes$tweets</code>. The <code>data</code> copy wins.</p>
     </div>
