@@ -12,13 +12,13 @@ Source:
 [`DESCRIPTION`](https://github.com/Ivey-Business-School/xapir/blob/master/DESCRIPTION)
 
 Boichuk J (2026). *xapir: An Implementation of X APIs for Social Media
-Engagement Research*. R package version 0.1.0,
+Engagement Research*. R package version 0.1.1,
 <https://github.com/Ivey-Business-School/xapir>.
 
     @Manual{,
       title = {xapir: An Implementation of X APIs for Social Media Engagement Research},
       author = {Jeffrey Boichuk},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.1},
       url = {https://github.com/Ivey-Business-School/xapir},
     }

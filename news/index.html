@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">xapir</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,15 @@
       <small>Source: <a href="https://github.com/Ivey-Business-School/xapir/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="xapir-011">xapir 0.1.1<a class="anchor" aria-label="anchor" href="#xapir-011"></a></h2>
+<p>Install it with <code>pak::pak("Ivey-Business-School/xapir@v0.1.1")</code>.</p>
+<div class="section level3">
+<h3 id="reading-from-the-api-0-1-1">Reading from the API<a class="anchor" aria-label="anchor" href="#reading-from-the-api-0-1-1"></a></h3>
+<ul><li>
+<code><a href="../reference/get_timeline.html">get_timeline()</a></code> takes <code>user_id</code> as an alternative to <code>username</code>. A handle costs one user read ($0.010) to turn it into an id before the posts are read. When you already know the id, pass <code>user_id</code> and that read is skipped; the posts cost the same as before. Give one of the two, not both, or the function stops before it spends anything. Keep the id as text: <code>user_id = "2244994945"</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="xapir-010">xapir 0.1.0<a class="anchor" aria-label="anchor" href="#xapir-010"></a></h2>
 <p>The first numbered release. Install it with <code>pak::pak("Ivey-Business-School/xapir@v0.1.0")</code>.</p>

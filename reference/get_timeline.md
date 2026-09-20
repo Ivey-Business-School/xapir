@@ -4,11 +4,17 @@ Returns a list of Posts authored by the provided User ID via the [user
 posts timeline by user ID
 endpoint](https://docs.x.com/x-api/posts/get-posts).
 
+Give either `username` or `user_id`, not both. A `username` costs one
+user read to turn the handle into an id before the posts are read. When
+you already know the account's id, pass `user_id` and that read is
+skipped.
+
 ## Usage
 
 ``` r
 get_timeline(
-  username,
+  username = NULL,
+  user_id = NULL,
   max_results = 100,
   max_posts = 500,
   end_time = NULL,
@@ -33,6 +39,11 @@ get_timeline(
 - username:
 
   `character`; the name of the account on X without the "@" symbol.
+
+- user_id:
+
+  `character`; the account's X user id, as a string of digits. When
+  given, the handle lookup is skipped and `username` must be `NULL`.
 
 - max_results:
 
@@ -143,5 +154,8 @@ API returned them. Pass it to the `extract_*()` functions.
 ``` r
 if (FALSE) { # \dontrun{
 tl <- get_timeline("XDevelopers")
+
+# The same timeline by id, with no user read for the handle
+tl <- get_timeline(user_id = "2244994945")
 } # }
 ```
