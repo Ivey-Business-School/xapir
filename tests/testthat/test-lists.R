@@ -190,7 +190,8 @@ test_that("get_trends_by_woeid returns the zero-row schema when data is empty", 
   httr2::local_mocked_responses(list(
     json_response(200, list(data = list()))
   ))
-  expect_silent(trends <- get_trends_by_woeid(4118, bearer_token = "tok"))
+  expect_message(trends <- get_trends_by_woeid(4118, bearer_token = "tok"),
+                 "costs about \\$0.010")
   expect_identical(trends, trend_schema())
   expect_equal(names(trends), c("trend_name", "post_count"))
   expect_type(trends$post_count, "integer")

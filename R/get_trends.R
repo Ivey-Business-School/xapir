@@ -44,6 +44,8 @@ get_trends_by_woeid <- function(
     stop("`max_trends` must be a number between 1 and 50.", call. = FALSE)
   }
 
+  announce_request_cost("trends")
+
   page <- x_request(bearer_token) |>
     req_url_path_append("trends", "by", "woeid", as.character(woeid)) |>
     req_url_query(

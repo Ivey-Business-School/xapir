@@ -36,7 +36,7 @@ get_blocking <- function(
 ) {
   check_max_results(max_results)
   check_max_users(max_users)
-  announce_user_cap(max_users, cap_arg = "max_users")
+  announce_user_cap(max_users, cap_arg = "max_users", what = "blocks")
 
   token <- authenticate_user()
 
@@ -56,7 +56,7 @@ get_blocking <- function(
     max_results      = max_results,
     sleep_time       = 0,
     pagination_token = pagination_token,
-    what             = "users"
+    what             = "blocks"
   )
 
   pages |>

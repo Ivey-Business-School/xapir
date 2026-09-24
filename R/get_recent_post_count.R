@@ -5,7 +5,8 @@
 #' [recent posts count
 #' endpoint](https://docs.x.com/x-api/posts/recent-search-counts).
 #'
-#' Counts are free. The endpoint returns how many posts matched in each
+#' A count request is billed once (US\$0.005 in September 2026), however
+#' many posts it counts. The endpoint returns how many posts matched in each
 #' period and no posts at all, so nothing in this call is billed. Use it to
 #' size a query before paying for `get_recent_post()`.
 #'
@@ -49,7 +50,7 @@ get_recent_post_count <- function(
   check_token(bearer_token)
   check_query(query)
   granularity <- check_granularity(granularity)
-  message("Reading post counts. Counts are free: no posts are billed.")
+  announce_request_cost("counts_recent")
 
   this_response <- x_request(bearer_token) |>
     req_url_path_append("tweets", "counts", "recent") |>

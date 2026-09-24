@@ -17,8 +17,8 @@ NULL
 # cost. Every user returned is billed, so the cap is the worst case.
 # `cap_arg` names the argument to change when the count is a cap rather than
 # the exact number of users asked for.
-announce_user_cap <- function(n, cap_arg = NULL) {
-  price <- x_price("users")
+announce_user_cap <- function(n, cap_arg = NULL, what = "users") {
+  price <- x_price(what)
   text <- sprintf(
     "Reading up to %s users, about $%.2f.",
     format(n, big.mark = ",", scientific = FALSE),

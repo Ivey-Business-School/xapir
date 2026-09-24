@@ -213,3 +213,31 @@ test_that("check_query and check_granularity stop on what the API would reject",
   expect_silent(check_granularity("day"))
   expect_error(check_granularity("week"), "\"minute\", \"hour\" or \"day\"")
 })
+
+test_that("prices follow the pricing page and the xapir.prices option", {
+  expect_equal(x_price("posts"), 0.005)
+  expect_equal(x_price("users"), 0.010)
+  expect_equal(x_price("follows"), 0.010)
+  expect_equal(x_price("likes"), 0.001)
+  expect_equal(x_price("blocks"), 0.001)
+  expect_equal(x_price("counts_recent"), 0.005)
+  expect_equal(x_price("trends"), 0.010)
+  expect_equal(x_price("post_create"), 0.015)
+  expect_error(x_price("nonsense"), "No price is known")
+  op <- options(xapir.prices = list(follows = 0.02))
+  on.exit(options(op), add = TRUE)
+  expect_equal(x_price("follows"), 0.02)
+  expect_equal(x_price("posts"), 0.005)
+})
+
+test_that("check_max_results takes the endpoint's own range", {
+  expect_silent(check_max_results(1000, min = 1, max = 1000, what = "users"))
+  expect_error(check_max_results(1001, min = 1, max = 1000, what = "users"),
+               "between 1 and 1000")
+  expect_error(check_max_results(5), "between 10 and 100")
+})
+
+test_that("announce_request_cost prints one line per request", {
+  expect_message(announce_request_cost("trends"), "costs about \\$0.010")
+  expect_message(announce_request_cost("post_create", n = 3), "3 requests, about \\$0.04")
+})

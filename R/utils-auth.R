@@ -19,12 +19,17 @@ x_oauth_scopes <- c(
   "follows.read",          # who follows whom
   "follows.write",         # follow_user(), unfollow_user()
   "like.read",             # get_liked_posts(), get_liking_users()
+  "like.write",            # like_post(), unlike_post()
   "list.read",             # get_owned_list(), get_list_member(), ...
+  "list.write",            # create_list(), add_list_member(), pin_list(), ...
   "block.read",            # get_blocking()
+  "block.write",           # block_user(), unblock_user()
   "mute.read",             # get_muting()
   "mute.write",            # mute_user(), unmute_user()
   "bookmark.read",         # get_bookmark()
   "bookmark.write",        # create_bookmark(), delete_bookmark()
+  "media.write",           # upload_media()
+  "space.read",            # get_spaces()
   "offline.access"         # a refresh token, so sign-in lasts across sessions
 )
 

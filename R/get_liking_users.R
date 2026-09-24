@@ -34,7 +34,7 @@ get_liking_users <- function(
   check_post_ids(post_id, max_ids = 1, arg = "post_id")
   check_max_results(max_results)
   check_max_posts(max_users, arg = "max_users")
-  announce_cap(max_users, what = "users")
+  announce_cap(max_users, what = "likes")
 
   token <- authenticate_user()
 
@@ -48,6 +48,6 @@ get_liking_users <- function(
     max_results      = max_results,
     sleep_time       = sleep_time,
     pagination_token = pagination_token,
-    what             = "users"
+    what             = "likes"
   )
 }

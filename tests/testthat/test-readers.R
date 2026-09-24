@@ -92,13 +92,14 @@ test_that("get_liking_users announces users and their price", {
     posts_page(1:20)
   })
   out <- collect_messages(get_liking_users("20", max_users = 20))
-  expect_match(out$msgs[1], "Reading up to 20 users, about \\$0.20. Set max_users")
+  # who liked a post is a like read: $0.001 each, not the $0.010 of a user read
+  expect_match(out$msgs[1], "Reading up to 20 users, about \\$0.02. Set max_users")
   expect_equal(out$msgs[2], "Finished getting users on page 1")
-  expect_equal(out$msgs[3], "Read 20 users, about $0.20.")
+  expect_equal(out$msgs[3], "Read 20 users, about $0.02.")
   expect_match(urls[1], "/tweets/20/liking_users", fixed = TRUE)
   expect_equal(length(out$result[[1]]$data), 20)
 
-  op <- options(xapir.price_per_user = 0.05)
+  op <- options(xapir.prices = list(likes = 0.05))
   on.exit(options(op), add = TRUE)
   out <- collect_messages(get_liking_users("20", max_users = 20))
   expect_match(out$msgs[1], "about \\$1.00")
@@ -220,8 +221,8 @@ test_that("get_recent_post_count returns a tibble of periods and says counts are
   out <- collect_messages(
     get_recent_post_count("tesla", is_local_tz = FALSE, bearer_token = "tok")
   )
-  expect_match(out$msgs[1], "Counts are free")
-  expect_false(any(grepl("\\$", out$msgs)))
+  # a count is billed once per request, however many posts it counts
+  expect_match(out$msgs[1], "This request costs about \\$0.005")
   counts <- out$result
   expect_s3_class(counts, "tbl_df")
   expect_equal(names(counts), c("start", "end", "post_count"))

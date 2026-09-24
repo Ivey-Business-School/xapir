@@ -231,7 +231,8 @@ test_that("get_blocking pages twice and returns every user", {
       invokeRestart("muffleMessage")
     }
   )
-  expect_match(msgs[1], "Reading up to 500 users, about \\$5.00")
+  # a block read is $0.001 a user, not the $0.010 of a profile read
+  expect_match(msgs[1], "Reading up to 500 users, about \\$0.50")
   expect_equal(length(urls), 3)
   expect_match(urls[2], "/2/users/42/blocking", fixed = TRUE)
   expect_match(urls[3], "/2/users/42/blocking", fixed = TRUE)

@@ -76,30 +76,76 @@ field_query <- function(post_fields, user_fields, media_fields, poll_fields,
 
 # Guardrails -----------------------------------------------------------------
 
-# What X charges per post returned, in US dollars, as of September 2026. The
-# course can move the prices without a release: set
-# options(xapir.price_per_post = 0.006) or options(xapir.price_per_user = 0.02)
-# in .Rprofile and every cost message follows.
-x_price_per_post <- 0.005
+# Prices, in US dollars, from docs.x.com/x-api/getting-started/pricing on
+# 24 September 2026. Reads are billed per item returned; the rest are billed
+# per request. The course can move any of them without a release:
+# options(xapir.prices = list(posts = 0.006)) in .Rprofile overrides one
+# entry and every cost message follows. The older options
+# xapir.price_per_post and xapir.price_per_user still work.
+x_default_prices <- list(
+  # per item returned
+  posts       = 0.005,
+  users       = 0.010,
+  follows     = 0.010,   # followers and following
+  lists       = 0.005,
+  likes       = 0.001,   # who liked a post
+  mutes       = 0.001,
+  blocks      = 0.001,
+  spaces      = 0.005,
+  communities = 0.005,
+  # per request
+  counts_recent = 0.005,
+  counts_all    = 0.010,
+  trends        = 0.010,
+  post_create   = 0.015,
+  post_create_with_url = 0.200,
+  interaction   = 0.015,   # like, follow, repost, block, mute
+  interaction_delete = 0.010,
+  content_manage = 0.005,  # delete a post, hide a reply
+  list_create   = 0.010,
+  list_manage   = 0.005,
+  bookmark      = 0.005,
+  media_metadata = 0.005
+)
+x_price_per_post <- x_default_prices$posts
 
-# The current price of one item of `what`, from the option when it is set.
-# Users have their own price (US$0.010 in September 2026); everything else is
-# billed as a post.
+# The current price of one item, or one request, of `what`.
 x_price <- function(what = "posts") {
-  if (identical(what, "users")) {
-    getOption("xapir.price_per_user", 0.01)
-  } else {
-    getOption("xapir.price_per_post", x_price_per_post)
+  prices <- utils::modifyList(x_default_prices, getOption("xapir.prices", list()))
+  if (identical(what, "posts")) {
+    return(getOption("xapir.price_per_post", prices$posts))
   }
+  if (identical(what, "users")) {
+    return(getOption("xapir.price_per_user", prices$users))
+  }
+  price <- prices[[what]]
+  if (is.null(price)) {
+    stop("No price is known for \"", what, "\".", call. = FALSE)
+  }
+  price
 }
 
-check_max_results <- function(max_results) {
+# The noun the cost line uses for `what`. Followers are users, likes are
+# users who liked, and so on.
+x_unit <- function(what) {
+  switch(what,
+    posts = "posts", users = "users", follows = "users", likes = "users",
+    mutes = "users", blocks = "users", lists = "lists", spaces = "spaces",
+    communities = "communities", what
+  )
+}
+
+# Each endpoint has its own page-size range: posts endpoints take 10 to 100,
+# followers up to 1,000, full-archive search up to 500. The reader passes
+# the range from the API reference and the message names it.
+check_max_results <- function(max_results, min = 10, max = 100, what = "posts") {
   ok <- is.numeric(max_results) && length(max_results) == 1 &&
-    !is.na(max_results) && max_results >= 10 && max_results <= 100
+    !is.na(max_results) && max_results >= min && max_results <= max
   if (!ok) {
     stop(
-      "`max_results` must be a number between 10 and 100. ",
-      "The X API returns at least 10 and at most 100 posts a page.",
+      "`max_results` must be a number between ", min, " and ", max, ". ",
+      "The X API returns at least ", min, " and at most ", max, " ", what,
+      " a page.",
       call. = FALSE
     )
   }
@@ -156,12 +202,27 @@ check_post_ids <- function(post_ids, max_ids = 100, arg = "post_ids") {
 # the argument that moves the cap.
 announce_cap <- function(max_posts, price = NULL, what = "posts", arg = NULL) {
   price <- price %||% x_price(what)
-  arg <- arg %||% if (identical(what, "users")) "max_users" else "max_posts"
+  unit <- x_unit(what)
+  arg <- arg %||% if (identical(unit, "users")) "max_users" else "max_posts"
   message(sprintf(
     "Reading up to %s %s, about $%.2f. Set %s to change this.",
     format(max_posts, big.mark = ",", scientific = FALSE),
-    what, max_posts * price, arg
+    unit, max_posts * price, arg
   ))
+}
+
+# One line for an endpoint billed per request rather than per item: counts,
+# trends and every write.
+announce_request_cost <- function(what, n = 1) {
+  price <- x_price(what)
+  if (n == 1) {
+    message(sprintf("This request costs about $%.3f.", price))
+  } else {
+    message(sprintf(
+      "%s requests, about $%.2f in total.",
+      format(n, big.mark = ","), n * price
+    ))
+  }
 }
 
 # One line after the last page, so a run that stopped early shows what it
@@ -170,7 +231,7 @@ announce_total <- function(n, what = "posts", price = NULL) {
   price <- price %||% x_price(what)
   message(sprintf(
     "Read %s %s, about $%.2f.",
-    format(n, big.mark = ",", scientific = FALSE), what, n * price
+    format(n, big.mark = ",", scientific = FALSE), x_unit(what), n * price
   ))
 }
 
@@ -296,7 +357,8 @@ lookup_user_id <- function(username, token) {
 # read and its cost are printed at the end. A pause between pages is
 # optional: x_perform() already waits as long as a 429 asks.
 fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
-                        pagination_token = NULL, what = "posts") {
+                        pagination_token = NULL, what = "posts",
+                        min_results = 10) {
   response <- list()
   post_counter <- 0
   call_i <- 1
@@ -306,7 +368,7 @@ fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
 
     page <- req |>
       req_url_query(
-        max_results      = max(min(max_results, remaining), 10),
+        max_results      = max(min(max_results, remaining), min_results),
         pagination_token = pagination_token
       ) |>
       x_perform()
@@ -319,7 +381,7 @@ fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
 
     response <- c(response, list(page))
     post_counter <- post_counter + n
-    message("Finished getting ", what, " on page ", call_i)
+    message("Finished getting ", x_unit(what), " on page ", call_i)
 
     pagination_token <- pluck(page, "meta", "next_token")
     if (is.null(pagination_token) || post_counter >= max_posts || n == 0) {
