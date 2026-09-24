@@ -33,11 +33,13 @@ get_liking_users(
 
 - max_users:
 
-  The most users to read in this call. The API bills every user it
-  returns (US\$0.010 each in September 2026), so the function prints the
-  cap in users and dollars before its first request and the total it
-  read after the last page. Must be a finite number of 1 or more. Set
-  `options(xapir.price_per_user = <dollars>)` when the price changes.
+  The most users to read in this call. A like read is billed per user
+  returned at US\$0.001 (September 2026), a tenth of a profile read,
+  which is why the default cap is 500 rather than 100. The function
+  prints the cap in users and dollars before its first request and the
+  total it read after the last page. Set
+  `options(xapir.prices = list(likes = <dollars>))` when the price
+  changes.
 
 - pagination_token:
 
@@ -66,8 +68,11 @@ get_liking_users(
 
 ## Value
 
-A `list` of pages. Each page holds `data` and `meta` as the API returned
-them.
+A tibble with one row per user who liked the post, with the 24 columns
+described in
+[`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md),
+from `created_at` to `user_id`. A post nobody liked gives the same
+columns with no rows.
 
 ## Examples
 

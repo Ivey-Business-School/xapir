@@ -56,10 +56,12 @@ get_all_post(
   cap in posts and dollars before its first request and the total it
   read after the last page. Must be a finite number of 1 or more. The
   last page is trimmed so the result never holds more than this many
-  posts. When the price changes, set
-  `options(xapir.price_per_post = <dollars>)` (and
-  `xapir.price_per_user` for readers that return users) and the messages
-  follow; the default is `0.005`.
+  posts. Your own data is billed at US\$0.001 an item when the signed-in
+  account owns the app; the cost line says "(your own data)" when the
+  package knows the account is yours, which it does after a sign-in or
+  from `options(xapir.my_user_id = "<id>")`. When a price changes, set
+  `options(xapir.prices = list(posts = <dollars>))` and the messages
+  follow.
 
 - start_time:
 

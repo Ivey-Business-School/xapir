@@ -9,7 +9,8 @@ the account, and `since_id` lets you append only what is new.
 
 ``` r
 get_mentions(
-  username,
+  username = NULL,
+  user_id = NULL,
   max_results = 100,
   max_posts = 500,
   end_time = NULL,
@@ -34,6 +35,12 @@ get_mentions(
 
   `character`; the name of the account on X without the "@" symbol.
 
+- user_id:
+
+  `character`; the account's X user id, as a string of digits. When
+  given, the handle lookup is skipped and `username` must be `NULL`.
+  Your own id also unlocks the owned-data price.
+
 - max_results:
 
   `numeric`; the number of posts per API call, between 10 and 100. The
@@ -48,10 +55,12 @@ get_mentions(
   cap in posts and dollars before its first request and the total it
   read after the last page. Must be a finite number of 1 or more. The
   last page is trimmed so the result never holds more than this many
-  posts. When the price changes, set
-  `options(xapir.price_per_post = <dollars>)` (and
-  `xapir.price_per_user` for readers that return users) and the messages
-  follow; the default is `0.005`.
+  posts. Your own data is billed at US\$0.001 an item when the signed-in
+  account owns the app; the cost line says "(your own data)" when the
+  package knows the account is yours, which it does after a sign-in or
+  from `options(xapir.my_user_id = "<id>")`. When a price changes, set
+  `options(xapir.prices = list(posts = <dollars>))` and the messages
+  follow.
 
 - end_time:
 

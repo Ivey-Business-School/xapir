@@ -67,11 +67,12 @@ can read, and the worst-case cost is printed before the request.</p></dd>
 
 
 <dt id="arg-max-users">max_users<a class="anchor" aria-label="anchor" href="#arg-max-users"></a></dt>
-<dd><p>The most users to read in this call. The API bills every
-user it returns (US$0.010 each in September 2026), so the function prints
-the cap in users and dollars before its first request and the total it
-read after the last page. Must be a finite number of 1 or more. Set
-<code>options(xapir.price_per_user = &lt;dollars&gt;)</code> when the price changes.</p></dd>
+<dd><p>The most users to read in this call. A like read is
+billed per user returned at US$0.001 (September 2026), a tenth of a
+profile read, which is why the default cap is 500 rather than 100. The
+function prints the cap in users and dollars before its first request
+and the total it read after the last page. Set
+<code>options(xapir.prices = list(likes = &lt;dollars&gt;))</code> when the price changes.</p></dd>
 
 
 <dt id="arg-pagination-token">pagination_token<a class="anchor" aria-label="anchor" href="#arg-pagination-token"></a></dt>
@@ -105,8 +106,9 @@ and are not requested by default.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>list</code> of pages. Each page holds <code>data</code> and <code>meta</code> as the
-API returned them.</p>
+    <p>A tibble with one row per user who liked the post, with the 24
+columns described in <code><a href="extract_user.html">extract_user()</a></code>, from <code>created_at</code> to <code>user_id</code>.
+A post nobody liked gives the same columns with no rows.</p>
     </div>
 
     <div class="section level2">

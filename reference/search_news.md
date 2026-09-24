@@ -3,7 +3,9 @@
 Finds news stories breaking on X that match a search via the [search
 news endpoint](https://docs.x.com/x-api/news/search-news). Each story is
 a summary Grok wrote from posts on X, with a headline, a hook and the
-entities it mentions. An app bearer token is enough.
+entities it mentions. An app bearer token is enough. The endpoint has no
+language parameter: stories come in the language X has set for the app
+or account, so a French-language app gets French news.
 
 News is not on the X API pricing page as of 24 September 2026, so this
 function prints no cost line. Check

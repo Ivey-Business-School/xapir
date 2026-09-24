@@ -79,10 +79,13 @@ can read, and the worst-case cost is printed before the request.</p></dd>
 post it returns (US$0.005 each in September 2026), so the function prints
 the cap in posts and dollars before its first request and the total it
 read after the last page. Must be a finite number of 1 or more. The last
-page is trimmed so the result never holds more than this many posts. When
-the price changes, set <code>options(xapir.price_per_post = &lt;dollars&gt;)</code> (and
-<code>xapir.price_per_user</code> for readers that return users) and the messages
-follow; the default is <code>0.005</code>.</p></dd>
+page is trimmed so the result never holds more than this many posts. Your
+own data is billed at US$0.001 an item when the signed-in account owns
+the app; the cost line says "(your own data)" when the package knows the
+account is yours, which it does after a sign-in or from
+<code>options(xapir.my_user_id = "&lt;id&gt;")</code>. When a price changes, set
+<code>options(xapir.prices = list(posts = &lt;dollars&gt;))</code> and the messages
+follow.</p></dd>
 
 
 <dt id="arg-end-time">end_time<a class="anchor" aria-label="anchor" href="#arg-end-time"></a></dt>

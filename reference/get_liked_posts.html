@@ -42,7 +42,8 @@ Needs a user token, so the first call opens a browser window to sign in.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_liked_posts</span><span class="op">(</span></span>
-<span>  <span class="va">username</span>,</span>
+<span>  username <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  user_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_results <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  max_posts <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  pagination_token <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -65,6 +66,12 @@ Needs a user token, so the first call opens a browser window to sign in.</p>
 "@" symbol.</p></dd>
 
 
+<dt id="arg-user-id">user_id<a class="anchor" aria-label="anchor" href="#arg-user-id"></a></dt>
+<dd><p><code>character</code>; the account's X user id, as a string of
+digits. When given, the handle lookup is skipped and <code>username</code> must be
+<code>NULL</code>. Your own id also unlocks the owned-data price.</p></dd>
+
+
 <dt id="arg-max-results">max_results<a class="anchor" aria-label="anchor" href="#arg-max-results"></a></dt>
 <dd><p><code>numeric</code>; the number of posts per API call, between
 10 and 100. The function stops before any request if the value is outside
@@ -77,10 +84,13 @@ can read, and the worst-case cost is printed before the request.</p></dd>
 post it returns (US$0.005 each in September 2026), so the function prints
 the cap in posts and dollars before its first request and the total it
 read after the last page. Must be a finite number of 1 or more. The last
-page is trimmed so the result never holds more than this many posts. When
-the price changes, set <code>options(xapir.price_per_post = &lt;dollars&gt;)</code> (and
-<code>xapir.price_per_user</code> for readers that return users) and the messages
-follow; the default is <code>0.005</code>.</p></dd>
+page is trimmed so the result never holds more than this many posts. Your
+own data is billed at US$0.001 an item when the signed-in account owns
+the app; the cost line says "(your own data)" when the package knows the
+account is yours, which it does after a sign-in or from
+<code>options(xapir.my_user_id = "&lt;id&gt;")</code>. When a price changes, set
+<code>options(xapir.prices = list(posts = &lt;dollars&gt;))</code> and the messages
+follow.</p></dd>
 
 
 <dt id="arg-pagination-token">pagination_token<a class="anchor" aria-label="anchor" href="#arg-pagination-token"></a></dt>

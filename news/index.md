@@ -141,6 +141,26 @@ Articles.
   and
   [`get_personalized_trends()`](https://Ivey-Business-School.github.io/xapir/reference/get_personalized_trends.md)
   say so before the request. Fields and expansions are still free.
+- Your own data is billed at \$0.001 an item when the signed-in account
+  owns the app (the pricing page’s “owned reads”). Readers of the
+  signed-in account
+  ([`get_bookmark()`](https://Ivey-Business-School.github.io/xapir/reference/get_bookmark.md),
+  [`get_blocking()`](https://Ivey-Business-School.github.io/xapir/reference/get_blocking.md),
+  [`get_muting()`](https://Ivey-Business-School.github.io/xapir/reference/get_muting.md),
+  [`get_pinned_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_pinned_lists.md))
+  price that way always; readers that take a `user_id`
+  ([`get_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_timeline.md),
+  [`get_mentions()`](https://Ivey-Business-School.github.io/xapir/reference/get_mentions.md),
+  [`get_liked_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_liked_posts.md),
+  [`get_followers()`](https://Ivey-Business-School.github.io/xapir/reference/get_followers.md),
+  [`get_following()`](https://Ivey-Business-School.github.io/xapir/reference/get_following.md),
+  [`get_owned_list()`](https://Ivey-Business-School.github.io/xapir/reference/get_owned_list.md),
+  [`get_followed_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_followed_lists.md),
+  [`get_list_memberships()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_memberships.md))
+  price that way when the id is yours. The package learns your id at
+  sign-in, or from `options(xapir.my_user_id = "<id>")`. Checked against
+  the credit balance on 24 September 2026: ten of your own posts cost
+  \$0.01.
 - Likes, mutes and blocks are billed per item at \$0.001:
   [`get_liking_users()`](https://Ivey-Business-School.github.io/xapir/reference/get_liking_users.md),
   [`get_muting()`](https://Ivey-Business-School.github.io/xapir/reference/get_muting.md)
@@ -210,16 +230,61 @@ Articles.
 
 ### Reading from the API
 
+- [`get_liking_users()`](https://Ivey-Business-School.github.io/xapir/reference/get_liking_users.md)
+  returns the 24-column users table, like every other user reader. It
+  returned raw pages before.
+
+- [`get_mentions()`](https://Ivey-Business-School.github.io/xapir/reference/get_mentions.md)
+  and
+  [`get_liked_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_liked_posts.md)
+  take `user_id` as an alternative to `username`, like
+  [`get_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_timeline.md).
+
+- [`get_bookmark()`](https://Ivey-Business-School.github.io/xapir/reference/get_bookmark.md)
+  no longer takes `username`. Bookmarks always belong to the account
+  that signed in; passing a name warns and is ignored.
+
+- [`get_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_timeline.md),
+  [`get_mentions()`](https://Ivey-Business-School.github.io/xapir/reference/get_mentions.md)
+  and
+  [`get_liked_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_liked_posts.md)
+  accept `max_results` down to 5, the endpoint’s floor, so five posts
+  cost five.
+
+- [`get_post_analytics()`](https://Ivey-Business-School.github.io/xapir/reference/get_post_analytics.md)
+  explains a 403 in plain words. The API’s own message says the app must
+  be attached to a Project when it already is; the endpoint is simply
+  closed to some accounts.
+
+- A bare `Date` means local midnight everywhere:
+  [`get_post_analytics()`](https://Ivey-Business-School.github.io/xapir/reference/get_post_analytics.md)
+  used UTC midnight while
+  [`iso_8601()`](https://Ivey-Business-School.github.io/xapir/reference/iso_8601.md)
+  used local time, so a daily count could lose its first day.
+
+- [`search_news()`](https://Ivey-Business-School.github.io/xapir/reference/search_news.md)
+  returns stories in the language X chose for the app or account; the
+  endpoint has no language parameter.
+
+- [`get_trends_by_woeid()`](https://Ivey-Business-School.github.io/xapir/reference/get_trends_by_woeid.md)
+  and
+  [`get_personalized_trends()`](https://Ivey-Business-School.github.io/xapir/reference/get_personalized_trends.md)
+  return `post_count` as `NA` when the API sends no number, which it
+  often does.
+
 - Every reader prints the most it can spend before its first request,
   single-page readers included:
   `Reading up to 500 posts, about $2.50. Set max_posts to change this.`
   A paged reader prints what it actually read at the end:
   `Read 143 posts, about $0.72.`
+
 - User reads are priced too, at \$0.010 per user:
   `Reading up to 2 users, about $0.02.`
+
 - The prices are options; see Prices above.
   `options(xapir.prices = list(posts = 0.006))` moves one, and every
   message follows.
+
 - `sleep_time` defaults to `0` everywhere.
   [`get_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_timeline.md),
   [`get_account_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_account_timeline.md),
@@ -228,17 +293,20 @@ Articles.
   [`get_liking_users()`](https://Ivey-Business-School.github.io/xapir/reference/get_liking_users.md)
   used to wait 90 seconds between pages; a rate limit already waits as
   long as X asks, so the pause bought nothing.
+
 - [`get_blocking()`](https://Ivey-Business-School.github.io/xapir/reference/get_blocking.md),
   [`get_muting()`](https://Ivey-Business-School.github.io/xapir/reference/get_muting.md)
   and
   [`get_list_member()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_member.md)
   page through all their results, stop at `max_users` (default 500), and
   announce the cost first.
+
 - [`get_owned_list()`](https://Ivey-Business-School.github.io/xapir/reference/get_owned_list.md)
   and
   [`get_followed_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_followed_lists.md)
   take `user_id` as an alternative to `username`, which skips the user
   read for the handle.
+
 - The user and list readers
   ([`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md),
   [`get_users_by_usernames()`](https://Ivey-Business-School.github.io/xapir/reference/get_users_by_usernames.md),
@@ -255,6 +323,7 @@ Articles.
   share one 24-column user schema, read only the API’s `data` block, and
   warn when the API reports a partial error (a suspended account among
   the ids, say) instead of building rows out of the error.
+
 - [`get_recent_post_count()`](https://Ivey-Business-School.github.io/xapir/reference/get_recent_post_count.md)
   returns a zero-row tibble with `start`, `end` and `post_count` when
   the query matched nothing.
