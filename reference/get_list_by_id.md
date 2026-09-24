@@ -1,7 +1,8 @@
 # Get List by ID
 
-Retrieves the details of a specific List by its ID via the [Get List by
-ID endpoint](https://docs.x.com/x-api/lists/get-list-by-id).
+Retrieves the details of one list by its id via the [get list by ID
+endpoint](https://docs.x.com/x-api/lists/get-list-by-id). An id the API
+cannot find stops the call with the API's reason.
 
 ## Usage
 
@@ -18,7 +19,7 @@ get_list_by_id(
 
 - list_id:
 
-  The ID of the List to retrieve.
+  The list's id, as a string of digits.
 
 - bearer_token:
 
@@ -31,11 +32,13 @@ get_list_by_id(
 
 - list_fields:
 
-  Character vector of fields to include (default common fields).
+  `character`, `vector`; the fields to return for the list.
 
 ## Value
 
-A tibble with list details (one row), or NULL if there's an error.
+A tibble with one row: `list_id`, `list_name`, `description`,
+`created_at` (POSIXct, UTC), `follower_count`, `member_count`, `private`
+and `owner_id`.
 
 ## Examples
 

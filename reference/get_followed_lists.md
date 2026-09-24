@@ -1,16 +1,22 @@
 # Get Followed Lists
 
-Retrieves the Lists followed by a given User via the [get followed lists
+Retrieves the lists a user follows via the [get followed lists
 endpoint](https://docs.x.com/x-api/users/get-followed-lists).
+
+Give either `username` or `user_id`, not both. A `username` costs one
+user read to turn the handle into an id before the lists are read. When
+you already know the account's id, pass `user_id` and that read is
+skipped.
 
 ## Usage
 
 ``` r
 get_followed_lists(
-  username,
+  username = NULL,
+  user_id = NULL,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   list_fields = c("id", "name", "created_at", "description", "follower_count",
-    "member_count", "private")
+    "member_count", "private", "owner_id")
 )
 ```
 
@@ -18,7 +24,12 @@ get_followed_lists(
 
 - username:
 
-  Username of the account whose followed lists are being retrieved.
+  `character`; the name of the account on X without the "@" symbol.
+
+- user_id:
+
+  `character`; the account's X user id, as a string of digits. When
+  given, the handle lookup is skipped and `username` must be `NULL`.
 
 - bearer_token:
 
@@ -31,18 +42,22 @@ get_followed_lists(
 
 - list_fields:
 
-  Character vector of list fields to include in the response. Defaults
-  to commonly useful fields.
+  `character`, `vector`; the fields to return for each list.
 
 ## Value
 
-A tibble containing the IDs of the followed lists and their metadata, or
-NULL if none are found.
+A tibble with one row per list: `list_id`, `list_name`, `description`,
+`created_at` (POSIXct, UTC), `follower_count`, `member_count`, `private`
+and `owner_id`. A user who follows no lists gives the same columns with
+no rows.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 lists <- get_followed_lists(username = "XDevelopers")
+
+# The same lists by id, with no user read for the handle
+lists <- get_followed_lists(user_id = "2244994945")
 } # }
 ```

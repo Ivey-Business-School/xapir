@@ -4,6 +4,12 @@ Returns Post Counts from the last 7 days that match a search query via
 the [recent posts count
 endpoint](https://docs.x.com/x-api/posts/recent-search-counts).
 
+A count request is billed once (US\$0.005 in September 2026), however
+many posts it counts. The endpoint returns how many posts matched in
+each period and no posts at all, so no post is billed. Use it to size a
+query before paying for
+[`get_recent_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_recent_post.md).
+
 ## Usage
 
 ``` r
@@ -40,8 +46,8 @@ get_recent_post_count(
 
 - granularity:
 
-  The granularity for the search count results. This takes either the
-  value 'minute', 'hour', or 'day'.
+  The period each count covers: `"minute"`, `"hour"` or `"day"`. The
+  function stops before any request on anything else.
 
 - is_local_tz:
 
@@ -49,8 +55,8 @@ get_recent_post_count(
 
 - drop_incomplete:
 
-  Drops rows that do not contain a full granularity period amount of
-  data.
+  Drops the first and last rows, which cover only part of a
+  `granularity` period.
 
 - bearer_token:
 
@@ -63,12 +69,14 @@ get_recent_post_count(
 
 ## Value
 
-A tibble containing the number of posts.
+A tibble with one row per period: `start` and `end` (date-times) and
+`post_count` (integer). When the query matched nothing, the tibble has
+the same three columns and no rows.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-tl <- get_recent_post_count("Developers")
+counts <- get_recent_post_count("Developers")
 } # }
 ```

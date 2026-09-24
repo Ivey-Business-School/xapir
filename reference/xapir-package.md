@@ -18,10 +18,6 @@ Useful links:
 
 **Maintainer**: Jeffrey Boichuk <jpboichuk@gmail.com>
 
-Authors:
-
-- Jeffrey Boichuk <jpboichuk@gmail.com>
-
 Other contributors:
 
 - Steven M. Mortimer <mortimer.steven.m@gmail.com> \[contributor\]

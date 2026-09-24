@@ -58,8 +58,16 @@ extract_post(
 
 ## Value
 
-A tibble with one row per post, always with the same 22 columns.
-`article_title` is NA unless the post is an X article.
+A tibble with one row per post, always with the same 24 columns:
+`created_at`, `text`, `is_long_post`, `lang`, `possibly_sensitive`,
+`paid_partnership`, `article_title`, `post_type`, `impression_count`,
+`like_count`, `repost_count`, `quote_count`, `reply_count`,
+`bookmark_count`, `reply_settings`, `reposted`, `quoted`, `replied_to`,
+`in_reply_to_user_id`, `user_id`, `community_id`, `conversation_id`,
+`post_url` and `post_id`. `article_title` is NA unless the post is an X
+article, `paid_partnership` is TRUE when the author disclosed the post
+as paid promotion, and `community_id` is NA unless the post was made in
+an X community.
 
 ## Examples
 

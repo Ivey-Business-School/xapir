@@ -1,8 +1,13 @@
 # Get Users by Usernames
 
-Retrieves details of multiple Users by their usernames via the [get
+Retrieves details of up to 100 users by their usernames via the [get
 users by usernames
-endpoint](https://docs.x.com/x-api/users/get-users-by-usernames).
+endpoint](https://docs.x.com/x-api/users/get-users-by-usernames). Every
+user returned is billed, so the function says what the call can cost
+before it reads anything.
+
+A handle the API cannot find does not stop the call: the users it did
+find are returned, and one warning names each handle that was not.
 
 ## Usage
 
@@ -19,8 +24,8 @@ get_users_by_usernames(
 
 - usernames:
 
-  A list of usernames. Up to 100 comma-separated usernames can be looked
-  up using this endpoint.
+  A character vector of up to 100 handles, with or without the leading
+  "@".
 
 - bearer_token:
 
@@ -34,7 +39,11 @@ get_users_by_usernames(
 - user_fields:
 
   `character`, `vector`; the fields to return for each user. Default:
-  `c("created_at", "description", "protected", "entities", "location", "profile_image_url", "public_metrics", "verified", "verified_type", "is_identity_verified", "url")`.
+  `c("created_at", "description", "protected", "entities", "location", "profile_image_url", "profile_banner_url", "public_metrics", "verified", "verified_type", "verified_followers_count", "subscription_type", "parody", "is_identity_verified", "url")`.
+  Four more fields, `connection_status`, `confirmed_email`,
+  `receives_your_dm` and `subscribes_to_you`, describe the account's
+  relationship with the signed-in user; they need a user token and are
+  not requested by default.
 
 - expansions:
 
@@ -42,15 +51,15 @@ get_users_by_usernames(
 
 ## Value
 
-A tibble containing the user information
+A tibble with one row per user and the 24 columns described in
+[`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md),
+from `created_at` to `user_id`. When no handle is found, the same
+columns with no rows.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# Get basic user info for multiple users
-get_users_by_usernames(
-user_ids = c("Tesla", "elonmusk")
-)
+users <- get_users_by_usernames(c("Tesla", "XDevelopers"))
 } # }
 ```

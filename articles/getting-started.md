@@ -1,0 +1,439 @@
+# Getting Started
+
+xapir reads from and writes to X through the X API v2. You pull posts
+with one function, save what comes back as a file, and unfold that file
+into tidy tables with a second set of functions that never touch the
+API. X bills every post it returns, so each reader tells you the most a
+call can cost before it makes a request.
+
+This guide covers five things: signing in, what a call costs, reading a
+timeline and unfolding it into tables, reading followers and lists, and
+writing to X from your own account.
+
+## Install
+
+The package is not on CRAN. Install a numbered release from GitHub:
+
+``` r
+
+# install.packages("pak")
+pak::pak("Ivey-Business-School/xapir@v0.2.0")
+library(xapir)
+```
+
+## Signing in
+
+X issues two kinds of credentials, and the package uses both. Both come
+from an app on the [X developer
+portal](https://developer.x.com/en/portal/dashboard).
+
+### A bearer token, for reading
+
+The bearer token is a long string on your app’s “Keys and tokens” page.
+It lets you read public data: timelines, searches, profiles, lists and
+trends. Put it in your `.Renviron` file, which
+`usethis::edit_r_environ()` opens for you:
+
+    X_BEARER_TOKEN=AAAA...
+
+Restart R. Every reader picks the token up from
+`Sys.getenv("X_BEARER_TOKEN")`; you never pass it by hand. If the
+variable is empty, the reader stops before it spends anything and says
+so.
+
+### A client id, for acting as yourself
+
+Anything that acts as your account needs a user token instead: posting,
+uploading media, deleting, liking, reposting, bookmarking, following,
+muting, blocking, hiding a reply and managing lists, plus the readers
+that only make sense for the signed-in account
+([`get_account_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_account_timeline.md),
+[`get_bookmark()`](https://Ivey-Business-School.github.io/xapir/reference/get_bookmark.md),
+[`get_liked_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_liked_posts.md),
+[`get_liking_users()`](https://Ivey-Business-School.github.io/xapir/reference/get_liking_users.md),
+[`get_repost_of_me()`](https://Ivey-Business-School.github.io/xapir/reference/get_repost_of_me.md),
+[`get_my_user()`](https://Ivey-Business-School.github.io/xapir/reference/get_my_user.md),
+[`get_blocking()`](https://Ivey-Business-School.github.io/xapir/reference/get_blocking.md),
+[`get_muting()`](https://Ivey-Business-School.github.io/xapir/reference/get_muting.md),
+[`get_pinned_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_pinned_lists.md),
+[`get_post_analytics()`](https://Ivey-Business-School.github.io/xapir/reference/get_post_analytics.md),
+[`get_personalized_trends()`](https://Ivey-Business-School.github.io/xapir/reference/get_personalized_trends.md),
+[`search_users()`](https://Ivey-Business-School.github.io/xapir/reference/search_users.md)
+and
+[`search_communities()`](https://Ivey-Business-School.github.io/xapir/reference/search_communities.md)).
+
+To get a user token the package needs your app’s OAuth 2.0 client id,
+from the same page in the portal. Add it beside the bearer token and
+restart R:
+
+    X_CLIENT_ID=your-client-id
+
+In the portal, the app must have user authentication turned on, with
+read-and-write permissions and `http://localhost:1410` as a callback
+URL.
+
+The first time you call one of these functions a browser window opens
+and asks you to approve the app. Approve it, come back to R, and the
+call carries on. The token is saved to disk under
+[`httr2::oauth_cache_path()`](https://httr2.r-lib.org/reference/oauth_cache_path.html)
+in a folder named `xapir`, so you sign in once, not every session. When
+the token expires it is refreshed in the background; if the refresh
+fails, the browser opens again.
+
+To sign in as a different account, delete that folder and call a user
+function again:
+
+``` r
+
+unlink(file.path(httr2::oauth_cache_path(), "xapir"), recursive = TRUE)
+```
+
+## What a call costs
+
+X bills a read per item returned and a write per request, at the prices
+on its [pricing page](https://docs.x.com/x-api/getting-started/pricing)
+(24 September 2026). A post is US\$0.005, a user US\$0.010, a follower
+or followed account US\$0.010, a list, space or community US\$0.005, and
+a user who liked, muted or blocked something US\$0.001. Fields and
+expansions are free, which is why every reader asks for every field by
+default.
+
+Counts are not free. A count request is billed once, US\$0.005 for the
+last seven days and US\$0.010 for the full archive, however many posts
+it covers, so it is still the cheap way to size a query before you pay
+for the posts. Trends are US\$0.010 a request.
+
+Every reader prints the most it can spend before its first request,
+using the `max_posts` (or `max_users`) cap:
+
+    #> Reading up to 500 posts, about $2.50. Set max_posts to change this.
+
+A reader that pages through results also prints what it actually read at
+the end, because a pull often stops before the cap:
+
+    #> Finished getting posts on page 1
+    #> Finished getting posts on page 2
+    #> Read 143 posts, about $0.72.
+
+A reader billed per request, and every write, prints its price instead:
+
+    #> This request costs about $0.005.
+
+Two rules keep a mistake small. The cap must be a finite number, so
+`max_posts = Inf` stops before the first request. And the last page is
+trimmed, so a pull never holds more posts than you asked for.
+
+Three details are worth knowing:
+
+- A `username` costs one user read (\$0.010) to turn the handle into an
+  id.
+  [`get_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_timeline.md),
+  [`get_followers()`](https://Ivey-Business-School.github.io/xapir/reference/get_followers.md),
+  [`get_owned_list()`](https://Ivey-Business-School.github.io/xapir/reference/get_owned_list.md)
+  and the other readers that take a handle also take `user_id`, which
+  skips that read. Keep ids as text, `"2244994945"`, because as numbers
+  they lose digits.
+- The pricing page de-duplicates reads within a UTC day: reading the
+  same post twice on the same day is billed once. Pay-per-use is also
+  capped at 3 million post reads a month;
+  [`get_usage()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage.md)
+  shows where you stand.
+- Every price lives in one table. If X changes one, set
+  `options(xapir.prices = list(posts = 0.006))` in your `.Rprofile` and
+  every message follows. The older `xapir.price_per_post` and
+  `xapir.price_per_user` options still work.
+
+## Read, save, unfold
+
+### Read
+
+[`get_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_timeline.md)
+reads an account’s posts, newest first. Cap the pull, and give a window
+with `start_time` and `end_time` when you want one.
+[`iso_8601()`](https://Ivey-Business-School.github.io/xapir/reference/iso_8601.md)
+turns a date into the format the API wants.
+
+``` r
+
+timeline <- get_timeline(
+  username   = "Tesla",
+  max_posts  = 500,
+  start_time = iso_8601("2026-01-01"),
+  end_time   = iso_8601("2026-02-01")
+)
+```
+
+The result is a list of pages, each holding `data`, `includes` and
+`meta` as the API returned them. It is not a table yet, on purpose: it
+holds everything X sent, including the posts that were quoted or
+reposted and the users, media, polls and places they refer to, so you
+never pay for the same posts twice.
+
+### Save
+
+Save the raw pull straight away, before you touch it.
+
+``` r
+
+saveRDS(timeline, "tesla-2026-01.rds")
+```
+
+Every function in the rest of this guide reads from that file. Reading
+it back is free; reading the timeline again is not.
+
+``` r
+
+timeline <- readRDS("tesla-2026-01.rds")
+```
+
+### Unfold
+
+[`extract_post()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post.md)
+turns the pages into one row per post with the same 24 columns every
+time.
+
+``` r
+
+post <- extract_post(timeline)
+post
+```
+
+The columns, in order: `created_at` (UTC; pass `tz = Sys.timezone()` for
+local time), `text` (the whole post, even past 280 characters, with
+`is_long_post` marking the long ones), `lang`, `possibly_sensitive`,
+`paid_partnership` (`TRUE` when the author disclosed the post as paid
+promotion), `article_title`, `post_type` (Thread, Post, Quote post,
+Reply or Repost), the six counts (`impression_count`, `like_count`,
+`repost_count`, `quote_count`, `reply_count`, `bookmark_count`),
+`reply_settings`, the ids of the post this one reposted, quoted or
+replied to (`reposted`, `quoted`, `replied_to`), `in_reply_to_user_id`,
+`user_id`, `community_id` (`NA` unless the post was made in an X
+community), `conversation_id`, `post_url` and `post_id`.
+
+On a repost, `like_count`, `reply_count`, `quote_count`,
+`bookmark_count` and `repost_count` are `NA`, because those numbers
+belong to the original post. Its `impression_count` is its own.
+
+Media come out with
+[`extract_post_media()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_media.md):
+one row per media item per post, so a post with three photos gives three
+rows. For a video or an animated GIF, `url` is the mp4 with the highest
+bit rate the API offers.
+
+``` r
+
+post_media <- extract_post_media(timeline)
+post_media
+```
+
+The two tables join on `post_id`. Which videos drew the most views?
+
+``` r
+
+library(dplyr)
+
+post |>
+  select(post_id, created_at, text, like_count) |>
+  inner_join(post_media, by = "post_id") |>
+  filter(type == "video") |>
+  arrange(desc(view_count))
+```
+
+## The twelve tables
+
+Each `extract_*()` function reads the saved pull and returns one table.
+Together they are the course’s data model. None of them calls the API.
+
+| Function | One row per | Key columns |
+|----|----|----|
+| [`extract_post()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post.md) | post | `post_id`, `user_id`, `text`, the counts |
+| [`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md) | user | `user_id`, `username`, `followers_count` |
+| [`extract_post_media()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_media.md) | media item per post | `post_id`, `media_id`, `type`, `url`, `view_count` |
+| [`extract_post_url()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_url.md) | link per post | `post_id`, `expanded_url`, `title`, `image_url` |
+| [`extract_post_mention()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_mention.md) | mentioned account per post | `post_id`, `username`, `user_id` |
+| [`extract_post_hashtag()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_hashtag.md) | hashtag per post | `post_id`, `hashtag` |
+| [`extract_post_cashtag()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_cashtag.md) | cashtag per post | `post_id`, `tag` |
+| [`extract_post_context()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_context.md) | context annotation per post | `post_id`, `domain_name`, `entity_name` |
+| [`extract_post_entity_annotation()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_entity_annotation.md) | named entity per post | `post_id`, `normalized_text`, `type`, `probability` |
+| [`extract_post_poll_option()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_poll_option.md) | poll option per post | `post_id`, `poll_id`, `label`, `votes` |
+| [`extract_post_place()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_place.md) | tagged post | `post_id`, `place_id`, `full_name`, `country` |
+| [`extract_post_edited_post_id()`](https://Ivey-Business-School.github.io/xapir/reference/extract_post_edited_post_id.md) | earlier version of an edited post | `post_id`, `edited_post_id` |
+
+Eleven of the tables carry `post_id`, so any of them joins to the post
+table on that column.
+[`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md)
+carries `user_id` instead and joins to the post table’s `user_id`, which
+is the author.
+
+``` r
+
+post |>
+  left_join(extract_user(timeline), by = "user_id") |>
+  select(username, created_at, text, like_count)
+```
+
+Two properties hold for every table. First, the columns are always the
+same, even when there are no rows: a timeline with no polls gives a
+zero-row poll table with the usual columns, so a script written on one
+pull runs on the next. Second, each table includes the posts a timeline
+quotes, replies to or reposts by default, so a quoted post’s photo is in
+the media table too. Pass `include_referenced_posts = FALSE` to keep
+only the posts the endpoint returned.
+[`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md)
+has no such switch; it lists every user in the pull.
+
+The other post readers return the same list of pages and feed the same
+tables:
+[`get_recent_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_recent_post.md)
+(a search over the last seven days),
+[`get_all_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_all_post.md)
+(the full archive, on pay-per-use or Enterprise access),
+[`get_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_post.md)
+(up to 100 posts by id),
+[`get_quote_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_quote_post.md),
+[`get_repost()`](https://Ivey-Business-School.github.io/xapir/reference/get_repost.md),
+[`get_mentions()`](https://Ivey-Business-School.github.io/xapir/reference/get_mentions.md),
+[`get_list_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_posts.md),
+[`get_space_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_space_posts.md),
+[`get_bookmark()`](https://Ivey-Business-School.github.io/xapir/reference/get_bookmark.md),
+[`get_liked_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_liked_posts.md),
+[`get_account_timeline()`](https://Ivey-Business-School.github.io/xapir/reference/get_account_timeline.md)
+and
+[`get_repost_of_me()`](https://Ivey-Business-School.github.io/xapir/reference/get_repost_of_me.md).
+The user readers, such as
+[`get_users_by_usernames()`](https://Ivey-Business-School.github.io/xapir/reference/get_users_by_usernames.md),
+[`get_followers()`](https://Ivey-Business-School.github.io/xapir/reference/get_followers.md)
+and
+[`get_list_member()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_member.md),
+return a tibble directly with the same 24 user columns as
+[`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md).
+
+## Followers and lists
+
+Who follows an account?
+[`get_followers()`](https://Ivey-Business-School.github.io/xapir/reference/get_followers.md)
+returns one row per follower with the 24 user columns, so there is
+nothing to unfold. It is billed per user (\$0.010), so cap it; the
+default `max_users = 1000` is about \$10. Pass `user_id` when you know
+it and the handle lookup is skipped.
+
+``` r
+
+followers <- get_followers(username = "Tesla", max_users = 200)
+#> Reading up to 200 users, about $2.00. Set max_users to change this.
+
+followers |>
+  arrange(desc(followers_count)) |>
+  select(username, name, followers_count, verified)
+```
+
+[`get_following()`](https://Ivey-Business-School.github.io/xapir/reference/get_following.md)
+is the same in the other direction, and
+[`get_reposted_by()`](https://Ivey-Business-School.github.io/xapir/reference/get_reposted_by.md)
+lists who reposted one post.
+
+A list is a curated set of accounts, and its timeline is a post reader
+like any other:
+[`get_list_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_posts.md)
+returns pages, so save them and unfold them with the same twelve tables.
+[`get_list_by_id()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_by_id.md),
+[`get_list_member()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_member.md)
+and
+[`get_list_followers()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_followers.md)
+describe the list itself.
+
+``` r
+
+list_posts <- get_list_posts(list_id = "1146654567674912769", max_posts = 300)
+saveRDS(list_posts, "ev-makers-list.rds")
+
+post <- extract_post(list_posts)
+post |>
+  left_join(extract_user(list_posts), by = "user_id") |>
+  count(username, sort = TRUE)
+```
+
+## Writing to X
+
+Every write acts as the account that signed in, so each of these opens
+the browser the first time. Each returns the API’s `data` invisibly and
+stops with X’s own message when the request is refused. A rate limit or
+a server error is retried, waiting as long as X asks.
+
+``` r
+
+# Post, and keep the id so you can delete it later
+new_post <- create_post(text = "Hello from R!")
+new_post$id
+
+# Delete one or more of your own posts; one row per id
+delete_post(post_ids = new_post$id)
+
+# Like, repost, and undo either, by post id
+like_post(post_id = "1234567890123456789")
+unlike_post(post_id = "1234567890123456789")
+create_repost(post_id = "1234567890123456789")
+delete_repost(post_id = "1234567890123456789")
+
+# Bookmarks are always your own
+create_bookmark(post_id = "1234567890123456789")
+delete_bookmark(post_id = "1234567890123456789")
+
+# Follow, unfollow, mute and unmute; the source is the account that signed in
+follow_user(source_username = "your_handle", target_username = "XDevelopers")
+unfollow_user(source_username = "your_handle", target_username = "XDevelopers")
+mute_user(source_username = "your_handle", target_username = "XDevelopers")
+unmute_user(source_username = "your_handle", target_username = "XDevelopers")
+
+# Block and unblock; the target can be a handle or an id
+block_user(target_username = "spammer")
+unblock_user(target_username = "spammer")
+
+# Hide a reply to one of your posts, and show it again
+hide_reply(reply_id = "1234567890123456789")
+hide_reply(reply_id = "1234567890123456789", hidden = FALSE)
+
+# Lists: create one, add a member, pin it, delete it
+new_list <- create_list(name = "EV makers")
+add_list_member(list_id = new_list$id, username = "Tesla")
+pin_list(list_id = new_list$id)
+delete_list(list_id = new_list$id)
+```
+
+Every write prints its price before the request. A post is \$0.015, but
+a post whose text carries a URL is \$0.200, more than thirteen times as
+much; the price line shows which rate applies, so read it before posting
+a batch with links.
+
+To post a photo, GIF or video, upload it first.
+[`upload_media()`](https://Ivey-Business-School.github.io/xapir/reference/upload_media.md)
+sends the file in chunks, waits for X to finish processing a video, and
+returns a media id. Pass that id to
+[`create_post()`](https://Ivey-Business-School.github.io/xapir/reference/create_post.md)
+as `media_ids`; a post can carry up to four photos, or one GIF, or one
+video, and media cannot be combined with a poll.
+
+``` r
+
+media_id <- upload_media("chart.png", alt_text = "Sales by month, 2026")
+create_post(text = "Our year so far", media_ids = media_id)
+
+# A reply, a quote and a poll take plain arguments too
+create_post(text = "Agreed!", reply_to_post_id = new_post$id)
+create_post(text = "Which one?", poll_options = c("This", "That"),
+            poll_duration_minutes = 60)
+```
+
+[`delete_post()`](https://Ivey-Business-School.github.io/xapir/reference/delete_post.md)
+deletes in batches of five with a fifteen-minute pause between them,
+which stays inside X’s deletion cap on every tier. Raise `batch_size` on
+a paid tier to go faster.
+
+## Where next
+
+The [reference
+index](https://Ivey-Business-School.github.io/xapir/reference/index.html)
+lists every function with its arguments and columns, grouped the same
+way as this guide. The [release
+notes](https://Ivey-Business-School.github.io/xapir/news/index.html) say
+what changed in each version and which column or argument names moved.

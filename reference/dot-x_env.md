@@ -9,3 +9,7 @@ exported and should not be accessed directly by users.
 ``` r
 .x_env
 ```
+
+## Format
+
+An object of class `environment` of length 0.

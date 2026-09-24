@@ -1,16 +1,22 @@
-# Get Owned List
+# Get Owned Lists
 
-Get a User’s Owned Lists via the [owned list
+Retrieves the lists a user owns via the [owned lists
 endpoint](https://docs.x.com/x-api/lists/get-a-users-owned-lists).
+
+Give either `username` or `user_id`, not both. A `username` costs one
+user read to turn the handle into an id before the lists are read. When
+you already know the account's id, pass `user_id` and that read is
+skipped.
 
 ## Usage
 
 ``` r
 get_owned_list(
-  username,
+  username = NULL,
+  user_id = NULL,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   list_fields = c("id", "name", "created_at", "description", "follower_count",
-    "member_count", "private")
+    "member_count", "private", "owner_id")
 )
 ```
 
@@ -18,7 +24,12 @@ get_owned_list(
 
 - username:
 
-  Username of the account that owns the lists
+  `character`; the name of the account on X without the "@" symbol.
+
+- user_id:
+
+  `character`; the account's X user id, as a string of digits. When
+  given, the handle lookup is skipped and `username` must be `NULL`.
 
 - bearer_token:
 
@@ -35,13 +46,18 @@ get_owned_list(
 
 ## Value
 
-A tibble containing the IDs of the lists and their names, or NULL if
-none found.
+A tibble with one row per list: `list_id`, `list_name`, `description`,
+`created_at` (POSIXct, UTC), `follower_count`, `member_count`, `private`
+and `owner_id`. A user with no lists gives the same columns with no
+rows.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 lists <- get_owned_list(username = "Tesla")
+
+# The same lists by id, with no user read for the handle
+lists <- get_owned_list(user_id = "13298072")
 } # }
 ```

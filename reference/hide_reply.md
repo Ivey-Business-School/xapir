@@ -1,8 +1,8 @@
-# Hide Reply on X
+# Hide Reply
 
-Hides or unhides a reply to a conversation owned by the authenticated
-user via the [hide reply
-endpoint](https://docs.x.com/x-api/posts/hide-reply).
+Hides, or unhides, a reply to one of the signed-in account's posts via
+the [hide reply endpoint](https://docs.x.com/x-api/posts/hide-reply).
+Needs a user token, so the first call opens a browser window to sign in.
 
 ## Usage
 
@@ -14,13 +14,18 @@ hide_reply(reply_id, hidden = TRUE)
 
 - reply_id:
 
-  The ID of the reply to be hidden. Must be a reply to a post authored
-  by the authenticating user.
+  The id of the reply, as a string. It must be a reply to a post by the
+  account that signed in.
 
 - hidden:
 
-  Indicates whether the reply should be hidden (TRUE) or unhidden
-  (FALSE). Defaults to TRUE.
+  `TRUE` (the default) hides the reply, `FALSE` shows it again.
+
+## Value
+
+Invisibly, the `data` list the API returns, `list(hidden = TRUE)` or
+`list(hidden = FALSE)`. Stops with the API's message when the request is
+refused.
 
 ## Examples
 
@@ -29,7 +34,7 @@ if (FALSE) { # \dontrun{
 # Hide a reply
 hide_reply(reply_id = "1234567890123456789")
 
-# Unhide a reply
+# Show it again
 hide_reply(reply_id = "1234567890123456789", hidden = FALSE)
 } # }
 ```

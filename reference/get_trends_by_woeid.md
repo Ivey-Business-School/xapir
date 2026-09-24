@@ -1,8 +1,10 @@
 # Get Trends by WOEID
 
-Retrieves trending topics for a specified location via its WOEID from
-the [Get Trends by WOEID
-endpoint](https://docs.x.com/x-api/trends/get-trends-by-woeid).
+Retrieves the trending topics for a location, given its WOEID (Yahoo's
+"Where On Earth" id), via the [get trends by WOEID
+endpoint](https://docs.x.com/x-api/trends/get-trends-by-woeid). For
+example, 1 is worldwide, 23424977 is the United States and 4118 is
+Toronto.
 
 ## Usage
 
@@ -19,7 +21,7 @@ get_trends_by_woeid(
 
 - woeid:
 
-  Integer WOEID of the location to fetch trends for.
+  The location's WOEID, one number or a string of digits.
 
 - bearer_token:
 
@@ -32,21 +34,23 @@ get_trends_by_woeid(
 
 - max_trends:
 
-  Integer for maximum results (1–50, default 20).
+  The most trends to return, between 1 and 50. Default 20.
 
 - trend_fields:
 
-  Character vector of fields to include (e.g., "trend_name",
-  "tweet_count").
+  `character`, `vector`; the fields to return for each trend. The API
+  calls the post count `tweet_count`.
 
 ## Value
 
-A tibble with trend names and tweet count, or NULL if no data.
+A tibble with one row per trend: `trend_name` and `post_count` (the
+number of posts on the topic, when the API reports one). A location with
+no trends gives the same columns with no rows.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-tr <- get_trends_by_woeid(woeid = 4118)  # e.g., Toronto
+trends <- get_trends_by_woeid(woeid = 4118)  # Toronto
 } # }
 ```

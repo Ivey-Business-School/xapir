@@ -1,103 +1,84 @@
   
 ![xapir package logo](reference/figures/xapir.png)
 
-{xapir} is an R package that connects to a limited set of X API v2
-endpoints using tidy principles.
-
-Package features include:
-
-- OAuth 2.0 authentication by setting your API token as environment
-  variable (Bearer Token)
-- Retrieve timeline data using `x_get_timeline()`
-- Retrieve tweet data using `x_get_tweets()`
-
-## Table of Contents
-
-- [Installation](#installation)
-- [Vignettes](#vignettes)
-- [Usage](#usage)
-  - [Authenticate](#authenticate)
-  - [Get Timeline](#get-timeline)
-  - [Get Tweets](#get-tweets)
-- [Future](#future)
-- [More Information](#more-information)
+xapir reads from and writes to X through the X API v2, for students
+learning about social media and marketing. You pull posts with one
+function, save what comes back as a file, and unfold that file into tidy
+tables with a second set of functions that never touch the API. X bills
+every post it returns, so each reader tells you the most a call can cost
+before it makes a request.
 
 ## Installation
 
+The package is not on CRAN. Install a numbered release from GitHub:
+
 ``` r
 
-# get the development version on GitHub
-# install.packages("remotes")
-remotes::install_github("Ivey-Business-School/xapir")
-
-# this package is NOT on CRAN so you cannot install using `install.packages()`
+# install.packages("pak")
+pak::pak("Ivey-Business-School/xapir@v0.2.0")
 ```
 
-If you encounter an issue while using this package, please file a
-minimal reproducible example on
-[GitHub](https://github.com/Ivey-Business-School/xapir/issues).
+## Getting started
 
-## Vignettes
-
-The README below outlines the basic package functionality. For more
-information please feel free to browse the {xapir} website at
-<https://Ivey-Business-School.github.io/xapir/> which contains the
-following vignettes:
-
-- [Getting
-  Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.html)
-
-## Usage
-
-### Authenticate
-
-First, load the {xapir} package and supply your token.
+Put your app’s bearer token and client id in `.Renviron` as
+`X_BEARER_TOKEN` and `X_CLIENT_ID`, restart R, and you can read. The
+first function that acts as your account opens a browser window once;
+the token is cached, so you sign in once, not every session.
 
 ``` r
 
-suppressWarnings(suppressMessages(library(dplyr)))
 library(xapir)
-token <- Sys.getenv("MY_TOKEN")
+
+# Read: one pull, capped, over a window
+timeline <- get_timeline(
+  username   = "Tesla",
+  max_posts  = 500,
+  start_time = iso_8601("2026-01-01"),
+  end_time   = iso_8601("2026-02-01")
+)
+#> Reading up to 500 posts, about $2.50. Set max_posts to change this.
+
+# Save the raw pull before you touch it. Reading it back is free.
+saveRDS(timeline, "tesla-2026-01.rds")
+
+# Unfold it into tables. None of these calls the API.
+post       <- extract_post(timeline)
+user       <- extract_user(timeline)
+post_media <- extract_post_media(timeline)
 ```
 
-After supplying your token, you can begin running functions that call
-the X APIs.
+X bills a read per item returned (\$0.005 a post, \$0.010 a user) and a
+write or a count per request, so every function prints its price before
+it sends anything. Reads of the same item are billed once a day, and
+pay-per-use is capped at 3 million post reads a month. Prices live in
+one table: `options(xapir.prices = list(posts = 0.006))` moves one.
 
-### Get Timeline
+The same tables unfold a search
+([`get_recent_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_recent_post.md),
+or the full archive with
+[`get_all_post()`](https://Ivey-Business-School.github.io/xapir/reference/get_all_post.md)),
+a list’s posts
+([`get_list_posts()`](https://Ivey-Business-School.github.io/xapir/reference/get_list_posts.md))
+and a space’s posts. Other readers return a tibble directly: followers
+and following, who reposted a post, lists and their members, spaces,
+communities, news stories, your usage and your post analytics. The write
+functions post (with media from
+[`upload_media()`](https://Ivey-Business-School.github.io/xapir/reference/upload_media.md),
+a quote, a reply or a poll), like, repost, bookmark, follow, mute,
+block, hide replies and manage lists. Streaming, webhooks, direct
+messages and the other real-time parts of the API are not covered.
 
-TBA
-
-``` r
-
-# example code here
-```
-
-### Get Tweets
-
-TBA
-
-``` r
-
-# example code here
-```
-
-## Future
-
-This package only contains functions that use a subset of the X API
-endpoints. Future iterations may expand upon this to include more.
-
-## More Information
-
-X provides examples in many programming languages, including R by using
-the package {RTwitterV2}. Please use the X API documentation for more
-detail around what is expected for each endpoint and the type of data
-the API call will return. X’s documentation is available here:
-<https://developer.x.com/en/docs/x-api>.
+The [Getting
+Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.md)
+guide covers signing in, what a call costs, the twelve tables and how
+they join, and writing to X. The [reference
+index](https://Ivey-Business-School.github.io/xapir/reference/index.md)
+lists every function with its arguments and columns, and the [release
+notes](https://Ivey-Business-School.github.io/xapir/news/index.md) say
+what changed in each version.
 
 ------------------------------------------------------------------------
 
-Please note that this project is released with a [Contributor Code of
-Conduct](https://github.com/Ivey-Business-School.github.io/xapir/blob/main/.github/CODE_OF_CONDUCT.md).
-By participating in this project you agree to abide by its terms.
-
-[Top](#)
+Please note that this project is released with a Contributor Code of
+Conduct. By participating in this project you agree to abide by its
+terms.

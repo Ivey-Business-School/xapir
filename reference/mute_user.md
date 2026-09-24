@@ -1,7 +1,9 @@
-# Mute User on X
+# Mute User
 
-Causes the authenticated user to mute a specific User by their ID via
-the [mute user endpoint](https://docs.x.com/x-api/users/mute-user).
+Makes the source account mute the target account via the [mute user
+endpoint](https://docs.x.com/x-api/users/mute-user). The source must be
+the account that signed in. Needs a user token, so the first call opens
+a browser window to sign in.
 
 ## Usage
 
@@ -13,16 +15,22 @@ mute_user(source_username, target_username)
 
 - source_username:
 
-  Username of account that will mute someone.
+  Username of the account that will mute, without the "@" symbol. Must
+  be the account that signed in.
 
 - target_username:
 
-  Username of account that will be muted.
+  Username of the account to mute, without the "@" symbol.
+
+## Value
+
+Invisibly, the `data` list the API returns, `list(muting = TRUE)`. Stops
+with the API's message when the request is refused.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-mute_user(source_username = "myaccount", target_username = "username_to_mute")
+mute_user(source_username = "myaccount", target_username = "noisyaccount")
 } # }
 ```

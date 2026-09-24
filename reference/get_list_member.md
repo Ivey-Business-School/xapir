@@ -1,8 +1,9 @@
 # Get List Members
 
-Returns a list of Users that are members of a List by the provided List
-ID via the [get list
-members](https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of-a-list-by-the-provided-list-id).
+Returns the users that are members of a list via the [get list members
+endpoint](https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of-a-list-by-the-provided-list-id).
+Every user returned is billed, so the function says what the call can
+cost before it reads anything, and stops reading at `max_users`.
 
 ## Usage
 
@@ -10,7 +11,10 @@ members](https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of
 get_list_member(
   list_id,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  user_fields = default_user_fields()
+  user_fields = default_user_fields(),
+  max_results = 100,
+  max_users = 500,
+  pagination_token = NULL
 )
 ```
 
@@ -18,7 +22,7 @@ get_list_member(
 
 - list_id:
 
-  A string representing the unique ID of the list.
+  The list's id, as a string of digits.
 
 - bearer_token:
 
@@ -32,16 +36,42 @@ get_list_member(
 - user_fields:
 
   `character`, `vector`; the fields to return for each user. Default:
-  `c("created_at", "description", "protected", "entities", "location", "profile_image_url", "public_metrics", "verified", "verified_type", "is_identity_verified", "url")`.
+  `c("created_at", "description", "protected", "entities", "location", "profile_image_url", "profile_banner_url", "public_metrics", "verified", "verified_type", "verified_followers_count", "subscription_type", "parody", "is_identity_verified", "url")`.
+  Four more fields, `connection_status`, `confirmed_email`,
+  `receives_your_dm` and `subscribes_to_you`, describe the account's
+  relationship with the signed-in user; they need a user token and are
+  not requested by default.
+
+- max_results:
+
+  `numeric`; the number of users per API call, between 10 and 100. The
+  function stops before any request if the value is outside that range.
+
+- max_users:
+
+  `numeric`; the most users to read across all pages. Reading stops once
+  this many have been returned. Default 500.
+
+- pagination_token:
+
+  A string used to navigate backward through result pages. The X API
+  provides this token when more results are available. Typically, you
+  won\<80\>\<99\>t need to set this manually as the function handles it,
+  but you can supply a pagination_token from a previous response to
+  continue retrieving results beyond the last page, if desired.
 
 ## Value
 
-A list containing the API response.
+A tibble with one row per member: `list_id`, then the 24 columns
+described in
+[`extract_user()`](https://Ivey-Business-School.github.io/xapir/reference/extract_user.md),
+from `created_at` to `user_id`. A list with no members gives the same
+columns with no rows.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-list_members <- get_list_members(list_ID)
+members <- get_list_member(list_id = "1146654567674912769")
 } # }
 ```
