@@ -1,39 +1,34 @@
-#' Repost a Post on X
+#' Create Repost
 #'
 #' @description
-#' Causes the User (in the path) to repost the specified Post. The User in the path must match the User 
-#' context authorizing the request. This is done via the [retweet endpoint](https://docs.x.com/x-api/posts/repost-post).
-#' 
-#' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_body_json req_perform resp_body_json
-#' @param tweet_id The ID of the post to be reposted.
+#' Reposts a post from the signed-in account via the [repost
+#' endpoint](https://docs.x.com/x-api/posts/repost-post). Needs a user token,
+#' so the first call opens a browser window to sign in.
+#'
+#' @importFrom httr2 req_body_json req_method
+#' @param post_id The id of the post to repost, as a string.
+#' @param tweet_id Deprecated. Use `post_id`.
+#' @return Invisibly, the `data` list the API returns, `list(retweeted =
+#'   TRUE)`. Stops with the API's message when the repost is refused.
 #' @examples
 #' \dontrun{
-#' create_repost(tweet_id = "20")
+#' create_repost(post_id = "20")
 #' }
 #' @export
 create_repost <- function(
-  tweet_id
+  post_id,
+  tweet_id = NULL
 ) {
 
-  # Get cached or refreshed token
-  token <- authenticate_user()
+  post_id <- use_post_id(post_id, tweet_id)
+  token   <- authenticate_user()
+  user_id <- my_user_id(token)
 
-  # Get authenticated user's ID
-  user_req <- request("https://api.twitter.com/2/users/me") |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  
-  # Get authenticated user's ID
-  user_data <- resp_body_json(user_req)
-  user_id <- user_data$data$id
-
-  url <- paste0("https://api.twitter.com/2/users/", user_id, "/retweets")
-
-  # Perform repost
-  response <- request(url) |>
+  response <- x_request(token$access_token) |>
+    req_url_path_append("users", user_id, "retweets") |>
     req_method("POST") |>
-    req_auth_bearer_token(token$access_token) |>
-    req_body_json(list(tweet_id = tweet_id)) |>
-    req_perform() |>
-    resp_body_json()
+    req_body_json(list(tweet_id = post_id)) |>
+    x_perform()
+
+  invisible(response$data)
 }

@@ -1,52 +1,39 @@
 #' Follow User
 #'
 #' @description
-#' Causes the User(in the path) to follow, or “request to follow” for protected Users, the target User
-#' via the [follow user endpoint](https://docs.x.com/x-api/users/follow-user).
-#' The User(in the path) must match the User context authorizing the request
+#' Makes the source account follow the target account (or request to follow,
+#' when the target is protected) via the [follow user
+#' endpoint](https://docs.x.com/x-api/users/follow-user). The source must be
+#' the account that signed in. Needs a user token, so the first call opens a
+#' browser window to sign in.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_perform resp_body_json
-#' @param source_username Username of account that will follow someone.
-#' @param target_username Username of account that will be followed. 
+#' @importFrom httr2 req_body_json req_method
+#' @param source_username Username of the account that will follow, without
+#'   the "@" symbol. Must be the account that signed in.
+#' @param target_username Username of the account to follow, without the "@"
+#'   symbol.
+#' @return Invisibly, the `data` list the API returns, `list(following =
+#'   TRUE, pending_follow = FALSE)`. Stops with the API's message when the
+#'   request is refused.
 #' @examples
 #' \dontrun{
 #' follow_user(source_username = "Tesla", target_username = "elonmusk")
 #' }
 #' @export
 follow_user <- function(
-  source_username, 
+  source_username,
   target_username
 ) {
-  
-  # Get cached or refreshed token
-  token <- authenticate_user()
 
-  # Obtain the user_id of the source account
-  url <- paste0("https://api.twitter.com/2/users/by/username/", source_username)
-  
-  req <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  
-  resp <- resp_body_json(req)
-  source_user_id <- resp$data$id
+  token          <- authenticate_user()
+  source_user_id <- lookup_user_id(source_username, token$access_token)
+  target_user_id <- lookup_user_id(target_username, token$access_token)
 
-  # Obtain the user_id of the target account
-  url <- paste0("https://api.twitter.com/2/users/by/username/", target_username)
-  
-  req <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  
-  resp <- resp_body_json(req)
-  target_user_id <- resp$data$id
-
-  url <- paste0("https://api.twitter.com/2/users/", source_user_id, "/following")
-
-  req <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
+  response <- x_request(token$access_token) |>
+    req_url_path_append("users", source_user_id, "following") |>
+    req_method("POST") |>
     req_body_json(list(target_user_id = target_user_id)) |>
-    req_perform()
+    x_perform()
 
-  resp <- resp_body_json(req)
+  invisible(response$data)
 }

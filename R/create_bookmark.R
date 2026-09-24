@@ -1,44 +1,38 @@
 #' Create Bookmark
 #'
 #' @description
-#' Adds a post to the authenticated user’s bookmarks
-#' via the [create bookmark endpoint](https://docs.x.com/x-api/bookmarks/create-bookmark).
-#' The User must match the User context authorizing the request
+#' Adds a post to the signed-in account's bookmarks via the [create bookmark
+#' endpoint](https://docs.x.com/x-api/bookmarks/create-bookmark). Needs a
+#' user token, so the first call opens a browser window to sign in.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_perform resp_body_json req_body_json req_method
-#' @template username
-#' @param tweet_id ID of the tweet to be bookmarked.
+#' @importFrom httr2 req_body_json req_method
+#' @param post_id The id of the post to bookmark, as a string.
+#' @param username Deprecated and ignored. Bookmarks always belong to the
+#'   account that signed in.
+#' @param tweet_id Deprecated. Use `post_id`.
+#' @return Invisibly, the `data` list the API returns, `list(bookmarked =
+#'   TRUE)`. Stops with the API's message when the request is refused.
 #' @examples
 #' \dontrun{
-#' create_bookmark(
-#'  username = "Tesla", 
-#'  tweet_id = "1234567890123456789"
-#' )
+#' create_bookmark(post_id = "1234567890123456789")
 #' }
 #' @export
 create_bookmark <- function(
-  username,
-  tweet_id
+  post_id,
+  username = NULL,
+  tweet_id = NULL
 ) {
-  # Get cached or refreshed token
-  token <- authenticate_user()
-  
-  # Obtain the user_id of the user account
-  url <- paste0("https://api.twitter.com/2/users/by/username/", username)
-  req <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  resp <- resp_body_json(req)
-  user_id <- resp$data$id
-  
-  # Bookmark the tweet
-  url <- paste0("https://api.twitter.com/2/users/", user_id, "/bookmarks")
-  req <- request(url) |>
+
+  warn_username_ignored(username, "create_bookmark")
+  post_id <- use_post_id(post_id, tweet_id)
+  token   <- authenticate_user()
+  user_id <- my_user_id(token)
+
+  response <- x_request(token$access_token) |>
+    req_url_path_append("users", user_id, "bookmarks") |>
     req_method("POST") |>
-    req_auth_bearer_token(token$access_token) |>
-    req_body_json(list(tweet_id = tweet_id)) |>
-    req_perform()
-  
-  resp <- resp_body_json(req)
-  return(resp)
+    req_body_json(list(tweet_id = post_id)) |>
+    x_perform()
+
+  invisible(response$data)
 }

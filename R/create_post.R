@@ -1,59 +1,71 @@
-#' Create Post on X
+#' Create Post
 #'
 #' @description
-#' Causes the User to create a Post under the authorized account via the [create a post 
-#' endpoint](https://docs.x.com/x-api/posts/creation-of-a-post).
+#' Publishes a post from the signed-in account via the [create a post
+#' endpoint](https://docs.x.com/x-api/posts/creation-of-a-post). Needs a user
+#' token, so the first call opens a browser window to sign in.
 #'
-#' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_body_json req_perform resp_body_json
-#' @param text The tweet text (max 280 characters)
-#' @param for_super_followers_only Exclusive Tweet for super followers.
-#' @param geo Place ID being attached to the Tweet for geo location.
-#' @param media Media information being attached to created Tweet. This is mutually exclusive from 
-#' Quote Tweet Id, Poll, and Card URI.
-#' @param nullcast Nullcasted (promoted-only) Posts do not appear in the public timeline and are not served to followers.
-#' @param poll Poll options for a Tweet with a poll. This is mutually exclusive from Media, Quote Tweet Id, and Card URI.
-#' @param reply Tweet information of the Tweet being replied to.
-#' @param reply_settings Settings to indicate who can reply to the Tweet.
+#' @importFrom httr2 req_body_json req_method
+#' @param text The text of the post. The maximum length depends on the
+#'   account's tier (280 characters on a standard account, longer on
+#'   Premium). The API refuses text that is too long and the error says so.
+#' @param for_super_followers_only `TRUE` to show the post only to super
+#'   followers.
+#' @param geo A list with a `place_id`, to attach a place to the post.
+#' @param media A list with `media_ids` (and optionally `tagged_user_ids`),
+#'   to attach media already uploaded to X. Cannot be combined with `poll`.
+#' @param nullcast `TRUE` for a promoted-only post that does not appear in
+#'   the public timeline.
+#' @param poll A list with `options` and `duration_minutes`, to attach a
+#'   poll. Cannot be combined with `media`.
+#' @param reply A list with `in_reply_to_tweet_id` (and optionally
+#'   `exclude_reply_user_ids`), to post as a reply.
+#' @param reply_settings Who can reply: `"following"`, `"mentionedUsers"`
+#'   or `"subscribers"`. Leave `NULL` to let everyone reply.
+#' @return Invisibly, the `data` list the API returns, with the new post's
+#'   `id` and `text`. Stops with the API's message when the post is refused.
 #' @examples
 #' \dontrun{
-#' create_post(text = "Hello, world!")
+#' new_post <- create_post(text = "Hello, world!")
+#' new_post$id
+#'
+#' create_post(
+#'   text  = "Which one?",
+#'   poll  = list(options = c("This", "That"), duration_minutes = 60)
+#' )
 #' }
 #' @export
 create_post <- function(
   text,
   for_super_followers_only = FALSE,
   geo = NULL,
-  media = NULL, 
+  media = NULL,
   nullcast = FALSE,
   poll = NULL,
   reply = NULL,
   reply_settings = NULL
 ) {
 
-  if (nchar(text) > 280) {
-    stop("Tweet exceeds 280 characters.")
+  if (!is.character(text) || length(text) != 1 || is.na(text)) {
+    stop("`text` must be one string.", call. = FALSE)
   }
 
-  # Get cached or refreshed token
   token <- authenticate_user()
 
-  # Build JSON payload
   body <- list(text = text)
+  if (isTRUE(for_super_followers_only)) body$for_super_followers_only <- TRUE
+  if (isTRUE(nullcast)) body$nullcast <- TRUE
+  body$geo            <- geo
+  body$media          <- media
+  body$poll           <- poll
+  body$reply          <- reply
+  body$reply_settings <- reply_settings
 
-  if (!is.null(for_super_followers_only) && for_super_followers_only)
-    body$for_super_followers_only <- TRUE
-
-  if (!is.null(geo)) body$geo <- geo
-  if (!is.null(media)) body$media <- media
-  if (!is.null(nullcast) && nullcast) body$nullcast <- TRUE
-  if (!is.null(poll)) body$poll <- poll
-  if (!is.null(reply)) body$reply <- reply
-  if (!is.null(reply_settings)) body$reply_settings <- reply_settings
-
-  # Make API request
-  response <- request("https://api.twitter.com/2/tweets") |>
-    req_auth_bearer_token(token$access_token) |>
+  response <- x_request(token$access_token) |>
+    req_url_path_append("tweets") |>
+    req_method("POST") |>
     req_body_json(body) |>
-    req_perform() |>
-    resp_body_json()
+    x_perform()
+
+  invisible(response$data)
 }

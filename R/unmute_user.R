@@ -1,46 +1,36 @@
-#' Unmute User on X
+#' Unmute User
 #'
 #' @description
-#' Causes the authenticated user to unmute a specific user by their ID via 
-#' the [unmute user endpoint](https://docs.x.com/x-api/users/unmute-user).
+#' Makes the source account unmute the target account via the [unmute user
+#' endpoint](https://docs.x.com/x-api/users/unmute-user). The source must be
+#' the account that signed in. Needs a user token, so the first call opens a
+#' browser window to sign in.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_body_json req_method req_perform resp_body_json
-#' @param source_username Username of account that will unmute someone.
-#' @param target_username Username of account that will be unmuted.
+#' @importFrom httr2 req_method
+#' @param source_username Username of the account that will unmute, without
+#'   the "@" symbol. Must be the account that signed in.
+#' @param target_username Username of the account to unmute, without the "@"
+#'   symbol.
+#' @return Invisibly, the `data` list the API returns, `list(muting = FALSE)`.
+#'   Stops with the API's message when the request is refused.
 #' @examples
 #' \dontrun{
-#' unmute_user(source_username = "myaccount", target_username = "username_to_mute")
+#' unmute_user(source_username = "myaccount", target_username = "noisyaccount")
 #' }
 #' @export
 unmute_user <- function(
   source_username,
   target_username
 ) {
-  # Get cached or refreshed token
-  token <- authenticate_user()
-  
-  # Obtain the user_id of the source account
-  url <- paste0("https://api.twitter.com/2/users/by/username/", source_username)
-  req <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  resp <- resp_body_json(req)
-  source_user_id <- resp$data$id
-  
-  # Obtain the user_id of the target account
-  url <- paste0("https://api.twitter.com/2/users/by/username/", target_username)
-  req <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  resp <- resp_body_json(req)
-  target_user_id <- resp$data$id
-  
-  # Mute the target user
-  url <- paste0("https://api.twitter.com/2/users/", source_user_id, "/muting/", target_user_id)
-  req <- request(url) |>
+
+  token          <- authenticate_user()
+  source_user_id <- lookup_user_id(source_username, token$access_token)
+  target_user_id <- lookup_user_id(target_username, token$access_token)
+
+  response <- x_request(token$access_token) |>
+    req_url_path_append("users", source_user_id, "muting", target_user_id) |>
     req_method("DELETE") |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  
-  resp <- resp_body_json(req)
+    x_perform()
+
+  invisible(response$data)
 }

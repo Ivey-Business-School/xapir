@@ -1,38 +1,33 @@
-#' Unrepost a Post on X
+#' Delete Repost
 #'
 #' @description
-#' Causes the authenticated user to repost a specific Post by its ID. The User in the path must match the User 
-#' context authorizing the request. This is done via the [retweet endpoint](https://docs.x.com/x-api/posts/unrepost-post).
-#' 
-#' @importFrom httr2 request req_auth_bearer_token req_method req_perform resp_body_json
-#' @param tweet_id The ID of the post to be unreposted.
+#' Removes the signed-in account's repost of a post via the [unrepost
+#' endpoint](https://docs.x.com/x-api/posts/unrepost-post). Needs a user
+#' token, so the first call opens a browser window to sign in.
+#'
+#' @importFrom httr2 req_method
+#' @param post_id The id of the post whose repost to remove, as a string.
+#' @param tweet_id Deprecated. Use `post_id`.
+#' @return Invisibly, the `data` list the API returns, `list(retweeted =
+#'   FALSE)`. Stops with the API's message when the request is refused.
 #' @examples
 #' \dontrun{
-#' delete_repost(tweet_id = "20")
+#' delete_repost(post_id = "20")
 #' }
 #' @export
 delete_repost <- function(
-  tweet_id
+  post_id,
+  tweet_id = NULL
 ) {
 
-  # Get cached or refreshed token
-  token <- authenticate_user()
+  post_id <- use_post_id(post_id, tweet_id)
+  token   <- authenticate_user()
+  user_id <- my_user_id(token)
 
-  # Get authenticated user's ID
-  user_req <- request("https://api.twitter.com/2/users/me") |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform()
-  
-  # Get authenticated user's ID
-  user_data <- resp_body_json(user_req)
-  user_id <- user_data$data$id
-
-  url <- paste0("https://api.twitter.com/2/users/", user_id, "/retweets/", tweet_id)
-
-  # Perform repost
-  response <- request(url) |>
+  response <- x_request(token$access_token) |>
+    req_url_path_append("users", user_id, "retweets", post_id) |>
     req_method("DELETE") |>
-    req_auth_bearer_token(token$access_token) |>
-    req_perform() |>
-    resp_body_json()
+    x_perform()
+
+  invisible(response$data)
 }
