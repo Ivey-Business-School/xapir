@@ -45,7 +45,7 @@ get_account_timeline <- function(
     since_id         = NULL,
     pagination_token = NULL,
     exclude          = NULL,
-    sleep_time       = 90,
+    sleep_time       = 0,
     post_fields      = default_post_fields(),
     user_fields      = default_user_fields(),
     media_fields     = default_media_fields(),

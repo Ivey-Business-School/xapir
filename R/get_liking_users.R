@@ -7,8 +7,11 @@
 #'
 #' @param post_id The ID of the Post whose liking Users are to be retrieved.
 #' @template max_results
-#' @param max_users The most users to read in this call. Users are billed per
-#'   user returned.
+#' @param max_users The most users to read in this call. The API bills every
+#'   user it returns (US$0.010 each in September 2026), so the function prints
+#'   the cap in users and dollars before its first request and the total it
+#'   read after the last page. Must be a finite number of 1 or more. Set
+#'   `options(xapir.price_per_user = <dollars>)` when the price changes.
 #' @template pagination_token
 #' @template sleep_time
 #' @template user_fields
@@ -24,12 +27,14 @@ get_liking_users <- function(
     max_results      = 100,
     max_users        = 500,
     pagination_token = NULL,
-    sleep_time       = 90,
+    sleep_time       = 0,
     user_fields      = default_user_fields()
 ) {
 
+  check_post_ids(post_id, max_ids = 1, arg = "post_id")
   check_max_results(max_results)
-  check_max_posts(max_users)
+  check_max_posts(max_users, arg = "max_users")
+  announce_cap(max_users, what = "users")
 
   token <- authenticate_user()
 

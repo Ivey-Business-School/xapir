@@ -36,7 +36,7 @@
 get_recent_post <- function(
     query,
     max_results      = 100,
-    max_posts        = 3200,
+    max_posts        = 500,
     end_time         = NULL,
     start_time       = NULL,
     sort_order       = "relevancy",

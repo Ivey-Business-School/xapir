@@ -28,7 +28,7 @@ get_liked_posts <- function(
     max_results      = 100,
     max_posts        = 500,
     pagination_token = NULL,
-    sleep_time       = 90,
+    sleep_time       = 0,
     post_fields      = default_post_fields(),
     user_fields      = default_user_fields(),
     media_fields     = default_media_fields(),

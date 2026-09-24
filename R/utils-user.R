@@ -12,15 +12,13 @@ NULL
 
 # Cost -----------------------------------------------------------------------
 
-# The price X charges per user returned, in US dollars, as of September 2026.
-x_price_per_user <- 0.01
-
+# The price per user comes from x_price("users") in utils-request.R.
 # One line, before the first request, so the reader knows what the call can
 # cost. Every user returned is billed, so the cap is the worst case.
 # `cap_arg` names the argument to change when the count is a cap rather than
 # the exact number of users asked for.
 announce_user_cap <- function(n, cap_arg = NULL) {
-  price <- getOption("xapir.price_per_user", x_price_per_user)
+  price <- x_price("users")
   text <- sprintf(
     "Reading up to %s users, about $%.2f.",
     format(n, big.mark = ",", scientific = FALSE),
@@ -33,15 +31,6 @@ announce_user_cap <- function(n, cap_arg = NULL) {
 }
 
 # Guardrails -----------------------------------------------------------------
-
-check_max_users <- function(max_users) {
-  ok <- is.numeric(max_users) && length(max_users) == 1 &&
-    !is.na(max_users) && max_users >= 1
-  if (!ok) {
-    stop("`max_users` must be a number of 1 or more.", call. = FALSE)
-  }
-  invisible(max_users)
-}
 
 # A batch of up to 100 usernames. A leading "@" is dropped, because that is
 # how handles are written everywhere but in the API.

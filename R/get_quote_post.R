@@ -17,7 +17,9 @@
 #' @template expansions
 #' @template bearer_token
 #' @return A \code{list} holding one page, in the same shape as
-#'   [get_timeline()] returns, so the `extract_*()` functions accept it.
+#'   [get_timeline()] returns, so the `extract_*()` functions accept it. The
+#'   page holds at most `max_results` posts, and that worst case is printed
+#'   in posts and dollars before the request.
 #' @examples
 #' \dontrun{
 #' get_quote_post(post_id = "20", max_results = 100)
@@ -37,7 +39,10 @@ get_quote_post <- function(
   bearer_token     = Sys.getenv("X_BEARER_TOKEN")
 ) {
 
+  check_token(bearer_token)
+  check_post_ids(post_id, max_ids = 1, arg = "post_id")
   check_max_results(max_results)
+  announce_cap(max_results, arg = "max_results")
 
   page <- x_request(bearer_token) |>
     req_url_path_append("tweets", post_id, "quote_tweets") |>

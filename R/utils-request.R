@@ -76,8 +76,22 @@ field_query <- function(post_fields, user_fields, media_fields, poll_fields,
 
 # Guardrails -----------------------------------------------------------------
 
-# The price X charges per post returned, in US dollars, as of September 2026.
+# What X charges per post returned, in US dollars, as of September 2026. The
+# course can move the prices without a release: set
+# options(xapir.price_per_post = 0.006) or options(xapir.price_per_user = 0.02)
+# in .Rprofile and every cost message follows.
 x_price_per_post <- 0.005
+
+# The current price of one item of `what`, from the option when it is set.
+# Users have their own price (US$0.010 in September 2026); everything else is
+# billed as a post.
+x_price <- function(what = "posts") {
+  if (identical(what, "users")) {
+    getOption("xapir.price_per_user", 0.01)
+  } else {
+    getOption("xapir.price_per_post", x_price_per_post)
+  }
+}
 
 check_max_results <- function(max_results) {
   ok <- is.numeric(max_results) && length(max_results) == 1 &&
@@ -92,22 +106,71 @@ check_max_results <- function(max_results) {
   invisible(as.integer(max_results))
 }
 
-check_max_posts <- function(max_posts) {
+# A finite cap of 1 or more. Inf is refused: it would announce "up to Inf
+# posts" and then read until the API or the budget ran out.
+check_max_posts <- function(max_posts, arg = "max_posts") {
   ok <- is.numeric(max_posts) && length(max_posts) == 1 &&
-    !is.na(max_posts) && max_posts >= 1
+    is.finite(max_posts) && max_posts >= 1
   if (!ok) {
-    stop("`max_posts` must be a number of 1 or more.", call. = FALSE)
+    stop(
+      "`", arg, "` must be a finite number of 1 or more, such as 500. ",
+      "Every item returned is billed, so there is no unlimited pull.",
+      call. = FALSE
+    )
   }
   invisible(max_posts)
 }
 
+# The same rule for readers that return users and bill per user.
+check_max_users <- function(max_users) {
+  check_max_posts(max_users, arg = "max_users")
+}
+
+# Ids travel as text: as numbers they lose digits. Stops before any request
+# when an id is not a string of digits or there are more than the endpoint
+# takes in one call.
+check_post_ids <- function(post_ids, max_ids = 100, arg = "post_ids") {
+  ok <- is.character(post_ids) && length(post_ids) >= 1 &&
+    !anyNA(post_ids) && all(grepl("^[0-9]+$", post_ids))
+  if (!ok) {
+    stop(
+      "`", arg, "` must be ", if (max_ids == 1) "one string" else "strings",
+      " of digits, such as \"1234567890123456789\". ",
+      "Keep ids as text: as numbers they lose digits.",
+      call. = FALSE
+    )
+  }
+  if (length(post_ids) > max_ids) {
+    stop(
+      "`", arg, "` can hold at most ", max_ids,
+      if (max_ids == 1) " id" else " ids", " per call.",
+      call. = FALSE
+    )
+  }
+  invisible(post_ids)
+}
+
 # One line, before the first request, so the reader knows what the call can
-# cost. Every post returned is billed, so the cap is the worst case.
-announce_cap <- function(max_posts, price = x_price_per_post) {
+# cost. Every item returned is billed, so the cap is the worst case. `what` is
+# "posts" or "users" and picks the price; `price` overrides it; `arg` names
+# the argument that moves the cap.
+announce_cap <- function(max_posts, price = NULL, what = "posts", arg = NULL) {
+  price <- price %||% x_price(what)
+  arg <- arg %||% if (identical(what, "users")) "max_users" else "max_posts"
   message(sprintf(
-    "Reading up to %s posts, about $%.2f. Set max_posts to change this.",
+    "Reading up to %s %s, about $%.2f. Set %s to change this.",
     format(max_posts, big.mark = ",", scientific = FALSE),
-    max_posts * price
+    what, max_posts * price, arg
+  ))
+}
+
+# One line after the last page, so a run that stopped early shows what it
+# actually spent.
+announce_total <- function(n, what = "posts", price = NULL) {
+  price <- price %||% x_price(what)
+  message(sprintf(
+    "Read %s %s, about $%.2f.",
+    format(n, big.mark = ",", scientific = FALSE), what, n * price
   ))
 }
 
@@ -229,7 +292,9 @@ lookup_user_id <- function(username, token) {
 
 # Walks a paginated posts endpoint until next_token runs out or max_posts is
 # reached. Returns the list of pages the extractors read. The last page is
-# trimmed so the pull never holds more than max_posts posts.
+# trimmed so the pull never holds more than max_posts posts, and the total
+# read and its cost are printed at the end. A pause between pages is
+# optional: x_perform() already waits as long as a 429 asks.
 fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
                         pagination_token = NULL, what = "posts") {
   response <- list()
@@ -265,5 +330,35 @@ fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
     Sys.sleep(sleep_time)
   }
 
+  announce_total(post_counter, what = what)
   response
+}
+
+# Searches -------------------------------------------------------------------
+
+# One non-empty search string, so a blank query never reaches the API.
+check_query <- function(query) {
+  ok <- is.character(query) && length(query) == 1 && !is.na(query) &&
+    nzchar(trimws(query))
+  if (!ok) {
+    stop(
+      "`query` must be one search string, such as \"#marketing lang:en\".",
+      call. = FALSE
+    )
+  }
+  invisible(query)
+}
+
+# The three period sizes the counts endpoint takes.
+check_granularity <- function(granularity) {
+  choices <- c("minute", "hour", "day")
+  ok <- is.character(granularity) && length(granularity) == 1 &&
+    !is.na(granularity) && granularity %in% choices
+  if (!ok) {
+    stop(
+      "`granularity` must be \"minute\", \"hour\" or \"day\".",
+      call. = FALSE
+    )
+  }
+  invisible(granularity)
 }

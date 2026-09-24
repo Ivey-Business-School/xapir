@@ -13,7 +13,9 @@
 #' @template place_fields
 #' @template expansions
 #' @return A \code{list} holding one page, in the same shape as
-#'   [get_timeline()] returns, so the `extract_*()` functions accept it.
+#'   [get_timeline()] returns, so the `extract_*()` functions accept it. The
+#'   page holds at most `max_results` posts, and that worst case is printed
+#'   in posts and dollars before the request.
 #' @examples
 #' \dontrun{
 #' post <- get_repost_of_me()
@@ -30,6 +32,7 @@ get_repost_of_me <- function(
 ) {
 
   check_max_results(max_results)
+  announce_cap(max_results, arg = "max_results")
 
   token <- authenticate_user()
 

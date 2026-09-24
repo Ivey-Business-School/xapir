@@ -166,3 +166,50 @@ test_that("get_timeline wants exactly one of username and user_id", {
     "string of digits"
   )
 })
+
+test_that("check_max_posts wants a finite number of 1 or more and names the argument", {
+  expect_silent(check_max_posts(1))
+  expect_silent(check_max_posts(500))
+  expect_error(check_max_posts(Inf), "`max_posts` must be a finite number")
+  expect_error(check_max_posts(0), "`max_posts` must be a finite number")
+  expect_error(check_max_posts(NA), "`max_posts` must be a finite number")
+  expect_error(check_max_posts("a"), "`max_posts` must be a finite number")
+  expect_error(check_max_posts(Inf, arg = "max_users"), "`max_users` must be a finite number")
+  expect_error(check_max_posts(0, arg = "max_users"), "`max_users` must be a finite number")
+  expect_silent(check_max_posts(20, arg = "max_users"))
+})
+
+test_that("check_post_ids keeps ids as digit strings and counts them", {
+  expect_silent(check_post_ids("1234567890123456789"))
+  expect_silent(check_post_ids(as.character(1:100)))
+  expect_error(check_post_ids(as.character(1:101)), "at most 100 ids")
+  expect_error(check_post_ids(1234), "strings of digits")
+  expect_error(check_post_ids("abc"), "strings of digits")
+  expect_error(check_post_ids(character(0)), "strings of digits")
+  expect_error(check_post_ids(c("1", NA)), "strings of digits")
+  expect_error(check_post_ids(c("1", "2"), max_ids = 1, arg = "post_id"), "`post_id` can hold at most 1 id")
+  expect_error(check_post_ids(20, max_ids = 1, arg = "post_id"), "`post_id` must be one string of digits")
+})
+
+test_that("announce_cap reads the price from the options", {
+  expect_message(announce_cap(150), "Reading up to 150 posts, about \\$0.75. Set max_posts")
+  expect_message(announce_cap(20, what = "users"), "Reading up to 20 users, about \\$0.20. Set max_users")
+  expect_message(announce_cap(100, arg = "max_results"), "Set max_results to change this")
+  expect_message(announce_cap(2000), "Reading up to 2,000 posts, about \\$10.00")
+  op <- options(xapir.price_per_post = 0.02, xapir.price_per_user = 0.05)
+  on.exit(options(op), add = TRUE)
+  expect_message(announce_cap(150), "about \\$3.00")
+  expect_message(announce_cap(20, what = "users"), "about \\$1.00")
+  expect_message(announce_cap(150, price = 0.001), "about \\$0.15")
+  expect_message(announce_total(150), "^Read 150 posts, about \\$3\\.00\\.")
+  expect_message(announce_total(20, what = "users"), "^Read 20 users, about \\$1\\.00\\.")
+})
+
+test_that("check_query and check_granularity stop on what the API would reject", {
+  expect_silent(check_query("#marketing"))
+  expect_error(check_query(""), "`query` must be one search string")
+  expect_error(check_query(c("a", "b")), "`query` must be one search string")
+  expect_error(check_query(NULL), "`query` must be one search string")
+  expect_silent(check_granularity("day"))
+  expect_error(check_granularity("week"), "\"minute\", \"hour\" or \"day\"")
+})

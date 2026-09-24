@@ -5,7 +5,9 @@
 #' via the [get posts by IDs endpoint](https://docs.x.com/x-api/posts/get-posts-by-ids).
 #'
 #' @param post_ids The IDs of the posts to retrieve, as a character vector of
-#'   up to 100 ids.
+#'   up to 100 ids. Keep them as text: as numbers they lose digits. The
+#'   function stops before any request when an id is not a string of digits
+#'   or there are more than 100.
 #' @template bearer_token
 #' @template post_fields
 #' @template user_fields
@@ -14,7 +16,9 @@
 #' @template place_fields
 #' @template expansions
 #' @return A \code{list} holding one page, in the same shape as
-#'   [get_timeline()] returns, so the `extract_*()` functions accept it.
+#'   [get_timeline()] returns, so the `extract_*()` functions accept it. At
+#'   most one post per id is returned, and that worst case is printed in
+#'   posts and dollars before the request.
 #' @examples
 #' \dontrun{
 #' post <- get_post(c("1234567890123456789"))
@@ -31,14 +35,14 @@ get_post <- function(
   expansions       = default_expansions()
 ) {
 
-  if (length(post_ids) > 100) {
-    stop("`post_ids` can hold at most 100 ids per call.", call. = FALSE)
-  }
+  check_token(bearer_token)
+  check_post_ids(post_ids, max_ids = 100)
+  announce_cap(length(post_ids), arg = "post_ids")
 
   page <- x_request(bearer_token) |>
     req_url_path_append("tweets") |>
     req_url_query(
-      ids = str_c(as.character(post_ids), collapse = ","),
+      ids = str_c(post_ids, collapse = ","),
       !!!field_query(post_fields, user_fields, media_fields, poll_fields,
                      place_fields, expansions)
     ) |>

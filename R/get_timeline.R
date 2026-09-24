@@ -56,7 +56,7 @@ get_timeline <- function(
   since_id = NULL,
   pagination_token = NULL,
   exclude = NULL,
-  sleep_time = 90,
+  sleep_time = 0,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   post_fields = default_post_fields(),
   user_fields = default_user_fields(),
