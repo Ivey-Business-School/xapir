@@ -24,6 +24,8 @@ create_repost <- function(
   token   <- authenticate_user()
   user_id <- my_user_id(token)
 
+  announce_request_cost("interaction")
+
   response <- x_request(token$access_token) |>
     req_url_path_append("users", user_id, "retweets") |>
     req_method("POST") |>

@@ -33,6 +33,8 @@ hide_reply <- function(
 
   token <- authenticate_user()
 
+  announce_request_cost("content_manage")
+
   response <- x_request(token$access_token) |>
     req_url_path_append("tweets", reply_id, "hidden") |>
     req_method("PUT") |>

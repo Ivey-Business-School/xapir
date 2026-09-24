@@ -24,6 +24,8 @@ delete_repost <- function(
   token   <- authenticate_user()
   user_id <- my_user_id(token)
 
+  announce_request_cost("interaction_delete")
+
   response <- x_request(token$access_token) |>
     req_url_path_append("users", user_id, "retweets", post_id) |>
     req_method("DELETE") |>

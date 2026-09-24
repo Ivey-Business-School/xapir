@@ -27,6 +27,8 @@ mute_user <- function(
   source_user_id <- lookup_user_id(source_username, token$access_token)
   target_user_id <- lookup_user_id(target_username, token$access_token)
 
+  announce_request_cost("interaction")
+
   response <- x_request(token$access_token) |>
     req_url_path_append("users", source_user_id, "muting") |>
     req_method("POST") |>

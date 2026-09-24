@@ -41,6 +41,8 @@ delete_post <- function(
     stop("`batch_size` must be a number of 1 or more.", call. = FALSE)
   }
 
+  announce_request_cost("content_manage", n = length(post_ids))
+
   batches <- split(post_ids, ceiling(seq_along(post_ids) / batch_size))
   rows    <- list()
 

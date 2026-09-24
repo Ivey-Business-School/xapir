@@ -29,6 +29,8 @@ delete_bookmark <- function(
   token   <- authenticate_user()
   user_id <- my_user_id(token)
 
+  announce_request_cost("bookmark")
+
   response <- x_request(token$access_token) |>
     req_url_path_append("users", user_id, "bookmarks", post_id) |>
     req_method("DELETE") |>
