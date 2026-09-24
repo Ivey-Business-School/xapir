@@ -26,3 +26,4 @@
 ^\.httr-oauth$
 ^CRAN-RELEASE$
 ^CRAN-SUBMISSION$
+^vignettes/.*\.html$
