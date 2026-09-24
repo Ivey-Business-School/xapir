@@ -3,28 +3,6 @@
 # is answered by a mock, and the wait between status polls is recorded
 # instead of slept.
 
-# The stubs test-write.R uses, repeated here because testthat runs this
-# file first and test files do not share their environments.
-fake_token <- function(...) list(access_token = "tok")
-
-record_requests <- function(respond) {
-  seen <- list()
-  httr2::local_mocked_responses(function(req) {
-    seen[[length(seen) + 1]] <<- req
-    respond(req)
-  }, env = parent.frame())
-  function() seen
-}
-
-sent_json <- function(req) {
-  data <- req$body$data
-  if (is.character(data)) {
-    jsonlite::fromJSON(data, simplifyVector = FALSE)
-  } else {
-    data
-  }
-}
-
 # A 10,000-byte file with a png extension. The bytes are not a real image;
 # the mock never looks at them.
 fake_png <- function(env = parent.frame()) {

@@ -78,13 +78,20 @@ for each post. The default asks for everything the twelve tables need:
   "geo", "attachments", "context_annotations", "entities", "lang",
   "possibly_sensitive", "edit_controls", "referenced_tweets",
   "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
-is nothing to save by trimming this.}
+  "edit_history_tweet_ids", "community_id", "paid_partnership", "id")}.
+Fields are free; posts cost, so there is nothing to save by trimming
+this.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-  "entities", "location", "profile_image_url", "public_metrics",
-  "verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "profile_banner_url",
+  "public_metrics", "verified", "verified_type",
+  "verified_followers_count", "subscription_type", "parody",
+  "is_identity_verified", "url")}. Four more fields,
+\code{connection_status}, \code{confirmed_email},
+\code{receives_your_dm} and \code{subscribes_to_you}, describe the
+account's relationship with the signed-in user; they need a user token
+and are not requested by default.}
 
 \item{media_fields}{\code{character}, \code{vector}; the fields to return
 for each media item. Default: \code{c("duration_ms", "height", "width",
@@ -103,7 +110,10 @@ for each tagged place. Default: \code{c("country", "country_code",
 return alongside each post. Default: \code{c("author_id",
   "entities.mentions.username", "referenced_tweets.id.author_id",
   "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
-  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
+  "attachments.poll_ids", "geo.place_id")}. The API also offers
+\code{"attachments.media_source_tweet"}, \code{"article.cover_media"},
+\code{"article.media_entities"} and \code{"edit_history_tweet_ids"};
+no table reads them, so they are left out. Expansions are free.}
 }
 \value{
 A \code{list} of pages. Each page holds \code{data}, \code{includes} and

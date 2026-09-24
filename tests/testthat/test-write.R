@@ -2,30 +2,6 @@
 # browser, so it is stubbed to return a token-shaped list; the requests it
 # would sign are then mocked through httr2.
 
-fake_token <- function(...) list(access_token = "tok")
-
-# Records every request the mock sees so a test can check the method, path
-# and body. `respond` maps a request to a response.
-record_requests <- function(respond) {
-  seen <- list()
-  httr2::local_mocked_responses(function(req) {
-    seen[[length(seen) + 1]] <<- req
-    respond(req)
-  }, env = parent.frame())
-  function() seen
-}
-
-# httr2 keeps the R object given to req_body_json() in req$body$data and
-# serialises it when the request is performed, so the mock sees the list.
-sent_json <- function(req) {
-  data <- req$body$data
-  if (is.character(data)) {
-    jsonlite::fromJSON(data, simplifyVector = FALSE)
-  } else {
-    data
-  }
-}
-
 test_that("the scopes cover every endpoint the package exposes", {
   needed <- c(
     "tweet.read", "tweet.write", "tweet.moderate.write", "users.read",

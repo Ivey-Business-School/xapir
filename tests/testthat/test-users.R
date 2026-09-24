@@ -1,38 +1,3 @@
-# A user object as the API sends it, with the fields the package reads.
-api_user <- function(id, username = paste0("user", id), url = "https://t.co/x") {
-  list(
-    id = as.character(id),
-    username = username,
-    name = paste("User", id),
-    description = "bio",
-    created_at = "2020-01-02T03:04:05.000Z",
-    protected = FALSE,
-    verified = TRUE,
-    verified_type = "blue",
-    is_identity_verified = FALSE,
-    location = "Toronto",
-    profile_image_url = "https://pbs.twimg.com/x.jpg",
-    profile_banner_url = "https://pbs.twimg.com/banner.jpg",
-    verified_followers_count = 3L,
-    subscription_type = "Premium",
-    parody = FALSE,
-    pinned_tweet_id = "555",
-    url = url,
-    entities = list(url = list(urls = list(list(display_url = "example.com")))),
-    public_metrics = list(
-      followers_count = 10L, following_count = 5L, tweet_count = 100L,
-      listed_count = 2L, like_count = 7L, media_count = 40L
-    )
-  )
-}
-
-# A page of users with the given ids, and a next_token when given.
-users_page <- function(ids, next_token = NULL) {
-  meta <- list(result_count = length(ids))
-  if (!is.null(next_token)) meta$next_token <- next_token
-  json_response(200, list(data = lapply(ids, api_user), meta = meta))
-}
-
 user_columns <- c(
   "created_at", "username", "name", "description", "followers_count",
   "following_count", "post_count", "listed_count", "like_count",
@@ -41,14 +6,6 @@ user_columns <- c(
   "is_identity_verified", "location", "profile_image_url",
   "profile_banner_url", "link_in_bio", "url", "pinned_post_id", "user_id"
 )
-
-mock_user_token <- function(env = parent.frame()) {
-  testthat::local_mocked_bindings(
-    authenticate_user = function(...) list(access_token = "tok"),
-    .package = "xapir",
-    .env = env
-  )
-}
 
 test_that("user_row fills every column with a typed NA from an empty list", {
   row <- user_row(list())

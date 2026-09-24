@@ -1,17 +1,5 @@
 # Every test here mocks the API. Nothing calls X.
 
-collect_messages <- function(expr) {
-  msgs <- character(0)
-  result <- withCallingHandlers(
-    expr,
-    message = function(m) {
-      msgs <<- c(msgs, conditionMessage(m))
-      invokeRestart("muffleMessage")
-    }
-  )
-  list(result = result, msgs = trimws(msgs))
-}
-
 # A page of archive counts, with a next_token when given.
 all_count_page <- function(rows, next_token = NULL) {
   meta <- list(total_post_count = sum(vapply(rows, function(r) r$post_count, 1L)))

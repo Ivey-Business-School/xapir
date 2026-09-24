@@ -11,12 +11,16 @@ extract_user(timeline)
 \code{\link[=get_timeline]{get_timeline()}}.}
 }
 \value{
-A tibble with one row per user id and 18 columns: \code{created_at}
+A tibble with one row per user id and 24 columns: \code{created_at}
 (POSIXct, UTC), \code{username}, \code{name}, \code{description}, \code{followers_count},
 \code{following_count}, \code{post_count}, \code{listed_count}, \code{like_count},
-\code{protected}, \code{verified}, \code{verified_type}, \code{is_identity_verified},
-\code{location}, \code{profile_image_url}, \code{link_in_bio}, \code{url} and \code{user_id}.
-A timeline with no users gives the same columns and no rows.
+\code{media_count}, \code{protected}, \code{verified}, \code{verified_type},
+\code{verified_followers_count}, \code{subscription_type} (\code{"Basic"},
+\code{"Premium"}, \code{"PremiumPlus"} or \code{"None"}), \code{parody},
+\code{is_identity_verified}, \code{location}, \code{profile_image_url},
+\code{profile_banner_url}, \code{link_in_bio}, \code{url}, \code{pinned_post_id} and
+\code{user_id}. A field the API leaves out is \code{NA}. A timeline with no users
+gives the same columns and no rows.
 }
 \description{
 Reads the users that a timeline's pages carry in \code{includes$users} (the

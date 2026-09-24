@@ -30,8 +30,16 @@ default keeps it. Pass \code{Sys.timezone()} or a name such as
 Defaults to TRUE.}
 }
 \value{
-A tibble with one row per post, always with the same 22 columns.
-\code{article_title} is NA unless the post is an X article.
+A tibble with one row per post, always with the same 24 columns:
+\code{created_at}, \code{text}, \code{is_long_post}, \code{lang}, \code{possibly_sensitive},
+\code{paid_partnership}, \code{article_title}, \code{post_type}, \code{impression_count},
+\code{like_count}, \code{repost_count}, \code{quote_count}, \code{reply_count},
+\code{bookmark_count}, \code{reply_settings}, \code{reposted}, \code{quoted}, \code{replied_to},
+\code{in_reply_to_user_id}, \code{user_id}, \code{community_id}, \code{conversation_id},
+\code{post_url} and \code{post_id}. \code{article_title} is NA unless the post is an X
+article, \code{paid_partnership} is TRUE when the author disclosed the post
+as paid promotion, and \code{community_id} is NA unless the post was made in
+an X community.
 }
 \description{
 Processes the timeline data retrieved from the X API to wrangle post data,

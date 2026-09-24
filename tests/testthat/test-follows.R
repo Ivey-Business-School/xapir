@@ -1,17 +1,5 @@
 # Every test here mocks the API. Nothing calls X.
 
-collect_messages <- function(expr) {
-  msgs <- character(0)
-  result <- withCallingHandlers(
-    expr,
-    message = function(m) {
-      msgs <<- c(msgs, conditionMessage(m))
-      invokeRestart("muffleMessage")
-    }
-  )
-  list(result = result, msgs = trimws(msgs))
-}
-
 # A user object as the API sends it, with the fields the package reads. The
 # same shape test-users.R builds; test files do not share definitions.
 api_user <- function(id, username = paste0("user", id), url = "https://t.co/x") {
@@ -34,13 +22,6 @@ api_user <- function(id, username = paste0("user", id), url = "https://t.co/x") 
       listed_count = 2L, like_count = 7L
     )
   )
-}
-
-# A page of users with the given ids, and a next_token when given.
-users_page <- function(ids, next_token = NULL) {
-  meta <- list(result_count = length(ids))
-  if (!is.null(next_token)) meta$next_token <- next_token
-  json_response(200, list(data = lapply(ids, api_user), meta = meta))
 }
 
 user_columns <- names(user_schema())

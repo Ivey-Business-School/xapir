@@ -1,25 +1,5 @@
 # Every test here mocks the API. Nothing calls X.
 
-collect_messages <- function(expr) {
-  msgs <- character(0)
-  result <- withCallingHandlers(
-    expr,
-    message = function(m) {
-      msgs <<- c(msgs, conditionMessage(m))
-      invokeRestart("muffleMessage")
-    }
-  )
-  list(result = result, msgs = trimws(msgs))
-}
-
-mock_user_token <- function(env = parent.frame()) {
-  testthat::local_mocked_bindings(
-    authenticate_user = function(...) list(access_token = "tok"),
-    .package = "xapir",
-    .env = env
-  )
-}
-
 # Caps ---------------------------------------------------------------------
 
 test_that("max_posts = Inf stops before any request", {
@@ -203,13 +183,6 @@ test_that("get_post validates the ids before the request and announces as many p
 })
 
 # Counts ---------------------------------------------------------------------
-
-count_page <- function(rows) {
-  json_response(200, list(
-    data = rows,
-    meta = list(total_tweet_count = sum(vapply(rows, function(r) r$tweet_count, 1L)))
-  ))
-}
 
 test_that("get_recent_post_count returns a tibble of periods and says counts are free", {
   httr2::local_mocked_responses(list(count_page(list(

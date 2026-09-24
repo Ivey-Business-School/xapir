@@ -1,26 +1,6 @@
 # These test helpers mirror the ones at the top of test-write.R: testthat
 # runs each file in its own environment, so they are repeated here.
 
-fake_token <- function(...) list(access_token = "tok")
-
-record_requests <- function(respond) {
-  seen <- list()
-  httr2::local_mocked_responses(function(req) {
-    seen[[length(seen) + 1]] <<- req
-    respond(req)
-  }, env = parent.frame())
-  function() seen
-}
-
-sent_json <- function(req) {
-  data <- req$body$data
-  if (is.character(data)) {
-    jsonlite::fromJSON(data, simplifyVector = FALSE)
-  } else {
-    data
-  }
-}
-
 # The signed-in account is "42" for every test here, with no users/me call.
 use_me <- function(env = parent.frame()) {
   .x_env$my_user_id <- list(key = "tok", id = "42")
