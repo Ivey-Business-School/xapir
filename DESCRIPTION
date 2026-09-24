@@ -18,6 +18,7 @@ BugReports: https://github.com/Ivey-Business-School/xapir/issues
 Depends:
     R (>= 4.1.0)
 Imports:
+    curl,
     dplyr,
     httr2 (>= 1.1.0),
     lubridate,

@@ -186,12 +186,14 @@ test_that("delete_post pauses between batches and not after the last", {
       invokeRestart("muffleMessage")
     }
   )
-  # Five ids in batches of two make three batches, so two pauses.
+  # One cost line, then five ids in batches of two make three batches, so
+  # two pauses.
   expect_equal(nrow(out), 5)
   expect_true(all(out$deleted))
-  expect_equal(length(msgs), 2)
-  expect_match(msgs[1], "batch 1 of 3")
-  expect_match(msgs[2], "batch 2 of 3")
+  expect_equal(length(msgs), 3)
+  expect_match(msgs[1], "5 requests, about \\$")
+  expect_match(msgs[2], "batch 1 of 3")
+  expect_match(msgs[3], "batch 2 of 3")
 })
 
 test_that("unfollow_user throws with the API detail on 403", {
@@ -310,4 +312,102 @@ test_that("post ids must be strings of digits", {
   expect_error(create_repost(20), "string of digits")
   expect_error(create_repost(), "`post_id` is missing")
   expect_error(hide_reply("abc"), "string of digits")
+})
+
+# create_post: plain arguments, list arguments and the cost line ------------
+
+# Runs `expr` with messages captured, returning them.
+capture_messages <- function(expr) {
+  msgs <- character(0)
+  withCallingHandlers(expr, message = function(m) {
+    msgs <<- c(msgs, trimws(conditionMessage(m)))
+    invokeRestart("muffleMessage")
+  })
+  msgs
+}
+
+test_that("create_post turns the plain arguments into the API's objects", {
+  local_mocked_bindings(authenticate_user = fake_token, .package = "xapir")
+  seen <- record_requests(function(req) {
+    json_response(201, list(data = list(id = "1", text = "t")))
+  })
+
+  suppressMessages(create_post("photo", media_ids = c("11", "22")))
+  suppressMessages(create_post("quote", quote_post_id = "33"))
+  suppressMessages(create_post("reply", reply_to_post_id = "44"))
+  suppressMessages(create_post("poll", poll_options = c("Yes", "No")))
+  suppressMessages(create_post("poll", poll_options = c("A", "B", "C"),
+                               poll_duration_minutes = 60))
+  suppressMessages(create_post("community", community_id = "55",
+                               paid_partnership = TRUE,
+                               share_with_followers = TRUE,
+                               reply_settings = "verified"))
+
+  bodies <- lapply(seen(), sent_json)
+  expect_equal(bodies[[1]], list(text = "photo", media = list(media_ids = list("11", "22"))))
+  expect_equal(bodies[[2]], list(text = "quote", quote_tweet_id = "33"))
+  expect_equal(bodies[[3]], list(text = "reply", reply = list(in_reply_to_tweet_id = "44")))
+  expect_equal(bodies[[4]], list(
+    text = "poll", poll = list(options = list("Yes", "No"), duration_minutes = 1440L)
+  ))
+  expect_equal(bodies[[5]]$poll$options, list("A", "B", "C"))
+  expect_equal(bodies[[5]]$poll$duration_minutes, 60L)
+  expect_equal(bodies[[6]], list(
+    text = "community", paid_partnership = TRUE, share_with_followers = TRUE,
+    community_id = "55", reply_settings = "verified"
+  ))
+  expect_true(all(vapply(seen(), function(r) grepl("/2/tweets$", r$url), TRUE)))
+})
+
+test_that("create_post refuses media with a poll and a part given twice", {
+  httr2::local_mocked_responses(function(req) stop("a request was made"))
+  local_mocked_bindings(authenticate_user = fake_token, .package = "xapir")
+
+  expect_error(create_post("x", media_ids = "1", poll_options = c("a", "b")),
+               "both media and a poll")
+  expect_error(create_post("x", media = list(media_ids = "1"),
+                           poll = list(options = c("a", "b"), duration_minutes = 5)),
+               "both media and a poll")
+  expect_error(create_post("x", media_ids = "1", media = list(media_ids = "1")),
+               "either `media_ids` or `media`")
+  expect_error(create_post("x", poll_options = c("a", "b"),
+                           poll = list(options = c("a", "b"), duration_minutes = 5)),
+               "either `poll_options` or `poll`")
+  expect_error(create_post("x", reply_to_post_id = "1",
+                           reply = list(in_reply_to_tweet_id = "1")),
+               "either `reply_to_post_id` or `reply`")
+})
+
+test_that("create_post checks ids, poll shape and reply_settings first", {
+  httr2::local_mocked_responses(function(req) stop("a request was made"))
+  local_mocked_bindings(authenticate_user = fake_token, .package = "xapir")
+
+  expect_error(create_post("x", media_ids = 11), "`media_ids` must be strings of digits")
+  expect_error(create_post("x", media_ids = as.character(1:5)), "at most 4 ids")
+  expect_error(create_post("x", quote_post_id = 33), "`quote_post_id` must be one string")
+  expect_error(create_post("x", reply_to_post_id = "abc"), "`reply_to_post_id`")
+  expect_error(create_post("x", community_id = "c1"), "`community_id`")
+  expect_error(create_post("x", poll_options = "only one"), "2 to 4 strings")
+  expect_error(create_post("x", poll_options = c("a", strrep("b", 26))), "25 characters")
+  expect_error(create_post("x", poll_options = c("a", "b"), poll_duration_minutes = 2),
+               "between 5 and 10,080")
+  expect_error(create_post("x", reply_settings = "everyone"), "\"mentionedUsers\"")
+  expect_error(create_post(c("a", "b")), "one string")
+})
+
+test_that("create_post announces the higher price when the text has a link", {
+  local_mocked_bindings(authenticate_user = fake_token, .package = "xapir")
+  httr2::local_mocked_responses(function(req) {
+    json_response(201, list(data = list(id = "1", text = "t")))
+  })
+
+  plain <- capture_messages(create_post("No link here, just words."))
+  https <- capture_messages(create_post("Read this: https://example.com/post"))
+  http  <- capture_messages(create_post("http://example.com"))
+  www   <- capture_messages(create_post("See www.example.com for more"))
+
+  expect_equal(plain, "This request costs about $0.015.")
+  expect_equal(https, "This request costs about $0.200.")
+  expect_equal(http,  "This request costs about $0.200.")
+  expect_equal(www,   "This request costs about $0.200.")
 })
