@@ -2,6 +2,8 @@ tl <- tesla_pages()
 
 test_that("extract_user has is_identity_verified and url, and every column fills", {
   user <- extract_user(tl)
+  expect_equal(names(user), names(user_schema()))
+  expect_equal(ncol(user), 24)
   expect_equal(nrow(user), length(unique(user$user_id)))
   expect_type(user$is_identity_verified, "logical")
   expect_false(any(is.na(user$is_identity_verified)))
@@ -15,6 +17,14 @@ test_that("extract_user has is_identity_verified and url, and every column fills
   for (col in always_filled) {
     expect_false(any(is.na(user[[col]])), info = col)
   }
+  # the newer columns are there with their types even where the fixture,
+  # pulled before they joined the defaults, leaves them NA
+  expect_type(user$media_count, "integer")
+  expect_type(user$verified_followers_count, "integer")
+  expect_type(user$subscription_type, "character")
+  expect_type(user$parody, "logical")
+  expect_type(user$profile_banner_url, "character")
+  expect_type(user$pinned_post_id, "character")
 })
 
 test_that("extract_post_edited_post_id has no self-referencing rows", {

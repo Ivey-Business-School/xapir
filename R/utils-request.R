@@ -9,23 +9,36 @@ NULL
 # Field defaults -------------------------------------------------------------
 
 # The same five field sets and one expansion set serve every posts endpoint.
-# Change them here and every reader follows.
+# Change them here and every reader follows. The names are the ones the live
+# API still answers with (note_tweet, referenced_tweets, tweet.fields), even
+# where the OpenAPI spec has renamed them to "post".
 
+# Everything the post tables read. `community_id` is set on a post made in
+# an X community and `paid_partnership` is TRUE when the author disclosed
+# the post as paid promotion. The spec also lists display_text_range,
+# card_uri, source, withheld, scopes, media_metadata and article_title;
+# none of those fills a table column, so they are not asked for.
 default_post_fields <- function() {
   c(
     "created_at", "text", "note_tweet", "article", "public_metrics", "geo",
     "attachments", "context_annotations", "entities", "lang",
     "possibly_sensitive", "edit_controls", "referenced_tweets",
     "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-    "edit_history_tweet_ids", "id"
+    "edit_history_tweet_ids", "community_id", "paid_partnership", "id"
   )
 }
 
+# Every public user field the user table reads. The spec's other user
+# fields (connection_status, confirmed_email, receives_your_dm,
+# subscribes_to_you) describe the relationship with the signed-in user, so
+# an app bearer token cannot request them and they are left out. `withheld`
+# and `subscriber_count` are not read by the table.
 default_user_fields <- function() {
   c(
     "created_at", "description", "protected", "entities", "location",
-    "profile_image_url", "public_metrics", "verified", "verified_type",
-    "is_identity_verified", "url"
+    "profile_image_url", "profile_banner_url", "public_metrics", "verified",
+    "verified_type", "verified_followers_count", "subscription_type",
+    "parody", "is_identity_verified", "url"
   )
 }
 
@@ -44,6 +57,10 @@ default_place_fields <- function() {
   c("country", "country_code", "full_name", "geo", "id", "place_type")
 }
 
+# The related objects the tables read. The API also offers
+# attachments.media_source_tweet, article.cover_media, article.media_entities
+# and edit_history_tweet_ids; each adds includes no table reads, so they are
+# not asked for by default but can be passed through `expansions`.
 default_expansions <- function() {
   c(
     "author_id", "entities.mentions.username",

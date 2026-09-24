@@ -105,10 +105,20 @@ test_that("get_recent_post never returns more than max_posts", {
 
 test_that("the default post fields include the long-post and article fields", {
   long_post_fields <- c(
-    "note_tweet", "article", "edit_controls", "possibly_sensitive"
+    "note_tweet", "article", "edit_controls", "possibly_sensitive",
+    "community_id", "paid_partnership"
   )
   expect_true(all(long_post_fields %in% default_post_fields()))
-  expect_true(all(c("is_identity_verified", "url") %in% default_user_fields()))
+  # the live API still answers to the old names, so the defaults keep them
+  expect_false(any(c("note_post", "referenced_posts", "source") %in%
+                     default_post_fields()))
+  expect_true(all(c("is_identity_verified", "url", "profile_banner_url",
+                    "subscription_type", "verified_followers_count",
+                    "parody") %in% default_user_fields()))
+  # these need a user token, so an app token must not ask for them
+  user_context_only <- c("connection_status", "confirmed_email",
+                         "receives_your_dm", "subscribes_to_you")
+  expect_false(any(user_context_only %in% default_user_fields()))
   expect_true("alt_text" %in% default_media_fields())
   expect_true("geo.place_id" %in% default_expansions())
   expect_false(any(c("contained_within", "name") %in% default_place_fields()))

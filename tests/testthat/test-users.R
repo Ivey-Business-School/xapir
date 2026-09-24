@@ -12,11 +12,16 @@ api_user <- function(id, username = paste0("user", id), url = "https://t.co/x") 
     is_identity_verified = FALSE,
     location = "Toronto",
     profile_image_url = "https://pbs.twimg.com/x.jpg",
+    profile_banner_url = "https://pbs.twimg.com/banner.jpg",
+    verified_followers_count = 3L,
+    subscription_type = "Premium",
+    parody = FALSE,
+    pinned_tweet_id = "555",
     url = url,
     entities = list(url = list(urls = list(list(display_url = "example.com")))),
     public_metrics = list(
       followers_count = 10L, following_count = 5L, tweet_count = 100L,
-      listed_count = 2L, like_count = 7L
+      listed_count = 2L, like_count = 7L, media_count = 40L
     )
   )
 }
@@ -30,9 +35,11 @@ users_page <- function(ids, next_token = NULL) {
 
 user_columns <- c(
   "created_at", "username", "name", "description", "followers_count",
-  "following_count", "post_count", "listed_count", "like_count", "protected",
-  "verified", "verified_type", "is_identity_verified", "location",
-  "profile_image_url", "link_in_bio", "url", "user_id"
+  "following_count", "post_count", "listed_count", "like_count",
+  "media_count", "protected", "verified", "verified_type",
+  "verified_followers_count", "subscription_type", "parody",
+  "is_identity_verified", "location", "profile_image_url",
+  "profile_banner_url", "link_in_bio", "url", "pinned_post_id", "user_id"
 )
 
 mock_user_token <- function(env = parent.frame()) {
@@ -53,9 +60,15 @@ test_that("user_row fills every column with a typed NA from an empty list", {
   expect_type(row$username, "character")
   expect_type(row$followers_count, "integer")
   expect_type(row$post_count, "integer")
+  expect_type(row$media_count, "integer")
   expect_type(row$protected, "logical")
+  expect_type(row$verified_followers_count, "integer")
+  expect_type(row$subscription_type, "character")
+  expect_type(row$parody, "logical")
   expect_type(row$is_identity_verified, "logical")
+  expect_type(row$profile_banner_url, "character")
   expect_type(row$url, "character")
+  expect_type(row$pinned_post_id, "character")
   expect_type(row$user_id, "character")
 })
 
@@ -63,10 +76,35 @@ test_that("user_row reads a full user, turns an empty url into NA", {
   row <- user_row(api_user(1))
   expect_equal(row$user_id, "1")
   expect_equal(row$post_count, 100L)
+  expect_equal(row$media_count, 40L)
+  expect_equal(row$verified_followers_count, 3L)
+  expect_equal(row$subscription_type, "Premium")
+  expect_false(row$parody)
+  expect_equal(row$profile_banner_url, "https://pbs.twimg.com/banner.jpg")
   expect_equal(row$link_in_bio, "example.com")
   expect_equal(row$url, "https://t.co/x")
+  expect_equal(row$pinned_post_id, "555")
   expect_equal(format(row$created_at, "%Y-%m-%d %H:%M:%S"), "2020-01-02 03:04:05")
   expect_true(is.na(user_row(api_user(2, url = ""))$url))
+})
+
+test_that("user_row leaves the newer fields NA when the API omits them", {
+  x <- api_user(3)
+  x$profile_banner_url <- NULL
+  x$verified_followers_count <- NULL
+  x$subscription_type <- NULL
+  x$parody <- NULL
+  x$pinned_tweet_id <- NULL
+  x$public_metrics$media_count <- NULL
+  row <- user_row(x)
+  expect_equal(names(row), user_columns)
+  expect_true(is.na(row$media_count))
+  expect_true(is.na(row$verified_followers_count))
+  expect_true(is.na(row$subscription_type))
+  expect_true(is.na(row$parody))
+  expect_true(is.na(row$profile_banner_url))
+  expect_true(is.na(row$pinned_post_id))
+  expect_equal(row$user_id, "3")
 })
 
 test_that("users_table on nothing is the zero-row schema, silently", {
@@ -103,6 +141,16 @@ test_that("extract_user still gives the typed, filled table the package promises
   for (col in always_filled) {
     expect_false(any(is.na(user[[col]])), info = col)
   }
+  # the fixture was pulled before the newer fields joined the defaults, but
+  # media_count and pinned_tweet_id already came back
+  expect_type(user$media_count, "integer")
+  expect_false(any(is.na(user$media_count)))
+  expect_type(user$pinned_post_id, "character")
+  expect_gt(sum(!is.na(user$pinned_post_id)), 0)
+  expect_type(user$verified_followers_count, "integer")
+  expect_type(user$subscription_type, "character")
+  expect_type(user$parody, "logical")
+  expect_type(user$profile_banner_url, "character")
 })
 
 test_that("extract_user on an empty timeline is the zero-row schema, silently", {

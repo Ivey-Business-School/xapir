@@ -10,12 +10,16 @@
 #'
 #' @param timeline A list of pages as returned by a reader such as
 #'   [get_timeline()].
-#' @return A tibble with one row per user id and 18 columns: `created_at`
+#' @return A tibble with one row per user id and 24 columns: `created_at`
 #'   (POSIXct, UTC), `username`, `name`, `description`, `followers_count`,
 #'   `following_count`, `post_count`, `listed_count`, `like_count`,
-#'   `protected`, `verified`, `verified_type`, `is_identity_verified`,
-#'   `location`, `profile_image_url`, `link_in_bio`, `url` and `user_id`.
-#'   A timeline with no users gives the same columns and no rows.
+#'   `media_count`, `protected`, `verified`, `verified_type`,
+#'   `verified_followers_count`, `subscription_type` (`"Basic"`,
+#'   `"Premium"`, `"PremiumPlus"` or `"None"`), `parody`,
+#'   `is_identity_verified`, `location`, `profile_image_url`,
+#'   `profile_banner_url`, `link_in_bio`, `url`, `pinned_post_id` and
+#'   `user_id`. A field the API leaves out is `NA`. A timeline with no users
+#'   gives the same columns and no rows.
 #' @importFrom purrr map pluck
 #' @examples
 #' \dontrun{

@@ -80,6 +80,34 @@ test_that("lang, possibly_sensitive and article_title are present", {
   expect_true(all(is.na(no_article$article_title)))
 })
 
+test_that("paid_partnership and community_id are there, NA on the fixture", {
+  expect_type(post$paid_partnership, "logical")
+  expect_type(post$community_id, "character")
+  expect_true(all(is.na(post$paid_partnership)))
+  expect_true(all(is.na(post$community_id)))
+  # placed next to their neighbours
+  cols <- names(post)
+  expect_equal(cols[match("possibly_sensitive", cols) + 1], "paid_partnership")
+  expect_equal(cols[match("conversation_id", cols) - 1], "community_id")
+  expect_equal(ncol(post), 24)
+  # the zero-row schema has them too
+  empty <- extract_post(list(list(meta = list(result_count = 0L))))
+  expect_type(empty$paid_partnership, "logical")
+  expect_type(empty$community_id, "character")
+})
+
+test_that("a disclosed community post carries paid_partnership and community_id", {
+  page <- poll_page()
+  page$data[[1]]$paid_partnership <- TRUE
+  page$data[[1]]$community_id <- "1"
+  out <- extract_post(list(page))
+  expect_true(out$paid_partnership[out$post_id == "1"])
+  expect_equal(out$community_id[out$post_id == "1"], "1")
+  # the quoted post, which says nothing about either, stays NA
+  expect_true(is.na(out$paid_partnership[out$post_id == "2"]))
+  expect_true(is.na(out$community_id[out$post_id == "2"]))
+})
+
 test_that("ids are character", {
   for (col in c("post_id", "user_id", "conversation_id", "in_reply_to_user_id",
                 "reposted", "quoted", "replied_to")) {

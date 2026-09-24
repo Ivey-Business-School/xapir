@@ -32,8 +32,16 @@
 #' @param include_referenced_posts Logical. Whether to include the posts in
 #'   `includes$tweets` (the posts that were quoted, replied to or reposted).
 #'   Defaults to TRUE.
-#' @return A tibble with one row per post, always with the same 22 columns.
-#'   `article_title` is NA unless the post is an X article.
+#' @return A tibble with one row per post, always with the same 24 columns:
+#'   `created_at`, `text`, `is_long_post`, `lang`, `possibly_sensitive`,
+#'   `paid_partnership`, `article_title`, `post_type`, `impression_count`,
+#'   `like_count`, `repost_count`, `quote_count`, `reply_count`,
+#'   `bookmark_count`, `reply_settings`, `reposted`, `quoted`, `replied_to`,
+#'   `in_reply_to_user_id`, `user_id`, `community_id`, `conversation_id`,
+#'   `post_url` and `post_id`. `article_title` is NA unless the post is an X
+#'   article, `paid_partnership` is TRUE when the author disclosed the post
+#'   as paid promotion, and `community_id` is NA unless the post was made in
+#'   an X community.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -59,6 +67,7 @@ extract_post <- function(
     is_long_post        = logical(0),
     lang                = character(0),
     possibly_sensitive  = logical(0),
+    paid_partnership    = logical(0),
     article_title       = character(0),
     impression_count    = integer(0),
     like_count          = integer(0),
@@ -72,6 +81,7 @@ extract_post <- function(
     replied_to          = character(0),
     in_reply_to_user_id = character(0),
     user_id             = character(0),
+    community_id        = character(0),
     conversation_id     = character(0),
     post_id             = character(0)
   )
@@ -143,6 +153,7 @@ post_row <- function(x) {
     is_long_post        = !is.null(x$note_tweet),
     lang                = x$lang %||% NA_character_,
     possibly_sensitive  = x$possibly_sensitive %||% NA,
+    paid_partnership    = x$paid_partnership %||% NA,
     article_title       = x$article$title %||% NA_character_,
     impression_count    = metrics$impression_count %||% NA_integer_,
     like_count          = metrics$like_count %||% NA_integer_,
@@ -156,6 +167,7 @@ post_row <- function(x) {
     replied_to          = ref_of("replied_to"),
     in_reply_to_user_id = x$in_reply_to_user_id %||% NA_character_,
     user_id             = x$author_id %||% NA_character_,
+    community_id        = x$community_id %||% NA_character_,
     conversation_id     = x$conversation_id %||% NA_character_,
     post_id             = x$id %||% NA_character_
   )

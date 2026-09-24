@@ -114,27 +114,33 @@ parse_x_time <- function(x) {
 
 # Users ----------------------------------------------------------------------
 
-# The 18 columns every user table has, in this order, with no rows.
+# The 24 columns every user table has, in this order, with no rows.
 user_schema <- function() {
   tibble(
-    created_at           = as.POSIXct(character(0), tz = "UTC"),
-    username             = character(0),
-    name                 = character(0),
-    description          = character(0),
-    followers_count      = integer(0),
-    following_count      = integer(0),
-    post_count           = integer(0),
-    listed_count         = integer(0),
-    like_count           = integer(0),
-    protected            = logical(0),
-    verified             = logical(0),
-    verified_type        = character(0),
-    is_identity_verified = logical(0),
-    location             = character(0),
-    profile_image_url    = character(0),
-    link_in_bio          = character(0),
-    url                  = character(0),
-    user_id              = character(0)
+    created_at               = as.POSIXct(character(0), tz = "UTC"),
+    username                 = character(0),
+    name                     = character(0),
+    description              = character(0),
+    followers_count          = integer(0),
+    following_count          = integer(0),
+    post_count               = integer(0),
+    listed_count             = integer(0),
+    like_count               = integer(0),
+    media_count              = integer(0),
+    protected                = logical(0),
+    verified                 = logical(0),
+    verified_type            = character(0),
+    verified_followers_count = integer(0),
+    subscription_type        = character(0),
+    parody                   = logical(0),
+    is_identity_verified     = logical(0),
+    location                 = character(0),
+    profile_image_url        = character(0),
+    profile_banner_url       = character(0),
+    link_in_bio              = character(0),
+    url                      = character(0),
+    pinned_post_id           = character(0),
+    user_id                  = character(0)
   )
 }
 
@@ -153,24 +159,31 @@ user_row <- function(x) {
   }
 
   tibble(
-    created_at           = parse_x_time(x$created_at),
-    username             = as.character(x$username %||% NA_character_),
-    name                 = as.character(x$name %||% NA_character_),
-    description          = as.character(x$description %||% NA_character_),
-    followers_count      = as.integer(metrics$followers_count %||% NA_integer_),
-    following_count      = as.integer(metrics$following_count %||% NA_integer_),
-    post_count           = as.integer(metrics$tweet_count %||% NA_integer_),
-    listed_count         = as.integer(metrics$listed_count %||% NA_integer_),
-    like_count           = as.integer(metrics$like_count %||% NA_integer_),
-    protected            = as.logical(x$protected %||% NA),
-    verified             = as.logical(x$verified %||% NA),
-    verified_type        = as.character(x$verified_type %||% NA_character_),
-    is_identity_verified = as.logical(x$is_identity_verified %||% NA),
-    location             = as.character(x$location %||% NA_character_),
-    profile_image_url    = as.character(x$profile_image_url %||% NA_character_),
-    link_in_bio          = as.character(link_in_bio %||% NA_character_),
-    url                  = as.character(url),
-    user_id              = as.character(x$id %||% NA_character_)
+    created_at               = parse_x_time(x$created_at),
+    username                 = as.character(x$username %||% NA_character_),
+    name                     = as.character(x$name %||% NA_character_),
+    description              = as.character(x$description %||% NA_character_),
+    followers_count          = as.integer(metrics$followers_count %||% NA_integer_),
+    following_count          = as.integer(metrics$following_count %||% NA_integer_),
+    post_count               = as.integer(metrics$tweet_count %||% NA_integer_),
+    listed_count             = as.integer(metrics$listed_count %||% NA_integer_),
+    like_count               = as.integer(metrics$like_count %||% NA_integer_),
+    media_count              = as.integer(metrics$media_count %||% NA_integer_),
+    protected                = as.logical(x$protected %||% NA),
+    verified                 = as.logical(x$verified %||% NA),
+    verified_type            = as.character(x$verified_type %||% NA_character_),
+    verified_followers_count = as.integer(x$verified_followers_count %||% NA_integer_),
+    subscription_type        = as.character(x$subscription_type %||% NA_character_),
+    parody                   = as.logical(x$parody %||% NA),
+    is_identity_verified     = as.logical(x$is_identity_verified %||% NA),
+    location                 = as.character(x$location %||% NA_character_),
+    profile_image_url        = as.character(x$profile_image_url %||% NA_character_),
+    profile_banner_url       = as.character(x$profile_banner_url %||% NA_character_),
+    link_in_bio              = as.character(link_in_bio %||% NA_character_),
+    url                      = as.character(url),
+    # The API still calls it pinned_tweet_id.
+    pinned_post_id           = as.character(x$pinned_tweet_id %||% NA_character_),
+    user_id                  = as.character(x$id %||% NA_character_)
   )
 }
 
