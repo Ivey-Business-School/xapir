@@ -1,14 +1,26 @@
 #' Extract Post Context Data from Timeline
 #'
 #' @description
-#' Processes the timeline data retrieved from the X API to wrangle post context data,
-#' including metadata relating to the domain and entity.
+#' Processes the timeline data retrieved from the X API to wrangle the
+#' context annotations of each post: the domains (such as "Brand") and
+#' entities (such as a company) the API tags the post with. Each row is one
+#' annotation on one post.
 #'
-#' @importFrom purrr map map_dfr map_chr pluck 
-#' @importFrom dplyr distinct
+#' Each post appears once, even when it sits in one page's `data` and another
+#' page's `includes$tweets`. The `data` copy wins.
+#'
+#' @importFrom purrr map
+#' @importFrom dplyr bind_rows distinct
 #' @importFrom tibble tibble
 #' @param timeline A list containing the timeline data retrieved from the X API.
-#' @return A tibble containing structured post context data.
+#' @param include_referenced_posts Logical. Whether to include the posts in
+#'   `includes$tweets` (the posts that were quoted, replied to or reposted).
+#'   Defaults to TRUE.
+#' @return A tibble with one row per context annotation per post and the
+#'   character columns `post_id`, `domain_id`, `domain_name`,
+#'   `domain_description`, `entity_id`, `entity_name` and
+#'   `entity_description`. A timeline without context annotations gives zero
+#'   rows with the same columns.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -16,42 +28,46 @@
 #'   max_results = 100,
 #'   start_time = iso_8601(Sys.Date() - 7)
 #' )
-#' post <- extract_post_context(timeline)
+#' post_context <- extract_post_context(timeline)
 #' }
 #' @export
 extract_post_context <- function(
-  timeline
+  timeline,
+  include_referenced_posts = TRUE
 ) {
-  timeline |>
-    map(pluck("data")) |> 
-    unlist(recursive = FALSE) |>
-    map_dfr(
-        ~ {
-            if (!is.null(.x$context_annotations)) {
-                tibble(
-                    post_id            = .x$id,
-                    domain_id          = map_chr(.x$context_annotations, ~ .x$domain$id %||% NA_character_),
-                    domain_name        = map_chr(.x$context_annotations, ~ .x$domain$name %||% NA_character_),
-                    domain_description = map_chr(.x$context_annotations, ~ .x$domain$description %||% NA_character_),
-                    entity_id          = map_chr(.x$context_annotations, ~ .x$entity$id %||% NA_character_),
-                    entity_name        = map_chr(.x$context_annotations, ~ .x$entity$name %||% NA_character_),
-                    entity_description = map_chr(.x$context_annotations, ~ .x$entity$description %||% NA_character_)
-                )
-            } else {
-                tibble(
-                    post_id            = character(0),
-                    domain_id          = character(0),
-                    domain_name        = character(0),
-                    domain_description = character(0),
-                    entity_id          = character(0),
-                    entity_name        = character(0),
-                    entity_description = character(0)
-                )
-            }
-        }
-    ) |>
-    distinct() ->
-    post_context
 
-    return(post_context)
+  context_schema <- tibble(
+    post_id            = character(0),
+    domain_id          = character(0),
+    domain_name        = character(0),
+    domain_description = character(0),
+    entity_id          = character(0),
+    entity_name        = character(0),
+    entity_description = character(0)
+  )
+
+  posts <- unique_posts(timeline, include_referenced_posts)
+
+  bind_rows(context_schema, map(posts, context_rows)) |>
+    distinct()
+}
+
+#' The context annotation rows of one post, or NULL when it has none
+#' @keywords internal
+#' @noRd
+context_rows <- function(x) {
+  annotations <- x$context_annotations
+  if (is.null(annotations)) return(NULL)
+
+  bind_rows(map(annotations, function(a) {
+    tibble(
+      post_id            = x$id,
+      domain_id          = a$domain$id %||% NA_character_,
+      domain_name        = a$domain$name %||% NA_character_,
+      domain_description = a$domain$description %||% NA_character_,
+      entity_id          = a$entity$id %||% NA_character_,
+      entity_name        = a$entity$name %||% NA_character_,
+      entity_description = a$entity$description %||% NA_character_
+    )
+  }))
 }

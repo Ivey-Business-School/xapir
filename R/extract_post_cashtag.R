@@ -1,14 +1,24 @@
 #' Extract Post Cashtag Data from Timeline
 #'
 #' @description
-#' Processes the timeline data retrieved from the X API to wrangle post cashtag data,
-#' including metadata relating to the ticker symbol and its position in the post.
+#' Processes the timeline data retrieved from the X API to wrangle the
+#' cashtags in each post (ticker symbols such as `$TSLA`) and where they sit
+#' in the text. Each row is one cashtag in one post.
 #'
-#' @importFrom purrr map map_dfr pluck map_chr
+#' Each post appears once, even when it sits in one page's `data` and another
+#' page's `includes$tweets`. The `data` copy wins.
+#'
+#' @importFrom purrr map
+#' @importFrom dplyr bind_rows distinct
 #' @importFrom tibble tibble
-#' @importFrom dplyr distinct
 #' @param timeline A list containing the timeline data retrieved from the X API.
-#' @return A tibble containing structured post context data.
+#' @param include_referenced_posts Logical. Whether to include the posts in
+#'   `includes$tweets` (the posts that were quoted, replied to or reposted).
+#'   Defaults to TRUE.
+#' @return A tibble with one row per cashtag per post and the columns
+#'   `post_id` (character), `tag` (character, without the `$`), `start` and
+#'   `end` (integer positions in the post text). A timeline without cashtags
+#'   gives zero rows with the same columns.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -16,35 +26,42 @@
 #'   max_results = 100,
 #'   start_time = iso_8601(Sys.Date() - 7)
 #' )
-#' post <- extract_post_cashtag(timeline)
+#' post_cashtag <- extract_post_cashtag(timeline)
 #' }
 #' @export
 extract_post_cashtag <- function(
-    timeline
+  timeline,
+  include_referenced_posts = TRUE
 ) {
-  timeline |>
-    map(pluck("data")) |>
-    unlist(recursive = FALSE) |>
-    map_dfr(~ {
-      if (!is.null(.x$entities$cashtags)) {
-        map_dfr(.x$entities$cashtags, function(cashtag) {
-          tag_val   <- if (is.list(cashtag) && !is.null(cashtag[["tag"]]))   cashtag[["tag"]]   else NA_character_
-          start_val <- if (is.list(cashtag) && !is.null(cashtag[["start"]])) cashtag[["start"]] else NA_integer_
-          end_val   <- if (is.list(cashtag) && !is.null(cashtag[["end"]]))   cashtag[["end"]]   else NA_integer_
 
-          tibble(
-            post_id  = .x$id,
-            tag      = tag_val,
-            start    = start_val,
-            end      = end_val
-          )
-        })
-      } else {
-        tibble(post_id = character(0), tag = character(0), start = integer(0), end = integer(0))
-      }
-    }) |>
-    distinct() ->
-    post_cashtag
+  cashtag_schema <- tibble(
+    post_id = character(0),
+    tag     = character(0),
+    start   = integer(0),
+    end     = integer(0)
+  )
 
-    return(post_cashtag)
+  posts <- unique_posts(timeline, include_referenced_posts)
+
+  bind_rows(cashtag_schema, map(posts, cashtag_rows)) |>
+    distinct()
+}
+
+#' The cashtag rows of one post, or NULL when it has none
+#' @keywords internal
+#' @noRd
+cashtag_rows <- function(x) {
+  tags <- x$entities$cashtags
+  if (is.null(tags)) return(NULL)
+
+  # The argument is not called `tag`: inside tibble() the `tag` column would
+  # shadow it, so `tag$start` would read the column instead of the list.
+  bind_rows(map(tags, function(ct) {
+    tibble(
+      post_id = x$id,
+      tag     = ct$tag %||% NA_character_,
+      start   = ct$start %||% NA_integer_,
+      end     = ct$end %||% NA_integer_
+    )
+  }))
 }

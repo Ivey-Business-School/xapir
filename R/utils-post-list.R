@@ -70,3 +70,52 @@ author_lookup <- function(timeline) {
     filter(!is.na(user_id)) |>
     distinct(user_id, .keep_all = TRUE)
 }
+
+#' Keep the first item with each id
+#'
+#' @param items A list of named lists as parsed from the API's JSON.
+#' @param id_field The name of the id element: "id" for posts, users, polls
+#'   and places, "media_key" for media.
+#' @return `items` with each id kept once, in their original order. Items
+#'   without an id are dropped.
+#' @importFrom purrr map_chr
+#' @keywords internal
+#' @noRd
+unique_by_id <- function(items, id_field = "id") {
+  ids <- map_chr(items, ~ .x[[id_field]] %||% NA_character_)
+  items[!is.na(ids) & !duplicated(ids)]
+}
+
+#' Collect each post in a raw response once
+#'
+#' @description
+#' The same post can sit in one page's `data` and another page's
+#' `includes$tweets`, or in the `includes` of two pages. This helper keeps the
+#' first copy of each id, which is the `data` copy because [post_list()] puts
+#' `data` first. Every `extract_post_*()` child table reads its posts through
+#' this helper, so their rows join back onto [extract_post()] one-to-one on
+#' `post_id`.
+#'
+#' @inheritParams post_list
+#' @return A list of posts with distinct ids, each a named list as parsed from
+#'   the API's JSON.
+#' @keywords internal
+#' @noRd
+unique_posts <- function(timeline, include_referenced_posts = TRUE) {
+  unique_by_id(post_list(timeline, include_referenced_posts))
+}
+
+#' Collect one block of `includes` across every page, each item once
+#'
+#' @description
+#' A media item, place or poll attached to posts on two pages is listed in
+#' both pages' `includes`. This helper keeps the first copy.
+#'
+#' @inheritParams includes_list
+#' @inheritParams unique_by_id
+#' @return A list, possibly empty, with each id kept once.
+#' @keywords internal
+#' @noRd
+unique_includes <- function(timeline, block, id_field = "id") {
+  unique_by_id(includes_list(timeline, block), id_field)
+}

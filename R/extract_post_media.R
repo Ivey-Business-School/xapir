@@ -1,16 +1,33 @@
 #' Extract Media Information from Timeline
 #'
 #' @description
-#' Processes the timeline data retrieved from the X API to wrangle media information,
-#' such as images, videos, and GIFs attached to posts. `alt_text` is the
-#' author's description of the media and is `NA` when none was written.
+#' Processes the timeline data retrieved from the X API to wrangle media
+#' information, such as images, videos, and GIFs attached to posts. Each row
+#' is one media item attached to one post, so a post with three photos gives
+#' three rows.
 #'
-#' @importFrom purrr map map_dfr pluck detect
-#' @importFrom dplyr select any_of distinct left_join
+#' `alt_text` is the author's description of the media and is `NA` when none
+#' was written. For a video or animated GIF, `url` and `bit_rate` come from
+#' the `video/mp4` variant with the highest bit rate, which is the best
+#' quality the API offers; for a photo, `url` is the image and `bit_rate` is
+#' `NA`.
+#'
+#' Each post appears once, even when it sits in one page's `data` and another
+#' page's `includes$tweets`. The `data` copy wins.
+#'
+#' @importFrom purrr map keep
+#' @importFrom dplyr bind_rows left_join select all_of distinct
 #' @importFrom tibble tibble
-#' @importFrom tidyr unnest
 #' @param timeline A list containing the timeline data retrieved from the X API.
-#' @return A tibble containing structured media data.
+#' @param include_referenced_posts Logical. Whether to include the posts in
+#'   `includes$tweets` (the posts that were quoted, replied to or reposted).
+#'   Defaults to TRUE.
+#' @return A tibble with one row per media item per post and the columns
+#'   `post_id`, `media_id`, `type`, `view_count`, `duration_ms`, `height`,
+#'   `width`, `preview_image_url`, `url`, `alt_text` and `bit_rate`. Ids are
+#'   character; `view_count`, `duration_ms`, `height`, `width` and `bit_rate`
+#'   are integer. A timeline without media gives zero rows with the same
+#'   columns.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -22,74 +39,75 @@
 #' }
 #' @export
 extract_post_media <- function(
-  timeline
+  timeline,
+  include_referenced_posts = TRUE
 ) {
 
-  media_variables <-  c(
-    "post_id", "media_id", "type", "view_count", "duration_ms", "height", 
-    "width", "preview_image_url", "url", "alt_text", "bit_rate"
+  media_schema <- tibble(
+    post_id           = character(0),
+    media_id          = character(0),
+    type              = character(0),
+    view_count        = integer(0),
+    duration_ms       = integer(0),
+    height            = integer(0),
+    width             = integer(0),
+    preview_image_url = character(0),
+    url               = character(0),
+    alt_text          = character(0),
+    bit_rate          = integer(0)
   )
 
-  post_media_map <- timeline |>
-    map(pluck("data")) |>
-    unlist(recursive = FALSE) |>
-    map_dfr(
-      ~ {
-        keys <- .x$attachments$media_keys %||% NULL
-        if (is.null(keys)) return(NULL)
-        tibble(
-          post_id   = .x$id,
-          media_id  = as.character(keys)  # ensure character vector
-        )
-      }
-    )
+  # Step 1: which media keys does each post attach?
+  posts <- unique_posts(timeline, include_referenced_posts)
 
-  if (nrow(post_media_map) == 0) {
-    return(tibble(!!!setNames(rep(list(logical(0)), length(media_variables)), media_variables)))
-  }
+  post_media_map <- bind_rows(
+    select(media_schema, post_id, media_id),
+    map(posts, function(x) {
+      keys <- x$attachments$media_keys
+      if (is.null(keys)) return(NULL)
+      tibble(post_id = x$id, media_id = as.character(unlist(keys)))
+    })
+  )
 
-  post_media_map <- unnest(post_media_map, media_id)
+  # Step 2: the details of every media item in includes$media, each once
+  media_tbl <- bind_rows(
+    select(media_schema, -post_id),
+    map(unique_includes(timeline, "media", id_field = "media_key"), media_row)
+  )
 
-  # Extract media data directly
-  timeline |>
-    map(pluck("includes")) |>
-    map(pluck("media")) |>
-    unlist(recursive = FALSE) ->
-    media_list
-  
-  if (length(media_list) == 0) {
-    return(tibble(!!!setNames(rep(list(logical(0)), length(media_variables)), media_variables)))
-  }
+  # Step 3: attach the details to each post's media keys
+  post_media_map |>
+    left_join(media_tbl, by = "media_id") |>
+    select(all_of(names(media_schema))) |>
+    distinct()
+}
 
-  # Create the post media tibble
-  media_list |>
-  map_dfr(
-    ~ {
-      variants <- .x$variants %||% list()
-      first_mp4 <- detect(variants, ~ .x$content_type == "video/mp4")
+#' One row of media details from one item of includes$media
+#' @keywords internal
+#' @noRd
+media_row <- function(x) {
+  best <- best_mp4(x$variants %||% list())
 
-      tibble(
-        media_id          = .x$media_key,
-        type              = .x$type,
-        view_count        = .x$public_metrics$view_count %||% NA_integer_,
-        duration_ms       = .x$duration_ms %||% NA_integer_,
-        height            = .x$height,
-        width             = .x$width,
-        preview_image_url = .x$preview_image_url %||% NA |> as.character(),
-        url               = first_mp4$url %||% .x$url %||% NA_character_,
-        alt_text          = .x$alt_text %||% NA_character_,
-        bit_rate          = first_mp4$bit_rate %||% NA_integer_
-      )
-    }
-  ) |>
-    select(any_of(media_variables[-1])) ->
-    media_tbl
+  tibble(
+    media_id          = x$media_key %||% NA_character_,
+    type              = x$type %||% NA_character_,
+    view_count        = x$public_metrics$view_count %||% NA_integer_,
+    duration_ms       = x$duration_ms %||% NA_integer_,
+    height            = x$height %||% NA_integer_,
+    width             = x$width %||% NA_integer_,
+    preview_image_url = x$preview_image_url %||% NA_character_,
+    url               = best$url %||% x$url %||% NA_character_,
+    alt_text          = x$alt_text %||% NA_character_,
+    bit_rate          = best$bit_rate %||% NA_integer_
+  )
+}
 
-    # Join post_id to media table
-    post_media <- media_tbl |>
-      left_join(post_media_map, by = "media_id") |>
-      select(any_of(media_variables)) |>
-      distinct()
-
-    return(post_media)
+#' The video/mp4 variant with the highest bit rate, or NULL when there is none
+#' @keywords internal
+#' @noRd
+best_mp4 <- function(variants) {
+  mp4 <- keep(variants, ~ identical(.x$content_type, "video/mp4"))
+  if (length(mp4) == 0) return(NULL)
+  bit_rates <- vapply(mp4, function(v) as.numeric(v$bit_rate %||% 0), numeric(1))
+  mp4[[which.max(bit_rates)]]
 }

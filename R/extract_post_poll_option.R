@@ -1,17 +1,29 @@
 #' Extract Post Poll Option Information from Timeline
 #'
 #' @description
-#' Processes the timeline data retrieved from the X API to wrangle poll option information,
-#' such as poll IDs, options, and voting details. Posts are read from `data`
-#' and from `includes$tweets`, so a poll on a quoted post keeps its `post_id`.
+#' Processes the timeline data retrieved from the X API to wrangle poll
+#' option information, such as poll IDs, options, and voting details. Each
+#' row is one option of one poll on one post, so a two-option poll gives two
+#' rows. A poll whose post is not in the response has nothing to attach to
+#' and is left out.
 #'
-#' @importFrom purrr map map_dfr pluck compact flatten
-#' @importFrom dplyr select distinct left_join filter any_of
+#' Each post appears once, even when it sits in one page's `data` and another
+#' page's `includes$tweets`. The `data` copy wins.
+#'
+#' @importFrom purrr map
+#' @importFrom dplyr bind_rows left_join filter select all_of distinct
 #' @importFrom tibble tibble
-#' @importFrom tidyr unnest
 #' @importFrom lubridate ymd_hms
 #' @param timeline A list containing the timeline data retrieved from the X API.
-#' @return A tibble containing structured poll data.
+#' @param include_referenced_posts Logical. Whether to include the posts in
+#'   `includes$tweets` (the posts that were quoted, replied to or reposted).
+#'   Defaults to TRUE.
+#' @return A tibble with one row per poll option per post and the columns
+#'   `post_id` and `poll_id` (character), `position` (integer, the option's
+#'   order in the poll), `label` (character), `votes` (integer),
+#'   `duration_minutes` (integer), `end_datetime` (POSIXct, UTC) and
+#'   `voting_status` (character, "open" or "closed"). A timeline without polls
+#'   gives zero rows with the same columns.
 #' @examples
 #' \dontrun{
 #' timeline <- get_timeline(
@@ -19,89 +31,71 @@
 #'   max_results = 100,
 #'   start_time = iso_8601(Sys.Date() - 7)
 #' )
-#' polls <- extract_post_poll_option(timeline)
+#' post_poll_option <- extract_post_poll_option(timeline)
 #' }
 #' @export
 extract_post_poll_option <- function(
-  timeline
+  timeline,
+  include_referenced_posts = TRUE
 ) {
-  poll_columns <- c(
-    "post_id", "poll_id", "position", "label", "votes",
-    "duration_minutes", "end_datetime", "voting_status"
+
+  poll_schema <- tibble(
+    post_id          = character(0),
+    poll_id          = character(0),
+    position         = integer(0),
+    label            = character(0),
+    votes            = integer(0),
+    duration_minutes = integer(0),
+    end_datetime     = as.POSIXct(character(0), tz = "UTC"),
+    voting_status    = character(0)
   )
 
-  # Step 1: Map post_id to poll_id, from data and from includes$tweets
-  post_poll_map <- timeline |>
-    post_list(include_referenced_posts = TRUE) |>
-    map_dfr(~ {
-      poll_ids <- .x$attachments$poll_ids %||% NULL
+  # Step 1: which poll does each post carry?
+  posts <- unique_posts(timeline, include_referenced_posts)
+
+  post_poll_map <- bind_rows(
+    select(poll_schema, post_id, poll_id),
+    map(posts, function(x) {
+      poll_ids <- x$attachments$poll_ids
       if (is.null(poll_ids)) return(NULL)
-      tibble(
-        post_id = .x$id,
-        poll_id = as.character(poll_ids)
-      )
-    }) 
-
-  if (nrow(post_poll_map) == 0) {
-    return(tibble(!!!setNames(rep(list(logical(0)), length(poll_columns)), poll_columns)))
-  }
-
-  post_poll_map <- post_poll_map |>
-    unnest(poll_id) |>
-    distinct()
-
-  # Step 2: Extract and flatten includes$polls
-  poll_list <- timeline |>
-    map("includes") |>
-    map("polls") |>
-    compact() |>  # remove NULLs
-    flatten()
-
-  if (length(poll_list) == 0) {
-    return(tibble(!!!setNames(rep(list(logical(0)), length(poll_columns)), poll_columns)))
-  }
-
-  # Step 3: Create one row per poll option
-  poll_tbl <- poll_list |>
-    map_dfr(~ {
-      poll_id <- .x$id
-      duration <- .x$duration_minutes %||% NA
-      end_time <- .x$end_datetime %||% NA_character_
-      end_time <- if (!is.na(end_time)) ymd_hms(end_time, tz = "UTC") else as.POSIXct(NA)
-      status   <- .x$voting_status %||% NA_character_
-
-      if (!is.null(.x$options)) {
-        map_dfr(.x$options, function(opt) {
-          tibble(
-            poll_id          = poll_id,
-            position         = opt[["position"]] %||% NA_integer_,
-            label            = opt[["label"]] %||% NA_character_,
-            votes            = opt[["votes"]] %||% NA_integer_,
-            duration_minutes = duration,
-            end_datetime     = end_time,
-            voting_status    = status
-          )
-        })
-      } else {
-        tibble(
-          poll_id          = poll_id,
-          position         = integer(0),
-          label            = character(0),
-          votes            = integer(0),
-          duration_minutes = integer(0),
-          end_datetime     = as.POSIXct(character(0)),
-          voting_status    = character(0)
-        )
-      }
+      tibble(post_id = x$id, poll_id = as.character(unlist(poll_ids)))
     })
+  )
 
-  # Step 4: Join post_id with poll options. A poll whose post is not in the
-  # response has nothing to attach to, so it is dropped rather than kept with
-  # an NA post_id.
-  post_polls <- left_join(poll_tbl, post_poll_map, by = "poll_id") |>
+  # Step 2: one row per option of every poll in includes$polls, each poll once
+  option_tbl <- bind_rows(
+    select(poll_schema, -post_id),
+    map(unique_includes(timeline, "polls"), poll_option_rows)
+  )
+
+  # Step 3: attach each poll's options to the post that carries it. A poll
+  # whose post is not in the response has no post_id and is dropped.
+  option_tbl |>
+    left_join(post_poll_map, by = "poll_id", relationship = "many-to-many") |>
     filter(!is.na(post_id)) |>
-    select(any_of(poll_columns)) |>
+    select(all_of(names(poll_schema))) |>
     distinct()
+}
 
-  return(post_polls)
+#' The option rows of one poll from includes$polls, or NULL when it has none
+#' @keywords internal
+#' @noRd
+poll_option_rows <- function(x) {
+  options <- x$options
+  if (is.null(options)) return(NULL)
+
+  end_time <- x$end_datetime %||% NA_character_
+  end_time <- ymd_hms(end_time, tz = "UTC", quiet = TRUE)
+
+  bind_rows(map(options, function(opt) {
+    tibble(
+      poll_id          = x$id %||% NA_character_,
+      position         = opt$position %||% NA_integer_,
+      label            = opt$label %||% NA_character_,
+      votes            = opt$votes %||% NA_integer_,
+      duration_minutes = x$duration_minutes %||% NA_integer_,
+      end_datetime     = end_time,
+      voting_status    = x$voting_status %||% NA_character_
+    )
+  }))
 }
