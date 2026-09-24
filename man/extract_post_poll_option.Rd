@@ -4,18 +4,32 @@
 \alias{extract_post_poll_option}
 \title{Extract Post Poll Option Information from Timeline}
 \usage{
-extract_post_poll_option(timeline)
+extract_post_poll_option(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured poll data.
+A tibble with one row per poll option per post and the columns
+\code{post_id} and \code{poll_id} (character), \code{position} (integer, the option's
+order in the poll), \code{label} (character), \code{votes} (integer),
+\code{duration_minutes} (integer), \code{end_datetime} (POSIXct, UTC) and
+\code{voting_status} (character, "open" or "closed"). A timeline without polls
+gives zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle poll option information,
-such as poll IDs, options, and voting details. Posts are read from \code{data}
-and from \code{includes$tweets}, so a poll on a quoted post keeps its \code{post_id}.
+Processes the timeline data retrieved from the X API to wrangle poll
+option information, such as poll IDs, options, and voting details. Each
+row is one option of one poll on one post, so a two-option poll gives two
+rows. A poll whose post is not in the response has nothing to attach to
+and is left out.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -24,6 +38,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-polls <- extract_post_poll_option(timeline)
+post_poll_option <- extract_post_poll_option(timeline)
 }
 }

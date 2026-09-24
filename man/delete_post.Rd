@@ -2,24 +2,37 @@
 % Please edit documentation in R/delete_post.R
 \name{delete_post}
 \alias{delete_post}
-\title{Delete Post(s) on X}
+\title{Delete Posts}
 \usage{
-delete_post(post_ids, sleep_time = 900)
+delete_post(post_ids, sleep_time = 900, batch_size = 5)
 }
 \arguments{
-\item{post_ids}{A character vector of post IDs that are to be deleted from your X account}
+\item{post_ids}{A character vector of the ids of the posts to delete.}
 
-\item{sleep_time}{Seconds to pause between deletions when more than one
-post id is given.}
+\item{sleep_time}{Seconds to pause between batches.}
+
+\item{batch_size}{Number of posts to delete before pausing.}
 }
 \value{
-A tibble containing the requested post IDs to delete, whether they were deleted successfully, and any error messages
+A tibble with one row per id in \code{post_ids}: \code{post_id} (the id),
+\code{deleted} (\code{TRUE} when the API confirmed the deletion) and \code{error} (the
+error message, or \code{NA} when the post was deleted).
 }
 \description{
-Delete one or more Posts (in the path) by ID via the \href{https://docs.x.com/x-api/posts/post-delete-by-post-id}{delete a post endpoint}.
+Deletes one or more of the signed-in account's posts by id via the \href{https://docs.x.com/x-api/posts/post-delete-by-post-id}{delete a post endpoint}.
+Needs a user token, so the first call opens a browser window to sign in.
+
+X caps how many posts an account may delete in a 15-minute window, and
+the cap is lowest on the Free tier. The ids are therefore deleted in
+batches of \code{batch_size}, with a pause of \code{sleep_time} seconds between
+batches. The defaults, 5 posts then 15 minutes, stay inside the cap on
+every tier; raise \code{batch_size} on a paid tier (up to 50) to go faster.
+
+A post that cannot be deleted does not stop the others: its row records
+the API's message and the function carries on.
 }
 \examples{
 \dontrun{
-delete_post(post_ids =  c("post_id1", "post_id2", "post_id3"))
+delete_post(post_ids = c("1234567890123456789", "1234567890123456790"))
 }
 }

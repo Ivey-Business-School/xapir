@@ -7,13 +7,20 @@
 unfollow_user(source_username, target_username)
 }
 \arguments{
-\item{source_username}{Username of account that will unfollow someone.}
+\item{source_username}{Username of the account that will unfollow, without
+the "@" symbol. Must be the account that signed in.}
 
-\item{target_username}{Username of account that will be unfollowed.}
+\item{target_username}{Username of the account to unfollow, without the
+"@" symbol.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(following = FALSE)}. Stops with the API's message when the request is refused, for
+example when the source does not follow the target.
 }
 \description{
-Causes the source User to unfollow the target User via the \href{https://docs.x.com/x-api/users/unfollow-user}{unfollow user endpoint}.
-The source User must match the User context authorizing the request
+Makes the source account unfollow the target account via the \href{https://docs.x.com/x-api/users/unfollow-user}{unfollow user endpoint}. The source
+must be the account that signed in. Needs a user token, so the first call
+opens a browser window to sign in.
 }
 \examples{
 \dontrun{

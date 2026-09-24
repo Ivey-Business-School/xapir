@@ -4,24 +4,25 @@
 \alias{create_bookmark}
 \title{Create Bookmark}
 \usage{
-create_bookmark(username, tweet_id)
+create_bookmark(post_id, username = NULL, tweet_id = NULL)
 }
 \arguments{
-\item{username}{\code{character}; the name of the account on X without the
-"@" symbol.}
+\item{post_id}{The id of the post to bookmark, as a string.}
 
-\item{tweet_id}{ID of the tweet to be bookmarked.}
+\item{username}{Deprecated and ignored. Bookmarks always belong to the
+account that signed in.}
+
+\item{tweet_id}{Deprecated. Use \code{post_id}.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(bookmarked = TRUE)}. Stops with the API's message when the request is refused.
 }
 \description{
-Adds a post to the authenticated user’s bookmarks
-via the \href{https://docs.x.com/x-api/bookmarks/create-bookmark}{create bookmark endpoint}.
-The User must match the User context authorizing the request
+Adds a post to the signed-in account's bookmarks via the \href{https://docs.x.com/x-api/bookmarks/create-bookmark}{create bookmark endpoint}. Needs a
+user token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{
-create_bookmark(
- username = "Tesla", 
- tweet_id = "1234567890123456789"
-)
+create_bookmark(post_id = "1234567890123456789")
 }
 }

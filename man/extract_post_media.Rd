@@ -4,18 +4,37 @@
 \alias{extract_post_media}
 \title{Extract Media Information from Timeline}
 \usage{
-extract_post_media(timeline)
+extract_post_media(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured media data.
+A tibble with one row per media item per post and the columns
+\code{post_id}, \code{media_id}, \code{type}, \code{view_count}, \code{duration_ms}, \code{height},
+\code{width}, \code{preview_image_url}, \code{url}, \code{alt_text} and \code{bit_rate}. Ids are
+character; \code{view_count}, \code{duration_ms}, \code{height}, \code{width} and \code{bit_rate}
+are integer. A timeline without media gives zero rows with the same
+columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle media information,
-such as images, videos, and GIFs attached to posts. \code{alt_text} is the
-author's description of the media and is \code{NA} when none was written.
+Processes the timeline data retrieved from the X API to wrangle media
+information, such as images, videos, and GIFs attached to posts. Each row
+is one media item attached to one post, so a post with three photos gives
+three rows.
+
+\code{alt_text} is the author's description of the media and is \code{NA} when none
+was written. For a video or animated GIF, \code{url} and \code{bit_rate} come from
+the \code{video/mp4} variant with the highest bit rate, which is the best
+quality the API offers; for a photo, \code{url} is the image and \code{bit_rate} is
+\code{NA}.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{

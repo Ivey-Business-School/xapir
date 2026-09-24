@@ -15,10 +15,26 @@ stored and accessible without needing to manually input it for each
 session.}
 }
 \value{
-A list containing the token and refresh token
+An httr2 OAuth token (class \code{httr2_token}) with \verb{$access_token},
+and \verb{$refresh_token} when the app grants offline access.
 }
 \description{
-Authenticates with the X API using OAuth 2.0 Authorization Code Flow with offline access.
-Falls back to re-authentication if cached token fails.
+Signs in to the X API with OAuth 2.0 (authorization code flow with PKCE)
+and returns the token every user-context function uses. The first call
+opens a browser window to approve the app. The token is then cached on
+disk, so later calls, and later R sessions, reuse it without a browser.
+When the access token expires it is refreshed in the background; if the
+refresh fails, the browser flow runs again.
+
+The token is stored under \code{httr2::oauth_cache_path()} in a folder named
+\code{xapir}. To sign in as a different account, or after changing the scopes
+the package asks for, delete that folder and call a user function again:
+\code{unlink(file.path(httr2::oauth_cache_path(), "xapir"), recursive = TRUE)}.
+}
+\examples{
+\dontrun{
+token <- authenticate_user()
+token$access_token
+}
 }
 \keyword{internal}

@@ -2,25 +2,32 @@
 % Please edit documentation in R/hide_reply.R
 \name{hide_reply}
 \alias{hide_reply}
-\title{Hide Reply on X}
+\title{Hide Reply}
 \usage{
 hide_reply(reply_id, hidden = TRUE)
 }
 \arguments{
-\item{reply_id}{The ID of the reply to be hidden. Must be a reply to a post authored by the authenticating user.}
+\item{reply_id}{The id of the reply, as a string. It must be a reply to a
+post by the account that signed in.}
 
-\item{hidden}{Indicates whether the reply should be hidden (TRUE) or unhidden (FALSE). Defaults to TRUE.}
+\item{hidden}{\code{TRUE} (the default) hides the reply, \code{FALSE} shows it again.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(hidden = TRUE)}
+or \code{list(hidden = FALSE)}. Stops with the API's message when the request
+is refused.
 }
 \description{
-Hides or unhides a reply to a conversation owned by the authenticated user
-via the \href{https://docs.x.com/x-api/posts/hide-reply}{hide reply endpoint}.
+Hides, or unhides, a reply to one of the signed-in account's posts via the
+\href{https://docs.x.com/x-api/posts/hide-reply}{hide reply endpoint}. Needs a
+user token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{
 # Hide a reply
 hide_reply(reply_id = "1234567890123456789")
 
-# Unhide a reply
+# Show it again
 hide_reply(reply_id = "1234567890123456789", hidden = FALSE)
 }
 }

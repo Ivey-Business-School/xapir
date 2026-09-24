@@ -7,14 +7,21 @@
 follow_user(source_username, target_username)
 }
 \arguments{
-\item{source_username}{Username of account that will follow someone.}
+\item{source_username}{Username of the account that will follow, without
+the "@" symbol. Must be the account that signed in.}
 
-\item{target_username}{Username of account that will be followed.}
+\item{target_username}{Username of the account to follow, without the "@"
+symbol.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(following = TRUE, pending_follow = FALSE)}. Stops with the API's message when the
+request is refused.
 }
 \description{
-Causes the User(in the path) to follow, or “request to follow” for protected Users, the target User
-via the \href{https://docs.x.com/x-api/users/follow-user}{follow user endpoint}.
-The User(in the path) must match the User context authorizing the request
+Makes the source account follow the target account (or request to follow,
+when the target is protected) via the \href{https://docs.x.com/x-api/users/follow-user}{follow user endpoint}. The source must be
+the account that signed in. Needs a user token, so the first call opens a
+browser window to sign in.
 }
 \examples{
 \dontrun{

@@ -4,17 +4,30 @@
 \alias{extract_post_entity_annotation}
 \title{Extract Post Entity Annotation Data from Timeline}
 \usage{
-extract_post_entity_annotation(timeline)
+extract_post_entity_annotation(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured post context data.
+A tibble with one row per entity annotation per post and the
+columns \code{post_id}, \code{normalized_text} and \code{type} (character),
+\code{probability} (numeric, 0 to 1), and \code{start} and \code{end} (integer positions
+in the post text). A timeline without entity annotations gives zero rows
+with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle post entity annotation
-data, including metadata relating to the type and its probability.
+Processes the timeline data retrieved from the X API to wrangle the entity
+annotations of each post: the people, places, products and organizations
+the API recognizes in the text, with the API's confidence and where the
+words sit in the text. Each row is one annotation on one post.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +36,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post <- extract_post_entity_annotation(timeline)
+post_entity_annotation <- extract_post_entity_annotation(timeline)
 }
 }

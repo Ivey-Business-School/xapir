@@ -7,25 +7,44 @@
 get_blocking(
   user_fields = default_user_fields(),
   max_results = 100,
+  max_users = 500,
   pagination_token = NULL
 )
 }
 \arguments{
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 
-\item{max_results}{The maximum number of results to return per page. Must be between 1 and 1000. Default is 100.}
+\item{max_results}{\code{numeric}; the number of users per API call,
+between 10 and 100. The function stops before any request if the value
+is outside that range.}
 
-\item{pagination_token}{Contains either a next_token or previous_token value.}
+\item{max_users}{\code{numeric}; the most users to read across all pages.
+Reading stops once this many have been returned. Default 500.}
+
+\item{pagination_token}{A string used to navigate backward through result
+pages. The X API provides this token when more results are available.
+Typically, you won\if{html}{\out{<e2>}}<80><99>t need to set this manually as the function handles it,
+but you can supply a pagination_token from a previous response to continue
+retrieving results beyond the last page, if desired.}
 }
 \value{
-A tibble containing information on blocked users
+A tibble with one row per blocked user and the 18 columns described
+in \code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username}, \code{name},
+\code{description}, \code{followers_count}, \code{following_count}, \code{post_count},
+\code{listed_count}, \code{like_count}, \code{protected}, \code{verified}, \code{verified_type},
+\code{is_identity_verified}, \code{location}, \code{profile_image_url}, \code{link_in_bio},
+\code{url} and \code{user_id}. When nobody is blocked, the same columns with no
+rows.
 }
 \description{
-Retrieves a list of Users blocked by the specified User ID via
+Retrieves the users the signed-in user has blocked via
 the \href{https://docs.x.com/x-api/users/get-blocking}{get blocking endpoint}.
+Needs a user token, so the first call opens a browser window to sign in.
+Every user returned is billed, so the function says what the call can
+cost before it reads anything, and stops reading at \code{max_users}.
 }
 \examples{
 \dontrun{

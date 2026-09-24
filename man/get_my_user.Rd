@@ -9,15 +9,21 @@ get_my_user(user_fields = default_user_fields())
 \arguments{
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 }
 \value{
-A tibble containing the authenticated user's information and any expansions.
+A tibble with one row and the 18 columns described in
+\code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username}, \code{name},
+\code{description}, \code{followers_count}, \code{following_count}, \code{post_count},
+\code{listed_count}, \code{like_count}, \code{protected}, \code{verified}, \code{verified_type},
+\code{is_identity_verified}, \code{location}, \code{profile_image_url}, \code{link_in_bio},
+\code{url} and \code{user_id}.
 }
 \description{
-Returns details about the authenticated User
-via the \href{https://docs.x.com/x-api/users/get-my-user}{get my user endpoint}.
+Returns details about the signed-in user via the
+\href{https://docs.x.com/x-api/users/get-my-user}{get my user endpoint}.
+Needs a user token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{

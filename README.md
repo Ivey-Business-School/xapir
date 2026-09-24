@@ -5,309 +5,193 @@
 
 [![Lifecycle:
 Experimental](https://lifecycle.r-lib.org/articles/figures/lifecycle-experimental.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/Ivey-Business-School/xapir/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/Ivey-Business-School/xapir/actions/workflows/R-CMD-check.yml)
+[![Codecov test
+coverage](https://codecov.io/gh/Ivey-Business-School/xapir/graph/badge.svg)](https://app.codecov.io/gh/Ivey-Business-School/xapir)
 <!-- badges: end -->
 
-{xapir} is an R package that connects to a limited set of X API v2
-endpoints using tidy principles.
-
-Package features include:
-
--   OAuth 2.0 authentication by setting your API token as environment
-    variable (Bearer Token and Client ID)
--   Retrieve a user’s timeline data using `get_timeline()`
--   Search for posts with keywords using `get_recent_post()`
--   See how many posts have been posted under a query using
-    `get_recent_post_count()`
--   Retrieve quote posts for a given post using `get_quote_post()`
--   Retrieve owned lists using `get_owned_list()`
--   Obtain the accounts in a list using `get_list_member()`
--   Create a post on X using `create_post()`
--   Delete a post on X using `delete_post()`
--   Repost a post on X using `create_repost()`
--   Follow a user on X using `follow_user()`
--   Unfollow a user on X using `unfollow_user()`
--   Extract post data using `extract_post()`
--   Extract post media data using `extract_post_media()`
--   Extract post location data using `extract_post_place()`
--   Extract post poll data using `extract_post_poll()`
--   Extract user data using `extract_user()`
-
-## Table of Contents
-
--   [Installation](#installation)
--   [Usage](#usage)
-    -   [Authenticate](#authenticate)
-    -   [Get Timeline](#get-timeline)
-    -   [Get Recent Post](#get-recent-post)
-    -   [Get Recent Post Count](#get-recent-post-count)
-    -   [Get Quote Post](#get-quote-post)
-    -   [Get Owned List](#get-owned-list)
-    -   [Get List Member](#get-list-member)
-    -   [Create Post](#create-post)
-    -   [Delete Post](#delete-post)
-    -   [Create Repost](#create-repost)
-    -   [Follow User](#follow-user)
-    -   [Unfollow User](#unfollow-user)
-    -   [Extract Post](#extract-post)
-    -   [Extract Post Media](#extract-post-media)
-    -   [Extract Post Place](#extract-post-place)
-    -   [Extract Post Poll](#extract-post-poll)
-    -   [Extract Users](#extract-users)
--   [Future](#future)
--   [More Information](#more-information)
+xapir reads from and writes to X through the X API v2, for students
+learning about social media and marketing. You pull posts with one
+function, save what comes back as a file, and unfold that file into tidy
+tables with a second set of functions that never touch the API. X bills
+every post it returns, so each reader tells you the most a call can cost
+before it makes a request.
 
 ## Installation
 
-``` r
-# get the development version on GitHub
-# install.packages("remotes")
-remotes::install_github("Ivey-Business-School/xapir")
+The package is not on CRAN. Install a numbered release from GitHub:
 
-# this package is NOT on CRAN so you cannot install using `install.packages()`
+``` r
+# install.packages("pak")
+pak::pak("Ivey-Business-School/xapir@v0.2.0")
 ```
 
-If you encounter an issue while using this package, please file a
-minimal reproducible example on
+If something goes wrong, file a small reproducible example on
 [GitHub](https://github.com/Ivey-Business-School/xapir/issues).
 
-## Usage
+## Authentication
 
-### Authenticate
+Put two values from your app on the [X developer
+portal](https://developer.x.com/en/portal/dashboard) in your `.Renviron`
+file (`usethis::edit_r_environ()` opens it), then restart R:
 
-First, initialize your X bearer token and client ID for future use.
+    X_BEARER_TOKEN=AAAA...
+    X_CLIENT_ID=your-client-id
+
+The bearer token reads public data: timelines, searches, profiles, lists
+and trends. Every reader picks it up from the environment; you never
+pass it by hand.
+
+The client id is for acting as yourself: the write functions and the
+readers that only make sense for the signed-in account
+(`get_bookmark()`, `get_liked_posts()`, `get_my_user()` and the like).
+The first such call opens a browser window to approve the app. The token
+is then cached under `httr2::oauth_cache_path()` in a folder named
+`xapir`, so you sign in once, not every session. Delete that folder to
+sign in as someone else.
+
+## What a call costs
+
+X bills per item returned: US\$0.005 per post and US\$0.010 per user (at
+September 2026 prices). Counts and fields are free. Before its first
+request every reader prints the most it can spend, and a paged reader
+prints what it actually read at the end:
+
+    #> Reading up to 500 posts, about $2.50. Set max_posts to change this.
+    #> Finished getting posts on page 1
+    #> Read 143 posts, about $0.72.
+
+`max_posts` and `max_users` must be finite, and the last page is trimmed
+so a pull never holds more than the cap. A `username` costs one user
+read to become an id; pass `user_id` where a reader takes it to skip
+that. If prices change, set
+`options(xapir.price_per_post = 0.006, xapir.price_per_user = 0.02)` and
+every message follows.
+
+## Read, save, unfold
 
 ``` r
-library(usethis)
-
-# Once the renviron file open, paste your bearer token as <X_BEARER_TOKEN = ""> 
-# and your client ID as <X_CLIENT_ID = "">, then restart R
-edit_r_environ()
-```
-
-From here, you can load the packages required.
-
-``` r
-suppressWarnings(suppressMessages(library(dplyr)))
 library(xapir)
+
+# Read: one pull, capped, over a window
+timeline <- get_timeline(
+  username   = "Tesla",
+  max_posts  = 500,
+  start_time = iso_8601("2026-01-01"),
+  end_time   = iso_8601("2026-02-01")
+)
+
+# Save the raw pull before you touch it. Reading it back is free.
+saveRDS(timeline, "tesla-2026-01.rds")
+timeline <- readRDS("tesla-2026-01.rds")
+
+# Unfold it into tables. None of these calls the API.
+post       <- extract_post(timeline)
+user       <- extract_user(timeline)
+post_media <- extract_post_media(timeline)
+post_url   <- extract_post_url(timeline)
+
+# The tables join on post_id
+library(dplyr)
+post |>
+  inner_join(post_media, by = "post_id") |>
+  filter(type == "video") |>
+  arrange(desc(view_count))
 ```
 
-After supplying your token, client ID, and loading the package, you can
-begin running functions that call the X APIs.
+## The twelve tables
 
-### Get Timeline
+Each `extract_*()` function reads a saved pull and returns one table
+with the same columns every time, even when it has no rows. Eleven join
+to the post table on `post_id`; `extract_user()` joins on `user_id`. By
+default each table includes the posts a timeline quotes, replies to or
+reposts; pass `include_referenced_posts = FALSE` to keep only the posts
+the endpoint returned.
 
-`get_timeline()` allows for the timeline of an account to be extracted
-through the X API. The following example uses the function to extract
-all posts from Tesla between January 1, 2025 to January 31, 2025.
+| Function                           | One row per                        |
+|------------------------------------|------------------------------------|
+| `extract_post()`                   | post: text, counts, type, URL      |
+| `extract_user()`                   | user: handle, bio, follower counts |
+| `extract_post_media()`             | photo, video or GIF on a post      |
+| `extract_post_url()`               | link in a post, with its preview   |
+| `extract_post_mention()`           | account mentioned in a post        |
+| `extract_post_hashtag()`           | hashtag in a post                  |
+| `extract_post_cashtag()`           | cashtag in a post                  |
+| `extract_post_context()`           | topic X assigned to a post         |
+| `extract_post_entity_annotation()` | named entity X found in a post     |
+| `extract_post_poll_option()`       | option of a poll on a post         |
+| `extract_post_place()`             | post tagged with a place           |
+| `extract_post_edited_post_id()`    | earlier version of an edited post  |
+
+## Readers
+
+Every post reader returns the list of pages the tables above unfold.
+Readers marked “sign-in” use the user token; the rest use the bearer
+token.
+
+| Function                                      | Returns                                  |
+|-----------------------------------------------|------------------------------------------|
+| **Reading posts**                             |                                          |
+| `get_timeline(username = , user_id = )`       | an account’s posts                       |
+| `get_recent_post(query)`                      | posts matching a search, last seven days |
+| `get_recent_post_count(query)`                | how many posts matched, per period; free |
+| `get_post(post_ids)`                          | up to 100 posts by id                    |
+| `get_quote_post(post_id)`                     | posts that quote a post                  |
+| `get_repost(post_id)`                         | reposts of a post                        |
+| `get_mentions(username)`                      | posts that name an account               |
+| `get_account_timeline(username)`              | your home timeline (sign-in)             |
+| `get_bookmark(username)`                      | your bookmarks (sign-in)                 |
+| `get_liked_posts(username)`                   | posts an account liked (sign-in)         |
+| `get_liking_users(post_id)`                   | users who liked a post (sign-in)         |
+| `get_repost_of_me()`                          | your posts that were reposted (sign-in)  |
+| `iso_8601(x)`                                 | a date as the API wants it               |
+| **Accounts and lists**                        |                                          |
+| `get_users_by_usernames(usernames)`           | profiles by handle                       |
+| `get_users_by_ids(user_ids)`                  | profiles by id                           |
+| `get_my_user()`                               | your own profile (sign-in)               |
+| `get_blocking()`                              | accounts you block (sign-in)             |
+| `get_muting()`                                | accounts you mute (sign-in)              |
+| `get_owned_list(username = , user_id = )`     | lists an account owns                    |
+| `get_followed_lists(username = , user_id = )` | lists an account follows                 |
+| `get_list_by_id(list_id)`                     | one list                                 |
+| `get_list_member(list_id)`                    | the members of a list                    |
+| `get_trends_by_woeid(woeid)`                  | trending topics for a place              |
+
+User and list readers return a tibble directly: the same 18 user columns
+as `extract_user()`, or eight list columns (`list_id`, `list_name`, …).
+
+## Writing to X
+
+Each of these acts as the account that signed in, returns the `data`
+block the API sends back invisibly, and stops with the message X gives
+when the request is refused.
 
 ``` r
-response <- get_timeline(
-  username = "Tesla",
-  max_results = 100,
-  max_posts = 500,
-  start_time = iso_8601("2025-01-01"), 
-  end_time = iso_8601("2025-01-31"),
-)
+new_post <- create_post(text = "Hello from R!")
+delete_post(post_ids = new_post$id)
+
+create_repost(post_id = "1234567890123456789")
+delete_repost(post_id = "1234567890123456789")
+
+create_bookmark(post_id = "1234567890123456789")
+delete_bookmark(post_id = "1234567890123456789")
+
+follow_user(source_username = "your_handle", target_username = "XDevelopers")
+unfollow_user(source_username = "your_handle", target_username = "XDevelopers")
+mute_user(source_username = "your_handle", target_username = "XDevelopers")
+unmute_user(source_username = "your_handle", target_username = "XDevelopers")
+
+hide_reply(reply_id = "1234567890123456789")
 ```
 
-### Get Recent Post
-
-`get_recent_post()` allows for the user to search for posts using a
-query within the last 7 days. The following example uses the function to
-extract posts related to weddings and are not retweets nor replies.
-
-``` r
-response <- get_recent_post(
-  query = "weddings -is:retweet -is:reply"
-)
-```
-
-### Get Recent Post Count
-
-`get_recent_post_count()` allows for the user to see how many posts were
-posted within the last 7 days. The following example uses the function
-to count the number of posts related to weddings and are not retweets
-nor replies.
-
-``` r
-post_count <- get_recent_post_count(
-  query = "weddings -is:retweet -is:reply"
-)
-```
-
-### Get Quote Post
-
-`get_quote_post()` allows for the user to retrieve information about
-posts that quote a specific post. The following example uses the
-function to retrieve up to 100 posts that quote post the first post on
-X.
-
-``` r
-response <- get_quote_post(
-  post_id = "20",
-  max_results = 100
-)
-```
-
-### Get Owned List
-
-`get_owned_list()` allows for the user to extract the IDs of their owned
-lists. The following example uses the function to retrieve the lists
-owned by Tesla.
-
-``` r
-list_IDs <- get_owned_list(
-  username = "Tesla"
-)
-```
-
-### Get List Member
-
-`get_list_member()` allows for the user to extract the IDs and usernames
-of the members of a list. The following example uses the function to
-retrieve the members of Tesla’s “ev-news” list.
-
-``` r
-response <- get_list_member(
-  list_id = "45924881"
-)
-```
-
-### Create Post
-
-`create_post()` allows the user to create a post on their X account. The
-following example uses the function to post the phrase “Hello world!” on
-X.
-
-``` r
-create_post(
-  text = "Hello world!"
-)
-```
-
-### Delete Post
-
-`delete_post()` allows the user to delete a specific post on their X
-account using its post ID. The following example uses the function to
-delete a post with a post ID value of “20”.
-
-``` r
-delete_post(
-  post_id = "20"
-)
-```
-
-### Create Repost
-
-`create_repost()` allows the user to repost a specific post on their X
-account using its post ID. The following example uses the function to
-repost the first ever post on X.
-
-``` r
-create_repost(
-  post_id = "20"
-)
-```
-
-### Follow User
-
-`follow_user()` allows the user to follow, or request to follow for
-protected users, the target user. The following example uses the
-function to follow Elon Musk from the perspective of Tesla.
-
-``` r
-follow_user(
-  source_username = "Tesla",
-  target_username = "elonmusk"
-)
-```
-
-### Unfollow User
-
-`unfollow_user()` allows the user to unfollow the target user. The
-following example uses the function to unfollow Elon Musk from the
-perspective of Tesla.
-
-``` r
-unfollow_user(
-  source_username = "Tesla",
-  target_username = "elonmusk"
-)
-```
-
-### Extract Post
-
-`extract_post()` uses the results from the API call and cleans the data
-to return a tibble of all tweets.
-
-``` r
-posts <- extract_post(
-  timeline = response
-)
-```
-
-### Extract Post Media
-
-`extract_post_media()` uses the results from the API call and cleans the
-data to return a tibble of all media contained in tweets.
-
-``` r
-post_media <- extract_post_media(
-  timeline = response
-)
-```
-
-### Extract Post Place
-
-`extract_post_place()` uses the results from the API call and cleans the
-data to return a tibble of all location data contained in tweets.
-
-``` r
-post_place <- extract_post_place(
-  timeline = response
-)
-```
-
-### Extract Post Poll
-
-`extract_post_poll()` uses the results from the API call and cleans the
-data to return a tibble of all poll data contained in tweets.
-
-``` r
-post_poll <- extract_post_poll(
-  timeline = response
-)
-```
-
-### Extract Users
-
-`extract_user()` uses the results from the API call and cleans the data
-to return a tibble of all users. This includes accounts whose tweets
-were retweeted by the targeted account.
-
-``` r
-users <-  extract_user(
-  timeline = response
-)
-```
-
-## Future
-
-This package only contains functions that use a subset of the X API
-endpoints. Future iterations may expand upon this to include more.
-
-## More Information
-
-X provides examples in many programming languages, including R by using
-the package {RTwitterV2}. Please use the X API documentation for more
-detail around what is expected for each endpoint and the type of data
-the API call will return. X’s documentation is available here:
-<https://developer.x.com/en/docs/x-api>.
+The [Getting
+Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.html)
+guide walks through all of this, and the [reference
+index](https://Ivey-Business-School.github.io/xapir/reference/index.html)
+lists every function with its arguments and columns.
 
 ------------------------------------------------------------------------
 
 Please note that this project is released with a Contributor Code of
 Conduct. By participating in this project you agree to abide by its
 terms.
-
-[Top](#xapir)

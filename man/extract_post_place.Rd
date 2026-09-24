@@ -4,17 +4,31 @@
 \alias{extract_post_place}
 \title{Extract Post Place and Geo Coordinates from Timeline}
 \usage{
-extract_post_place(timeline)
+extract_post_place(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured place and coordinate data.
+A tibble with one row per tagged post and the columns \code{post_id},
+\code{place_id}, \code{full_name}, \code{country}, \code{country_code} and \code{place_type}
+(character), and \code{west_longitude}, \code{south_latitude}, \code{east_longitude}
+and \code{north_latitude} (numeric, the place's bounding box). A timeline
+without place tags gives zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle place information
-and exact geo-coordinates attached to posts.
+Processes the timeline data retrieved from the X API to wrangle the place
+a post was tagged with, from \code{includes$places}, and its bounding box.
+Each row is one post with a place tag. When the place's details are not
+in \code{includes}, the row keeps its \code{post_id} and \code{place_id} and the other
+columns are \code{NA}.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +37,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post_places <- extract_post_place(timeline)
+post_place <- extract_post_place(timeline)
 }
 }

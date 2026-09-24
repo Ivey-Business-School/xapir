@@ -2,21 +2,28 @@
 % Please edit documentation in R/unmute_user.R
 \name{unmute_user}
 \alias{unmute_user}
-\title{Unmute User on X}
+\title{Unmute User}
 \usage{
 unmute_user(source_username, target_username)
 }
 \arguments{
-\item{source_username}{Username of account that will unmute someone.}
+\item{source_username}{Username of the account that will unmute, without
+the "@" symbol. Must be the account that signed in.}
 
-\item{target_username}{Username of account that will be unmuted.}
+\item{target_username}{Username of the account to unmute, without the "@"
+symbol.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(muting = FALSE)}.
+Stops with the API's message when the request is refused.
 }
 \description{
-Causes the authenticated user to unmute a specific user by their ID via
-the \href{https://docs.x.com/x-api/users/unmute-user}{unmute user endpoint}.
+Makes the source account unmute the target account via the \href{https://docs.x.com/x-api/users/unmute-user}{unmute user endpoint}. The source must be
+the account that signed in. Needs a user token, so the first call opens a
+browser window to sign in.
 }
 \examples{
 \dontrun{
-unmute_user(source_username = "myaccount", target_username = "username_to_mute")
+unmute_user(source_username = "myaccount", target_username = "noisyaccount")
 }
 }

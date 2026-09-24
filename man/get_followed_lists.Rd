@@ -5,14 +5,20 @@
 \title{Get Followed Lists}
 \usage{
 get_followed_lists(
-  username,
+  username = NULL,
+  user_id = NULL,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   list_fields = c("id", "name", "created_at", "description", "follower_count",
-    "member_count", "private")
+    "member_count", "private", "owner_id")
 )
 }
 \arguments{
-\item{username}{Username of the account whose followed lists are being retrieved.}
+\item{username}{\code{character}; the name of the account on X without the
+"@" symbol.}
+
+\item{user_id}{\code{character}; the account's X user id, as a string of
+digits. When given, the handle lookup is skipped and \code{username} must be
+\code{NULL}.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -20,19 +26,29 @@ environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN
 Adding your bearer token to your \code{.Renviron} file keeps it out of your
 scripts and available in every session.}
 
-\item{list_fields}{Character vector of list fields to include in the response.
-Defaults to commonly useful fields.}
+\item{list_fields}{\code{character}, \code{vector}; the fields to return
+for each list.}
 }
 \value{
-A tibble containing the IDs of the followed lists and their metadata,
-or NULL if none are found.
+A tibble with one row per list: \code{list_id}, \code{list_name},
+\code{description}, \code{created_at} (POSIXct, UTC), \code{follower_count},
+\code{member_count}, \code{private} and \code{owner_id}. A user who follows no lists
+gives the same columns with no rows.
 }
 \description{
-Retrieves the Lists followed by a given User via the
+Retrieves the lists a user follows via the
 \href{https://docs.x.com/x-api/users/get-followed-lists}{get followed lists endpoint}.
+
+Give either \code{username} or \code{user_id}, not both. A \code{username} costs one
+user read to turn the handle into an id before the lists are read. When
+you already know the account's id, pass \code{user_id} and that read is
+skipped.
 }
 \examples{
 \dontrun{
 lists <- get_followed_lists(username = "XDevelopers")
+
+# The same lists by id, with no user read for the handle
+lists <- get_followed_lists(user_id = "2244994945")
 }
 }

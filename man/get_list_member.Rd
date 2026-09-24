@@ -7,11 +7,14 @@
 get_list_member(
   list_id,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  user_fields = default_user_fields()
+  user_fields = default_user_fields(),
+  max_results = 100,
+  max_users = 500,
+  pagination_token = NULL
 )
 }
 \arguments{
-\item{list_id}{A string representing the unique ID of the list.}
+\item{list_id}{The list's id, as a string of digits.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -21,17 +24,39 @@ scripts and available in every session.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
+
+\item{max_results}{\code{numeric}; the number of users per API call,
+between 10 and 100. The function stops before any request if the value
+is outside that range.}
+
+\item{max_users}{\code{numeric}; the most users to read across all pages.
+Reading stops once this many have been returned. Default 500.}
+
+\item{pagination_token}{A string used to navigate backward through result
+pages. The X API provides this token when more results are available.
+Typically, you won\if{html}{\out{<e2>}}<80><99>t need to set this manually as the function handles it,
+but you can supply a pagination_token from a previous response to continue
+retrieving results beyond the last page, if desired.}
 }
 \value{
-A list containing the API response.
+A tibble with one row per member: \code{list_id}, then the 18 columns
+described in \code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username},
+\code{name}, \code{description}, \code{followers_count}, \code{following_count},
+\code{post_count}, \code{listed_count}, \code{like_count}, \code{protected}, \code{verified},
+\code{verified_type}, \code{is_identity_verified}, \code{location},
+\code{profile_image_url}, \code{link_in_bio}, \code{url} and \code{user_id}. A list with no
+members gives the same columns with no rows.
 }
 \description{
-Returns a list of Users that are members of a List by the provided List ID via the \href{https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of-a-list-by-the-provided-list-id}{get list members}.
+Returns the users that are members of a list via the
+\href{https://docs.x.com/x-api/users/returns-user-objects-that-are-members-of-a-list-by-the-provided-list-id}{get list members endpoint}.
+Every user returned is billed, so the function says what the call can
+cost before it reads anything, and stops reading at \code{max_users}.
 }
 \examples{
 \dontrun{
-list_members <- get_list_members(list_ID)
+members <- get_list_member(list_id = "1146654567674912769")
 }
 }

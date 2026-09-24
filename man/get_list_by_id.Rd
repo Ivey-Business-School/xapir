@@ -12,7 +12,7 @@ get_list_by_id(
 )
 }
 \arguments{
-\item{list_id}{The ID of the List to retrieve.}
+\item{list_id}{The list's id, as a string of digits.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -20,14 +20,18 @@ environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN
 Adding your bearer token to your \code{.Renviron} file keeps it out of your
 scripts and available in every session.}
 
-\item{list_fields}{Character vector of fields to include (default common fields).}
+\item{list_fields}{\code{character}, \code{vector}; the fields to return
+for the list.}
 }
 \value{
-A tibble with list details (one row), or NULL if there's an error.
+A tibble with one row: \code{list_id}, \code{list_name}, \code{description},
+\code{created_at} (POSIXct, UTC), \code{follower_count}, \code{member_count}, \code{private}
+and \code{owner_id}.
 }
 \description{
-Retrieves the details of a specific List by its ID via the
-\href{https://docs.x.com/x-api/lists/get-list-by-id}{Get List by ID endpoint}.
+Retrieves the details of one list by its id via the
+\href{https://docs.x.com/x-api/lists/get-list-by-id}{get list by ID endpoint}.
+An id the API cannot find stops the call with the API's reason.
 }
 \examples{
 \dontrun{

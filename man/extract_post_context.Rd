@@ -4,17 +4,30 @@
 \alias{extract_post_context}
 \title{Extract Post Context Data from Timeline}
 \usage{
-extract_post_context(timeline)
+extract_post_context(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured post context data.
+A tibble with one row per context annotation per post and the
+character columns \code{post_id}, \code{domain_id}, \code{domain_name},
+\code{domain_description}, \code{entity_id}, \code{entity_name} and
+\code{entity_description}. A timeline without context annotations gives zero
+rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle post context data,
-including metadata relating to the domain and entity.
+Processes the timeline data retrieved from the X API to wrangle the
+context annotations of each post: the domains (such as "Brand") and
+entities (such as a company) the API tags the post with. Each row is one
+annotation on one post.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +36,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post <- extract_post_context(timeline)
+post_context <- extract_post_context(timeline)
 }
 }

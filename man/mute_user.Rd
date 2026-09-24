@@ -2,21 +2,28 @@
 % Please edit documentation in R/mute_user.R
 \name{mute_user}
 \alias{mute_user}
-\title{Mute User on X}
+\title{Mute User}
 \usage{
 mute_user(source_username, target_username)
 }
 \arguments{
-\item{source_username}{Username of account that will mute someone.}
+\item{source_username}{Username of the account that will mute, without the
+"@" symbol. Must be the account that signed in.}
 
-\item{target_username}{Username of account that will be muted.}
+\item{target_username}{Username of the account to mute, without the "@"
+symbol.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(muting = TRUE)}.
+Stops with the API's message when the request is refused.
 }
 \description{
-Causes the authenticated user to mute a specific User by their ID via
-the \href{https://docs.x.com/x-api/users/mute-user}{mute user endpoint}.
+Makes the source account mute the target account via the \href{https://docs.x.com/x-api/users/mute-user}{mute user endpoint}. The source must be the
+account that signed in. Needs a user token, so the first call opens a
+browser window to sign in.
 }
 \examples{
 \dontrun{
-mute_user(source_username = "myaccount", target_username = "username_to_mute")
+mute_user(source_username = "myaccount", target_username = "noisyaccount")
 }
 }

@@ -12,7 +12,7 @@ get_trends_by_woeid(
 )
 }
 \arguments{
-\item{woeid}{Integer WOEID of the location to fetch trends for.}
+\item{woeid}{The location's WOEID, one number or a string of digits.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -20,19 +20,25 @@ environment variable \code{X_BEARER_TOKEN} (via \code{Sys.getenv("X_BEARER_TOKEN
 Adding your bearer token to your \code{.Renviron} file keeps it out of your
 scripts and available in every session.}
 
-\item{max_trends}{Integer for maximum results (1–50, default 20).}
+\item{max_trends}{The most trends to return, between 1 and 50. Default 20.}
 
-\item{trend_fields}{Character vector of fields to include (e.g., "trend_name", "tweet_count").}
+\item{trend_fields}{\code{character}, \code{vector}; the fields to return
+for each trend. The API calls the post count \code{tweet_count}.}
 }
 \value{
-A tibble with trend names and tweet count, or NULL if no data.
+A tibble with one row per trend: \code{trend_name} and \code{post_count}
+(the number of posts on the topic, when the API reports one). A location
+with no trends gives the same columns with no rows.
 }
 \description{
-Retrieves trending topics for a specified location via its WOEID from the
-\href{https://docs.x.com/x-api/trends/get-trends-by-woeid}{Get Trends by WOEID endpoint}.
+Retrieves the trending topics for a location, given its WOEID (Yahoo's
+"Where On Earth" id), via the
+\href{https://docs.x.com/x-api/trends/get-trends-by-woeid}{get trends by WOEID endpoint}.
+For example, 1 is worldwide, 23424977 is the United States and 4118 is
+Toronto.
 }
 \examples{
 \dontrun{
-tr <- get_trends_by_woeid(woeid = 4118)  # e.g., Toronto
+trends <- get_trends_by_woeid(woeid = 4118)  # Toronto
 }
 }

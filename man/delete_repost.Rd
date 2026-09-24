@@ -2,19 +2,24 @@
 % Please edit documentation in R/delete_repost.R
 \name{delete_repost}
 \alias{delete_repost}
-\title{Unrepost a Post on X}
+\title{Delete Repost}
 \usage{
-delete_repost(tweet_id)
+delete_repost(post_id, tweet_id = NULL)
 }
 \arguments{
-\item{tweet_id}{The ID of the post to be unreposted.}
+\item{post_id}{The id of the post whose repost to remove, as a string.}
+
+\item{tweet_id}{Deprecated. Use \code{post_id}.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(retweeted = FALSE)}. Stops with the API's message when the request is refused.
 }
 \description{
-Causes the authenticated user to repost a specific Post by its ID. The User in the path must match the User
-context authorizing the request. This is done via the \href{https://docs.x.com/x-api/posts/unrepost-post}{retweet endpoint}.
+Removes the signed-in account's repost of a post via the \href{https://docs.x.com/x-api/posts/unrepost-post}{unrepost endpoint}. Needs a user
+token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{
-delete_repost(tweet_id = "20")
+delete_repost(post_id = "20")
 }
 }

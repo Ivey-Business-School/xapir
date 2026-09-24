@@ -3,7 +3,7 @@
 #' @description
 #' Processes the timeline data retrieved from the X API to wrangle the entity
 #' annotations of each post: the people, places, products and organizations
-#' the API recognises in the text, with the API's confidence and where the
+#' the API recognizes in the text, with the API's confidence and where the
 #' words sit in the text. Each row is one annotation on one post.
 #'
 #' Each post appears once, even when it sits in one page's `data` and another

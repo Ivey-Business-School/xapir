@@ -2,17 +2,23 @@
 % Please edit documentation in R/get_owned_list.R
 \name{get_owned_list}
 \alias{get_owned_list}
-\title{Get Owned List}
+\title{Get Owned Lists}
 \usage{
 get_owned_list(
-  username,
+  username = NULL,
+  user_id = NULL,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
   list_fields = c("id", "name", "created_at", "description", "follower_count",
-    "member_count", "private")
+    "member_count", "private", "owner_id")
 )
 }
 \arguments{
-\item{username}{Username of the account that owns the lists}
+\item{username}{\code{character}; the name of the account on X without the
+"@" symbol.}
+
+\item{user_id}{\code{character}; the account's X user id, as a string of
+digits. When given, the handle lookup is skipped and \code{username} must be
+\code{NULL}.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -24,13 +30,25 @@ scripts and available in every session.}
 for each list.}
 }
 \value{
-A tibble containing the IDs of the lists and their names, or NULL if none found.
+A tibble with one row per list: \code{list_id}, \code{list_name},
+\code{description}, \code{created_at} (POSIXct, UTC), \code{follower_count},
+\code{member_count}, \code{private} and \code{owner_id}. A user with no lists gives the
+same columns with no rows.
 }
 \description{
-Get a User’s Owned Lists via the \href{https://docs.x.com/x-api/lists/get-a-users-owned-lists}{owned list endpoint}.
+Retrieves the lists a user owns via the
+\href{https://docs.x.com/x-api/lists/get-a-users-owned-lists}{owned lists endpoint}.
+
+Give either \code{username} or \code{user_id}, not both. A \code{username} costs one
+user read to turn the handle into an id before the lists are read. When
+you already know the account's id, pass \code{user_id} and that read is
+skipped.
 }
 \examples{
 \dontrun{
 lists <- get_owned_list(username = "Tesla")
+
+# The same lists by id, with no user read for the handle
+lists <- get_owned_list(user_id = "13298072")
 }
 }

@@ -4,17 +4,33 @@
 \alias{extract_post_url}
 \title{Extract Post URL Information from Timeline}
 \usage{
-extract_post_url(timeline)
+extract_post_url(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured poll data.
+A tibble with one row per link per post and the columns \code{post_id},
+\code{start}, \code{end}, \code{url}, \code{expanded_url}, \code{unwound_url}, \code{display_url},
+\code{title}, \code{description}, \code{status} and \code{image_url}. \code{start}, \code{end} and
+\code{status} are integer; the rest are character. \code{image_url} is the first
+preview image of the linked page, or \code{NA}. A timeline without links gives
+zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle poll URL information,
-such as the URL, title, and description.
+Processes the timeline data retrieved from the X API to wrangle the links
+in each post, such as the shortened \code{t.co} address, the address it expands
+to, and the linked page's title and description. Each row is one link in
+one post. The API lists the \code{pic.x.com} link of a post once per attached
+photo; it is kept once here, since the media themselves are in
+\code{\link[=extract_post_media]{extract_post_media()}}.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +39,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-polls <- extract_post_url(timeline)
+post_url <- extract_post_url(timeline)
 }
 }

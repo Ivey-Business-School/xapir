@@ -4,17 +4,28 @@
 \alias{extract_post_hashtag}
 \title{Extract Post Hashtag Data from Timeline}
 \usage{
-extract_post_hashtag(timeline)
+extract_post_hashtag(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured post context data.
+A tibble with one row per hashtag per post and the columns
+\code{post_id} (character), \code{hashtag} (character, without the \verb{#}), \code{start}
+and \code{end} (integer positions in the post text). A timeline without
+hashtags gives zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle post hashtag
-data.
+Processes the timeline data retrieved from the X API to wrangle the
+hashtags in each post and where they sit in the text. Each row is one
+hashtag in one post.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +34,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post <- extract_post_hashtag(timeline)
+post_hashtag <- extract_post_hashtag(timeline)
 }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_post.R
 \name{create_post}
 \alias{create_post}
-\title{Create Post on X}
+\title{Create Post}
 \usage{
 create_post(
   text,
@@ -16,28 +16,46 @@ create_post(
 )
 }
 \arguments{
-\item{text}{The tweet text (max 280 characters)}
+\item{text}{The text of the post. The maximum length depends on the
+account's tier (280 characters on a standard account, longer on
+Premium). The API refuses text that is too long and the error says so.}
 
-\item{for_super_followers_only}{Exclusive Tweet for super followers.}
+\item{for_super_followers_only}{\code{TRUE} to show the post only to super
+followers.}
 
-\item{geo}{Place ID being attached to the Tweet for geo location.}
+\item{geo}{A list with a \code{place_id}, to attach a place to the post.}
 
-\item{media}{Media information being attached to created Tweet. This is mutually exclusive from
-Quote Tweet Id, Poll, and Card URI.}
+\item{media}{A list with \code{media_ids} (and optionally \code{tagged_user_ids}),
+to attach media already uploaded to X. Cannot be combined with \code{poll}.}
 
-\item{nullcast}{Nullcasted (promoted-only) Posts do not appear in the public timeline and are not served to followers.}
+\item{nullcast}{\code{TRUE} for a promoted-only post that does not appear in
+the public timeline.}
 
-\item{poll}{Poll options for a Tweet with a poll. This is mutually exclusive from Media, Quote Tweet Id, and Card URI.}
+\item{poll}{A list with \code{options} and \code{duration_minutes}, to attach a
+poll. Cannot be combined with \code{media}.}
 
-\item{reply}{Tweet information of the Tweet being replied to.}
+\item{reply}{A list with \code{in_reply_to_tweet_id} (and optionally
+\code{exclude_reply_user_ids}), to post as a reply.}
 
-\item{reply_settings}{Settings to indicate who can reply to the Tweet.}
+\item{reply_settings}{Who can reply: \code{"following"}, \code{"mentionedUsers"}
+or \code{"subscribers"}. Leave \code{NULL} to let everyone reply.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, with the new post's
+\code{id} and \code{text}. Stops with the API's message when the post is refused.
 }
 \description{
-Causes the User to create a Post under the authorized account via the \href{https://docs.x.com/x-api/posts/creation-of-a-post}{create a post endpoint}.
+Publishes a post from the signed-in account via the \href{https://docs.x.com/x-api/posts/creation-of-a-post}{create a post endpoint}. Needs a user
+token, so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{
-create_post(text = "Hello, world!")
+new_post <- create_post(text = "Hello, world!")
+new_post$id
+
+create_post(
+  text  = "Which one?",
+  poll  = list(options = c("This", "That"), duration_minutes = 60)
+)
 }
 }

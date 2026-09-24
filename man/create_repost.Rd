@@ -2,19 +2,24 @@
 % Please edit documentation in R/create_repost.R
 \name{create_repost}
 \alias{create_repost}
-\title{Repost a Post on X}
+\title{Create Repost}
 \usage{
-create_repost(tweet_id)
+create_repost(post_id, tweet_id = NULL)
 }
 \arguments{
-\item{tweet_id}{The ID of the post to be reposted.}
+\item{post_id}{The id of the post to repost, as a string.}
+
+\item{tweet_id}{Deprecated. Use \code{post_id}.}
+}
+\value{
+Invisibly, the \code{data} list the API returns, \code{list(retweeted = TRUE)}. Stops with the API's message when the repost is refused.
 }
 \description{
-Causes the User (in the path) to repost the specified Post. The User in the path must match the User
-context authorizing the request. This is done via the \href{https://docs.x.com/x-api/posts/repost-post}{retweet endpoint}.
+Reposts a post from the signed-in account via the \href{https://docs.x.com/x-api/posts/repost-post}{repost endpoint}. Needs a user token,
+so the first call opens a browser window to sign in.
 }
 \examples{
 \dontrun{
-create_repost(tweet_id = "20")
+create_repost(post_id = "20")
 }
 }

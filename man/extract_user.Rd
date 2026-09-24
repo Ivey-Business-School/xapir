@@ -7,14 +7,21 @@
 extract_user(timeline)
 }
 \arguments{
-\item{timeline}{A list containing the timeline data retrieved from the X API.}
+\item{timeline}{A list of pages as returned by a reader such as
+\code{\link[=get_timeline]{get_timeline()}}.}
 }
 \value{
-A tibble containing structured user data.
+A tibble with one row per user id and 18 columns: \code{created_at}
+(POSIXct, UTC), \code{username}, \code{name}, \code{description}, \code{followers_count},
+\code{following_count}, \code{post_count}, \code{listed_count}, \code{like_count},
+\code{protected}, \code{verified}, \code{verified_type}, \code{is_identity_verified},
+\code{location}, \code{profile_image_url}, \code{link_in_bio}, \code{url} and \code{user_id}.
+A timeline with no users gives the same columns and no rows.
 }
 \description{
-Processes the timeline data retrieved from the X API to extract user metadata,
-including profile details and public metrics. \code{created_at} is in UTC.
+Reads the users that a timeline's pages carry in \code{includes$users} (the
+authors of the posts, and the accounts they mention, reply to or quote)
+and returns one row per user. \code{created_at} is in UTC.
 \code{is_identity_verified} says whether X has checked the account holder's
 identity document; \code{url} is the profile link as the API returns it
 (a t.co address), and \code{link_in_bio} is its display form.

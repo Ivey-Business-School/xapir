@@ -4,17 +4,28 @@
 \alias{extract_post_mention}
 \title{Extract Post Mention Data from Timeline}
 \usage{
-extract_post_mention(timeline)
+extract_post_mention(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured post context data.
+A tibble with one row per mention per post and the columns
+\code{post_id}, \code{username} and \code{user_id} (character), and \code{start} and \code{end}
+(integer positions in the post text). A timeline without mentions gives
+zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle post mention
-data.
+Processes the timeline data retrieved from the X API to wrangle the users
+mentioned in each post and where the mention sits in the text. Each row is
+one mention in one post.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +34,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post <- extract_post_mention(timeline)
+post_mention <- extract_post_mention(timeline)
 }
 }

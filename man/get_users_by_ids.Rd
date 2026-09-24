@@ -12,7 +12,8 @@ get_users_by_ids(
 )
 }
 \arguments{
-\item{user_ids}{A list of User IDs. Up to 100 comma-separated User IDs can be looked up using this endpoint.}
+\item{user_ids}{A character vector of up to 100 user ids, each a string
+of digits. Keep ids as text: as numbers they lose digits.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -22,24 +23,31 @@ scripts and available in every session.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{expansions}{Not used by this endpoint. Accepted so that older code
 keeps running.}
 }
 \value{
-A tibble containing the user information
+A tibble with one row per user and the 18 columns described in
+\code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username}, \code{name},
+\code{description}, \code{followers_count}, \code{following_count}, \code{post_count},
+\code{listed_count}, \code{like_count}, \code{protected}, \code{verified}, \code{verified_type},
+\code{is_identity_verified}, \code{location}, \code{profile_image_url}, \code{link_in_bio},
+\code{url} and \code{user_id}. When no id is found, the same columns with no rows.
 }
 \description{
-Retrieves details of multiple Users by their IDs via
+Retrieves details of up to 100 users by their ids via
 the \href{https://docs.x.com/x-api/users/get-users-by-ids}{get users by IDs endpoint}.
+Every user returned is billed, so the function says what the call can
+cost before it reads anything.
+
+An id the API cannot find does not stop the call: the users it did find
+are returned, and one warning names each id that was not.
 }
 \examples{
 \dontrun{
-# Get basic user info for multiple users
-get_users_by_ids(
-user_ids = c("783214", "2244994945")
-)
+users <- get_users_by_ids(c("783214", "2244994945"))
 }
 }

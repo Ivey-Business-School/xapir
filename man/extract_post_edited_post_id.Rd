@@ -4,19 +4,29 @@
 \alias{extract_post_edited_post_id}
 \title{Extract Post Edited Post ID from Timeline}
 \usage{
-extract_post_edited_post_id(timeline)
+extract_post_edited_post_id(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured edited post ID data.
+A tibble with one row per earlier version per edited post and the
+character columns \code{post_id} and \code{edited_post_id}. A timeline without
+edited posts gives zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to retrieve data on previous
-versions of posts. The API lists a post's own id in its edit history, so an
-unedited post lists only itself. Those self rows are dropped: a row here
-means the post was edited, and \code{edited_post_id} is an earlier version.
+Processes the timeline data retrieved from the X API to retrieve data on
+previous versions of posts. The API lists a post's own id in its edit
+history, so an unedited post lists only itself. Those self rows are
+dropped: a row here means the post was edited, and \code{edited_post_id} is an
+earlier version.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -25,6 +35,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post <- extract_post_edited_post_id(timeline)
+post_edited_post_id <- extract_post_edited_post_id(timeline)
 }
 }

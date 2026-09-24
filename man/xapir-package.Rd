@@ -20,11 +20,6 @@ Useful links:
 \author{
 \strong{Maintainer}: Jeffrey Boichuk \email{jpboichuk@gmail.com}
 
-Authors:
-\itemize{
-  \item Jeffrey Boichuk \email{jpboichuk@gmail.com}
-}
-
 Other contributors:
 \itemize{
   \item Steven M. Mortimer \email{mortimer.steven.m@gmail.com} [contributor]

@@ -1,0 +1,310 @@
+---
+title: "Getting Started"
+author: "Jeffrey Boichuk"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Getting Started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+# Nothing in this vignette calls the X API when it is built. Every chunk is
+# shown, none is run.
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+xapir reads from and writes to X through the X API v2. You pull posts with
+one function, save what comes back as a file, and unfold that file into
+tidy tables with a second set of functions that never touch the API. X
+bills every post it returns, so each reader tells you the most a call can
+cost before it makes a request.
+
+This guide covers four things: signing in, what a call costs, reading a
+timeline and unfolding it into tables, and writing to X from your own
+account.
+
+## Install
+
+The package is not on CRAN. Install a numbered release from GitHub:
+
+```{r install}
+# install.packages("pak")
+pak::pak("Ivey-Business-School/xapir@v0.2.0")
+library(xapir)
+```
+
+## Signing in
+
+X issues two kinds of credentials, and the package uses both. Both come
+from an app on the [X developer
+portal](https://developer.x.com/en/portal/dashboard).
+
+### A bearer token, for reading
+
+The bearer token is a long string on your app's "Keys and tokens" page. It
+lets you read public data: timelines, searches, profiles, lists and
+trends. Put it in your `.Renviron` file, which `usethis::edit_r_environ()`
+opens for you:
+
+```
+X_BEARER_TOKEN=AAAA...
+```
+
+Restart R. Every reader picks the token up from
+`Sys.getenv("X_BEARER_TOKEN")`; you never pass it by hand. If the variable
+is empty, the reader stops before it spends anything and says so.
+
+### A client id, for acting as yourself
+
+Anything that acts as your account needs a user token instead: posting,
+deleting, reposting, bookmarking, following, muting and hiding a reply,
+plus the readers that only make sense for the signed-in account
+(`get_account_timeline()`, `get_bookmark()`, `get_liked_posts()`,
+`get_liking_users()`, `get_repost_of_me()`, `get_my_user()`,
+`get_blocking()` and `get_muting()`).
+
+To get a user token the package needs your app's OAuth 2.0 client id, from
+the same page in the portal. Add it beside the bearer token and restart R:
+
+```
+X_CLIENT_ID=your-client-id
+```
+
+In the portal, the app must have user authentication turned on, with
+read-and-write permissions and `http://localhost:1410` as a callback URL.
+
+The first time you call one of these functions a browser window opens and
+asks you to approve the app. Approve it, come back to R, and the call
+carries on. The token is saved to disk under `httr2::oauth_cache_path()`
+in a folder named `xapir`, so you sign in once, not every session. When
+the token expires it is refreshed in the background; if the refresh fails,
+the browser opens again.
+
+To sign in as a different account, delete that folder and call a user
+function again:
+
+```{r sign-out}
+unlink(file.path(httr2::oauth_cache_path(), "xapir"), recursive = TRUE)
+```
+
+## What a call costs
+
+X bills per item returned, not per request: US$0.005 per post and
+US$0.010 per user at the prices of September 2026. Counts are free, and so
+are fields, which is why every reader asks for every field by default.
+
+Every reader prints the most it can spend before its first request, using
+the `max_posts` (or `max_users`) cap:
+
+```
+#> Reading up to 500 posts, about $2.50. Set max_posts to change this.
+```
+
+A reader that pages through results also prints what it actually read at
+the end, because a pull often stops before the cap:
+
+```
+#> Finished getting posts on page 1
+#> Finished getting posts on page 2
+#> Read 143 posts, about $0.72.
+```
+
+Two rules keep a mistake small. The cap must be a finite number, so
+`max_posts = Inf` stops before the first request. And the last page is
+trimmed, so a pull never holds more posts than you asked for.
+
+Two details are worth knowing:
+
+* A `username` costs one user read ($0.010) to turn the handle into an id.
+  `get_timeline()`, `get_owned_list()` and `get_followed_lists()` take
+  `user_id` instead, which skips that read. Keep ids as text,
+  `"2244994945"`, because as numbers they lose digits.
+* If X changes its prices, set
+  `options(xapir.price_per_post = 0.006, xapir.price_per_user = 0.02)` in
+  your `.Rprofile` and every message follows. The defaults are `0.005` and
+  `0.01`.
+
+## Read, save, unfold
+
+### Read
+
+`get_timeline()` reads an account's posts, newest first. Cap the pull, and
+give a window with `start_time` and `end_time` when you want one.
+`iso_8601()` turns a date into the format the API wants.
+
+```{r read}
+timeline <- get_timeline(
+  username   = "Tesla",
+  max_posts  = 500,
+  start_time = iso_8601("2026-01-01"),
+  end_time   = iso_8601("2026-02-01")
+)
+```
+
+The result is a list of pages, each holding `data`, `includes` and `meta`
+as the API returned them. It is not a table yet, on purpose: it holds
+everything X sent, including the posts that were quoted or reposted and
+the users, media, polls and places they refer to, so you never pay for the
+same posts twice.
+
+### Save
+
+Save the raw pull straight away, before you touch it.
+
+```{r save}
+saveRDS(timeline, "tesla-2026-01.rds")
+```
+
+Every function in the rest of this guide reads from that file. Reading it
+back is free; reading the timeline again is not.
+
+```{r load}
+timeline <- readRDS("tesla-2026-01.rds")
+```
+
+### Unfold
+
+`extract_post()` turns the pages into one row per post with the same 22
+columns every time.
+
+```{r extract-post}
+post <- extract_post(timeline)
+post
+```
+
+The columns, in order: `created_at` (UTC; pass `tz = Sys.timezone()` for
+local time), `text` (the whole post, even past 280 characters, with
+`is_long_post` marking the long ones), `lang`, `possibly_sensitive`,
+`article_title`, the six counts (`impression_count`, `like_count`,
+`repost_count`, `quote_count`, `reply_count`, `bookmark_count`),
+`reply_settings`, the ids of the post this one reposted, quoted or replied
+to (`reposted`, `quoted`, `replied_to`), `in_reply_to_user_id`, `user_id`,
+`conversation_id`, `post_type` (Thread, Post, Quote post, Reply or
+Repost), `post_url` and `post_id`.
+
+On a repost, `like_count`, `reply_count`, `quote_count`, `bookmark_count`
+and `repost_count` are `NA`, because those numbers belong to the original
+post. Its `impression_count` is its own.
+
+Media come out with `extract_post_media()`: one row per media item per
+post, so a post with three photos gives three rows. For a video or an
+animated GIF, `url` is the mp4 with the highest bit rate the API offers.
+
+```{r extract-media}
+post_media <- extract_post_media(timeline)
+post_media
+```
+
+The two tables join on `post_id`. Which videos drew the most views?
+
+```{r join}
+library(dplyr)
+
+post |>
+  select(post_id, created_at, text, like_count) |>
+  inner_join(post_media, by = "post_id") |>
+  filter(type == "video") |>
+  arrange(desc(view_count))
+```
+
+## The twelve tables
+
+Each `extract_*()` function reads the saved pull and returns one table.
+Together they are the course's data model. None of them calls the API.
+
+| Function                            | One row per                          | Key columns                                         |
+|-------------------------------------|--------------------------------------|-----------------------------------------------------|
+| `extract_post()`                    | post                                 | `post_id`, `user_id`, `text`, the counts            |
+| `extract_user()`                    | user                                 | `user_id`, `username`, `followers_count`            |
+| `extract_post_media()`              | media item per post                  | `post_id`, `media_id`, `type`, `url`, `view_count`  |
+| `extract_post_url()`                | link per post                        | `post_id`, `expanded_url`, `title`, `image_url`     |
+| `extract_post_mention()`            | mentioned account per post           | `post_id`, `username`, `user_id`                    |
+| `extract_post_hashtag()`            | hashtag per post                     | `post_id`, `hashtag`                                |
+| `extract_post_cashtag()`            | cashtag per post                     | `post_id`, `tag`                                    |
+| `extract_post_context()`            | context annotation per post          | `post_id`, `domain_name`, `entity_name`             |
+| `extract_post_entity_annotation()`  | named entity per post                | `post_id`, `normalized_text`, `type`, `probability` |
+| `extract_post_poll_option()`        | poll option per post                 | `post_id`, `poll_id`, `label`, `votes`              |
+| `extract_post_place()`              | tagged post                          | `post_id`, `place_id`, `full_name`, `country`       |
+| `extract_post_edited_post_id()`     | earlier version of an edited post    | `post_id`, `edited_post_id`                         |
+
+Eleven of the tables carry `post_id`, so any of them joins to the post
+table on that column. `extract_user()` carries `user_id` instead and joins
+to the post table's `user_id`, which is the author.
+
+```{r join-user}
+post |>
+  left_join(extract_user(timeline), by = "user_id") |>
+  select(username, created_at, text, like_count)
+```
+
+Two properties hold for every table. First, the columns are always the
+same, even when there are no rows: a timeline with no polls gives a
+zero-row poll table with the usual columns, so a script written on one
+pull runs on the next. Second, each table includes the posts a timeline
+quotes, replies to or reposts by default, so a quoted post's photo is in
+the media table too. Pass `include_referenced_posts = FALSE` to keep only
+the posts the endpoint returned. `extract_user()` has no such switch; it
+lists every user in the pull.
+
+The other post readers return the same list of pages and feed the same
+tables: `get_recent_post()` (a search over the last seven days),
+`get_post()` (up to 100 posts by id), `get_quote_post()`, `get_repost()`,
+`get_mentions()`, `get_bookmark()`, `get_liked_posts()`,
+`get_account_timeline()` and `get_repost_of_me()`. The user and list
+readers, such as `get_users_by_usernames()` and `get_list_member()`,
+return a tibble directly with the same 18 user columns as
+`extract_user()`.
+
+## Writing to X
+
+Every write acts as the account that signed in, so each of these opens
+the browser the first time. Each returns the API's `data` invisibly and
+stops with X's own message when the request is refused. A rate limit or a
+server error is retried, waiting as long as X asks.
+
+```{r write}
+# Post, and keep the id so you can delete it later
+new_post <- create_post(text = "Hello from R!")
+new_post$id
+
+# Delete one or more of your own posts; one row per id
+delete_post(post_ids = new_post$id)
+
+# Repost and un-repost by post id
+create_repost(post_id = "1234567890123456789")
+delete_repost(post_id = "1234567890123456789")
+
+# Bookmarks are always your own
+create_bookmark(post_id = "1234567890123456789")
+delete_bookmark(post_id = "1234567890123456789")
+
+# Follow, unfollow, mute and unmute; the source is the account that signed in
+follow_user(source_username = "your_handle", target_username = "XDevelopers")
+unfollow_user(source_username = "your_handle", target_username = "XDevelopers")
+mute_user(source_username = "your_handle", target_username = "XDevelopers")
+unmute_user(source_username = "your_handle", target_username = "XDevelopers")
+
+# Hide a reply to one of your posts, and show it again
+hide_reply(reply_id = "1234567890123456789")
+hide_reply(reply_id = "1234567890123456789", hidden = FALSE)
+```
+
+`delete_post()` deletes in batches of five with a fifteen-minute pause
+between them, which stays inside X's deletion cap on every tier. Raise
+`batch_size` on a paid tier to go faster.
+
+## Where next
+
+The [reference index](https://Ivey-Business-School.github.io/xapir/reference/index.html)
+lists every function with its arguments and columns, grouped the same way
+as this guide. The [release notes](https://Ivey-Business-School.github.io/xapir/news/index.html)
+say what changed in each version and which column or argument names
+moved.

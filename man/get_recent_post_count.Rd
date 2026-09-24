@@ -15,7 +15,8 @@ get_recent_post_count(
 )
 }
 \arguments{
-\item{query}{The search to be made on X. You can find ways to build specific queries according to the \href{https://docs.x.com/x-api/posts/search/integrate/build-a-query#types}{X API documentation website}}
+\item{query}{The search to be made on X. You can find ways to build
+specific queries according to the \href{https://docs.x.com/x-api/posts/search/integrate/build-a-query#types}{X API documentation website}}
 
 \item{start_time}{The earliest date-time from which you want to get posts.}
 
@@ -24,11 +25,14 @@ Provide the value in ISO 8601 format (i.e., \code{YYYY-MM-DDTHH:mm:ssZ}). The
 \code{iso_8601()} function will convert a string, date, or date-time object to
 the required format (e.g., \code{iso_8601("2024-10-10")}).}
 
-\item{granularity}{The granularity for the search count results. This takes either the value 'minute', 'hour', or 'day'.}
+\item{granularity}{The period each count covers: \code{"minute"}, \code{"hour"} or
+\code{"day"}. The function stops before any request on anything else.}
 
-\item{is_local_tz}{Logical. Convert \code{start} and \code{end} from UTC to the system time zone.}
+\item{is_local_tz}{Logical. Convert \code{start} and \code{end} from UTC to the
+system time zone.}
 
-\item{drop_incomplete}{Drops rows that do not contain a full granularity period amount of data.}
+\item{drop_incomplete}{Drops the first and last rows, which cover only part
+of a \code{granularity} period.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -37,13 +41,20 @@ Adding your bearer token to your \code{.Renviron} file keeps it out of your
 scripts and available in every session.}
 }
 \value{
-A tibble containing the number of posts.
+A tibble with one row per period: \code{start} and \code{end} (date-times)
+and \code{post_count} (integer). When the query matched nothing, the tibble
+has the same three columns and no rows.
 }
 \description{
-Returns Post Counts from the last 7 days that match a search query via the \href{https://docs.x.com/x-api/posts/recent-search-counts}{recent posts count endpoint}.
+Returns Post Counts from the last 7 days that match a search query via the
+\href{https://docs.x.com/x-api/posts/recent-search-counts}{recent posts count endpoint}.
+
+Counts are free. The endpoint returns how many posts matched in each
+period and no posts at all, so nothing in this call is billed. Use it to
+size a query before paying for \code{get_recent_post()}.
 }
 \examples{
 \dontrun{
-tl <- get_recent_post_count("Developers")
+counts <- get_recent_post_count("Developers")
 }
 }

@@ -12,7 +12,8 @@ get_users_by_usernames(
 )
 }
 \arguments{
-\item{usernames}{A list of usernames. Up to 100 comma-separated usernames can be looked up using this endpoint.}
+\item{usernames}{A character vector of up to 100 handles, with or
+without the leading "@".}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -22,24 +23,32 @@ scripts and available in every session.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{expansions}{Not used by this endpoint. Accepted so that older code
 keeps running.}
 }
 \value{
-A tibble containing the user information
+A tibble with one row per user and the 18 columns described in
+\code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username}, \code{name},
+\code{description}, \code{followers_count}, \code{following_count}, \code{post_count},
+\code{listed_count}, \code{like_count}, \code{protected}, \code{verified}, \code{verified_type},
+\code{is_identity_verified}, \code{location}, \code{profile_image_url}, \code{link_in_bio},
+\code{url} and \code{user_id}. When no handle is found, the same columns with no
+rows.
 }
 \description{
-Retrieves details of multiple Users by their usernames via
+Retrieves details of up to 100 users by their usernames via
 the \href{https://docs.x.com/x-api/users/get-users-by-usernames}{get users by usernames endpoint}.
+Every user returned is billed, so the function says what the call can
+cost before it reads anything.
+
+A handle the API cannot find does not stop the call: the users it did
+find are returned, and one warning names each handle that was not.
 }
 \examples{
 \dontrun{
-# Get basic user info for multiple users
-get_users_by_usernames(
-user_ids = c("Tesla", "elonmusk")
-)
+users <- get_users_by_usernames(c("Tesla", "XDevelopers"))
 }
 }

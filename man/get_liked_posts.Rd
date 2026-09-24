@@ -9,7 +9,7 @@ get_liked_posts(
   max_results = 100,
   max_posts = 500,
   pagination_token = NULL,
-  sleep_time = 90,
+  sleep_time = 0,
   post_fields = default_post_fields(),
   user_fields = default_user_fields(),
   media_fields = default_media_fields(),
@@ -24,56 +24,62 @@ get_liked_posts(
 
 \item{max_results}{\code{numeric}; the number of posts per API call, between
 10 and 100. The function stops before any request if the value is outside
-that range.}
+that range. For a reader that returns one page this is also the most it
+can read, and the worst-case cost is printed before the request.}
 
 \item{max_posts}{The most posts to read in this call. The API bills every
 post it returns (US$0.005 each in September 2026), so the function prints
-the cap in posts and dollars before its first request. The last page is
-trimmed so the result never holds more than this many posts.}
+the cap in posts and dollars before its first request and the total it
+read after the last page. Must be a finite number of 1 or more. The last
+page is trimmed so the result never holds more than this many posts. When
+the price changes, set \verb{options(xapir.price_per_post = <dollars>)} (and
+\code{xapir.price_per_user} for readers that return users) and the messages
+follow; the default is \code{0.005}.}
 
 \item{pagination_token}{A string used to navigate backward through result
 pages. The X API provides this token when more results are available.
-Typically, you won’t need to set this manually as the function handles it,
+Typically, you won\if{html}{\out{<e2>}}<80><99>t need to set this manually as the function handles it,
 but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
 
-\item{sleep_time}{Seconds to pause between pages. Rate limits are handled
-for you: a 429 or a 5xx response is retried up to three times, waiting as
-long as the API asks. Any other error stops at once with the API's own
-message, so a mistyped handle or a bad token fails in seconds.}
+\item{sleep_time}{Seconds to pause between pages, \code{0} by default. A pause
+is optional: rate limits are handled for you. A 429 or a 5xx response is
+retried up to three times, waiting as long as the API asks. Any other
+error stops at once with the API's own message, so a mistyped handle or a
+bad token fails in seconds.}
 
 \item{post_fields}{\code{character}, \code{vector}; the fields to return
 for each post. The default asks for everything the twelve tables need:
 \code{c("created_at", "text", "note_tweet", "article", "public_metrics",
-"geo", "attachments", "context_annotations", "entities", "lang",
-"possibly_sensitive", "edit_controls", "referenced_tweets",
-"reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-"edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+  "geo", "attachments", "context_annotations", "entities", "lang",
+  "possibly_sensitive", "edit_controls", "referenced_tweets",
+  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
 is nothing to save by trimming this.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{media_fields}{\code{character}, \code{vector}; the fields to return
 for each media item. Default: \code{c("duration_ms", "height", "width",
-"preview_image_url", "type", "url", "alt_text", "public_metrics",
-"variants", "media_key")}.}
+  "preview_image_url", "type", "url", "alt_text", "public_metrics",
+  "variants", "media_key")}.}
 
 \item{poll_fields}{\code{character}, \code{vector}; the fields to return
 for each poll. Default: \code{c("end_datetime", "duration_minutes",
-"options", "voting_status", "id")}.}
+  "options", "voting_status", "id")}.}
 
 \item{place_fields}{\code{character}, \code{vector}; the fields to return
 for each tagged place. Default: \code{c("country", "country_code",
-"full_name", "geo", "id", "place_type")}.}
+  "full_name", "geo", "id", "place_type")}.}
 
 \item{expansions}{\code{character}, \code{vector}; the related objects to
 return alongside each post. Default: \code{c("author_id",
-"entities.mentions.username", "referenced_tweets.id.author_id",
-"referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
-"attachments.poll_ids", "geo.place_id")}. Expansions are free.}
+  "entities.mentions.username", "referenced_tweets.id.author_id",
+  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 }
 \value{
 A \code{list} of pages. Each page holds \code{data}, \code{includes} and

@@ -4,17 +4,28 @@
 \alias{extract_post_cashtag}
 \title{Extract Post Cashtag Data from Timeline}
 \usage{
-extract_post_cashtag(timeline)
+extract_post_cashtag(timeline, include_referenced_posts = TRUE)
 }
 \arguments{
 \item{timeline}{A list containing the timeline data retrieved from the X API.}
+
+\item{include_referenced_posts}{Logical. Whether to include the posts in
+\code{includes$tweets} (the posts that were quoted, replied to or reposted).
+Defaults to TRUE.}
 }
 \value{
-A tibble containing structured post context data.
+A tibble with one row per cashtag per post and the columns
+\code{post_id} (character), \code{tag} (character, without the \code{$}), \code{start} and
+\code{end} (integer positions in the post text). A timeline without cashtags
+gives zero rows with the same columns.
 }
 \description{
-Processes the timeline data retrieved from the X API to wrangle post cashtag data,
-including metadata relating to the ticker symbol and its position in the post.
+Processes the timeline data retrieved from the X API to wrangle the
+cashtags in each post (ticker symbols such as \verb{$TSLA}) and where they sit
+in the text. Each row is one cashtag in one post.
+
+Each post appears once, even when it sits in one page's \code{data} and another
+page's \code{includes$tweets}. The \code{data} copy wins.
 }
 \examples{
 \dontrun{
@@ -23,6 +34,6 @@ timeline <- get_timeline(
   max_results = 100,
   start_time = iso_8601(Sys.Date() - 7)
 )
-post <- extract_post_cashtag(timeline)
+post_cashtag <- extract_post_cashtag(timeline)
 }
 }

@@ -15,6 +15,9 @@ home:
 navbar:
   type: default
   left:
+    - text: Get started
+      icon: fa-play-circle
+      href: articles/getting-started.html
     - text: Reference
       icon: fa-file-code-o
       href: reference/index.html
@@ -25,6 +28,11 @@ navbar:
     - text: GitHub
       icon: fa-github fa-lg
       href: https://github.com/Ivey-Business-School/xapir
+
+articles:
+  - title: Guides
+    contents:
+      - getting-started
 
 reference:
   - title: Reading posts

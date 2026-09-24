@@ -23,49 +23,50 @@ get_quote_post(
 
 \item{max_results}{\code{numeric}; the number of posts per API call, between
 10 and 100. The function stops before any request if the value is outside
-that range.}
+that range. For a reader that returns one page this is also the most it
+can read, and the worst-case cost is printed before the request.}
 
 \item{exclude}{A comma-separated list of the types of posts to exclude from
 the response (e.g., "retweets", "replies", or "retweets,replies").}
 
 \item{pagination_token}{A string used to navigate backward through result
 pages. The X API provides this token when more results are available.
-Typically, you won’t need to set this manually as the function handles it,
+Typically, you won\if{html}{\out{<e2>}}<80><99>t need to set this manually as the function handles it,
 but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
 
 \item{post_fields}{\code{character}, \code{vector}; the fields to return
 for each post. The default asks for everything the twelve tables need:
 \code{c("created_at", "text", "note_tweet", "article", "public_metrics",
-"geo", "attachments", "context_annotations", "entities", "lang",
-"possibly_sensitive", "edit_controls", "referenced_tweets",
-"reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
-"edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
+  "geo", "attachments", "context_annotations", "entities", "lang",
+  "possibly_sensitive", "edit_controls", "referenced_tweets",
+  "reply_settings", "conversation_id", "in_reply_to_user_id", "author_id",
+  "edit_history_tweet_ids", "id")}. Fields are free; posts cost, so there
 is nothing to save by trimming this.}
 
 \item{user_fields}{\code{character}, \code{vector}; the fields to return
 for each user. Default: \code{c("created_at", "description", "protected",
-"entities", "location", "profile_image_url", "public_metrics",
-"verified", "verified_type", "is_identity_verified", "url")}.}
+  "entities", "location", "profile_image_url", "public_metrics",
+  "verified", "verified_type", "is_identity_verified", "url")}.}
 
 \item{media_fields}{\code{character}, \code{vector}; the fields to return
 for each media item. Default: \code{c("duration_ms", "height", "width",
-"preview_image_url", "type", "url", "alt_text", "public_metrics",
-"variants", "media_key")}.}
+  "preview_image_url", "type", "url", "alt_text", "public_metrics",
+  "variants", "media_key")}.}
 
 \item{poll_fields}{\code{character}, \code{vector}; the fields to return
 for each poll. Default: \code{c("end_datetime", "duration_minutes",
-"options", "voting_status", "id")}.}
+  "options", "voting_status", "id")}.}
 
 \item{place_fields}{\code{character}, \code{vector}; the fields to return
 for each tagged place. Default: \code{c("country", "country_code",
-"full_name", "geo", "id", "place_type")}.}
+  "full_name", "geo", "id", "place_type")}.}
 
 \item{expansions}{\code{character}, \code{vector}; the related objects to
 return alongside each post. Default: \code{c("author_id",
-"entities.mentions.username", "referenced_tweets.id.author_id",
-"referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
-"attachments.poll_ids", "geo.place_id")}. Expansions are free.}
+  "entities.mentions.username", "referenced_tweets.id.author_id",
+  "referenced_tweets.id", "in_reply_to_user_id", "attachments.media_keys",
+  "attachments.poll_ids", "geo.place_id")}. Expansions are free.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the
@@ -75,7 +76,9 @@ scripts and available in every session.}
 }
 \value{
 A \code{list} holding one page, in the same shape as
-\code{\link[=get_timeline]{get_timeline()}} returns, so the \verb{extract_*()} functions accept it.
+\code{\link[=get_timeline]{get_timeline()}} returns, so the \verb{extract_*()} functions accept it. The
+page holds at most \code{max_results} posts, and that worst case is printed
+in posts and dollars before the request.
 }
 \description{
 Returns a variety of information about each Post that quotes the Post specified by the requested ID
