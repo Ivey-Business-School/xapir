@@ -36,7 +36,7 @@ test_that("create_post sends a POST to /2/tweets and returns data invisibly", {
   expect_equal(req$method, "POST")
   expect_match(req$url, "^https://api.x.com/2/tweets$")
   expect_equal(sent_json(req), list(text = "Hello, world!"))
-  expect_equal(req$headers$Authorization, "Bearer tok")
+  expect_equal(auth_header(req), "Bearer tok")
 })
 
 test_that("create_post lets the API judge length and passes its message on", {

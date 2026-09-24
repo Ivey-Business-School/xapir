@@ -146,3 +146,14 @@ count_page <- function(rows) {
     meta = list(total_tweet_count = sum(vapply(rows, function(r) r$tweet_count, 1L)))
   ))
 }
+
+# The Authorization header of a request, whichever httr2 is installed.
+# httr2 1.2.0 started storing redacted headers behind a sentinel that
+# req_get_headers() reveals; older versions keep the plain string.
+auth_header <- function(req) {
+  if (exists("req_get_headers", envir = asNamespace("httr2"), inherits = FALSE)) {
+    httr2::req_get_headers(req, redacted = "reveal")[["Authorization"]]
+  } else {
+    req$headers$Authorization
+  }
+}

@@ -50,7 +50,7 @@ test_that("search_users pages with next_token and stops at max_users", {
   expect_match(urls[2], "next_token=abc", fixed = TRUE)
   expect_match(urls[2], "max_results=1", fixed = TRUE)
   expect_false(any(grepl("pagination_token", urls)))
-  expect_equal(seen()[[1]]$headers$Authorization, "Bearer tok")
+  expect_equal(auth_header(seen()[[1]]), "Bearer tok")
 
   expect_match(msgs[1], "Reading up to 3 users, about \\$0.03. Set max_users")
   expect_match(msgs[2], "page 1")
@@ -208,7 +208,7 @@ test_that("get_post_analytics flattens timestamped metrics, one row per period",
   expect_match(req$url, "granularity=daily", fixed = TRUE)
   expect_match(req$url, "analytics.fields=id%2Ctimestamp%2Ctimestamped_metrics%2Cimpressions",
                fixed = TRUE)
-  expect_equal(req$headers$Authorization, "Bearer tok")
+  expect_equal(auth_header(req), "Bearer tok")
 })
 
 test_that("get_post_analytics reads top-level metrics for a total, with NA timestamp", {

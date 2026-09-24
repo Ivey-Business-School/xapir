@@ -74,7 +74,7 @@ test_that("upload_media initializes, appends chunks in order and finalizes", {
   # initialize, 4 chunks (3000 + 3000 + 3000 + 1000), finalize; no metadata
   expect_equal(length(reqs), 6)
   expect_true(all(vapply(reqs, function(r) r$method, "") == "POST"))
-  expect_equal(reqs[[1]]$headers$Authorization, "Bearer tok")
+  expect_equal(auth_header(reqs[[1]]), "Bearer tok")
 
   init <- reqs[[1]]
   expect_match(init$url, "^https://api.x.com/2/media/upload/initialize$")

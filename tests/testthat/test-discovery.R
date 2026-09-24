@@ -300,7 +300,7 @@ test_that("search_communities signs in, hits /2/communities/search and returns t
   auth <- character(0)
   httr2::local_mocked_responses(function(req) {
     urls <<- c(urls, req$url)
-    auth <<- c(auth, req$headers$Authorization)
+    auth <<- c(auth, auth_header(req))
     json_response(200, list(
       data = list(api_community(1), api_community(2)),
       meta = list(next_token = "n2")

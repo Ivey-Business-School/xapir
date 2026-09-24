@@ -24,7 +24,7 @@ test_that("like_post POSTs the post id to /users/<me>/likes and says the cost", 
   expect_equal(req$method, "POST")
   expect_match(req$url, "^https://api.x.com/2/users/42/likes$")
   expect_equal(sent_json(req), list(tweet_id = "20"))
-  expect_equal(req$headers$Authorization, "Bearer tok")
+  expect_equal(auth_header(req), "Bearer tok")
 })
 
 test_that("unlike_post DELETEs /users/<me>/likes/<post_id>", {
