@@ -249,5 +249,15 @@ test_that("check_max_results takes the endpoint's own range", {
 
 test_that("announce_request_cost prints one line per request", {
   expect_message(announce_request_cost("trends"), "costs about \\$0.010")
-  expect_message(announce_request_cost("post_create", n = 3), "3 requests, about \\$0.04")
+  expect_message(announce_request_cost("post_create", n = 3), "3 requests, about \\$0.05")
+})
+
+test_that("dollars() rounds a half cent up on every platform", {
+  expect_equal(dollars(0.005), "0.01")
+  expect_equal(dollars(0.015), "0.02")
+  expect_equal(dollars(0.045), "0.05")
+  expect_equal(dollars(0.72), "0.72")
+  expect_equal(dollars(2.5), "2.50")
+  expect_equal(dollars(0.005, 3), "0.005")
+  expect_equal(dollars(150 * 0.005), "0.75")
 })

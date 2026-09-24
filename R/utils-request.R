@@ -126,6 +126,15 @@ x_default_prices <- list(
 )
 x_price_per_post <- x_default_prices$posts
 
+# Dollars as text, rounding a half cent up. C's printf rounds a half cent
+# differently on Windows and Linux, and R's round() sends it to zero, so a
+# $0.005 request would read as free. Half up is also the worst case, which
+# is what a cost line should show.
+dollars <- function(x, digits = 2) {
+  m <- 10^digits
+  sprintf(paste0("%.", digits, "f"), floor(x * m + 0.5 + 1e-8) / m)
+}
+
 # The current price of one item, or one request, of `what`.
 x_price <- function(what = "posts") {
   prices <- utils::modifyList(x_default_prices, getOption("xapir.prices", list()))
@@ -222,9 +231,9 @@ announce_cap <- function(max_posts, price = NULL, what = "posts", arg = NULL) {
   unit <- x_unit(what)
   arg <- arg %||% if (identical(unit, "users")) "max_users" else "max_posts"
   message(sprintf(
-    "Reading up to %s %s, about $%.2f. Set %s to change this.",
+    "Reading up to %s %s, about $%s. Set %s to change this.",
     format(max_posts, big.mark = ",", scientific = FALSE),
-    unit, max_posts * price, arg
+    unit, dollars(max_posts * price), arg
   ))
 }
 
@@ -233,11 +242,11 @@ announce_cap <- function(max_posts, price = NULL, what = "posts", arg = NULL) {
 announce_request_cost <- function(what, n = 1) {
   price <- x_price(what)
   if (n == 1) {
-    message(sprintf("This request costs about $%.3f.", price))
+    message(sprintf("This request costs about $%s.", dollars(price, 3)))
   } else {
     message(sprintf(
-      "%s requests, about $%.2f in total.",
-      format(n, big.mark = ","), n * price
+      "%s requests, about $%s in total.",
+      format(n, big.mark = ","), dollars(n * price)
     ))
   }
 }
@@ -247,8 +256,8 @@ announce_request_cost <- function(what, n = 1) {
 announce_total <- function(n, what = "posts", price = NULL) {
   price <- price %||% x_price(what)
   message(sprintf(
-    "Read %s %s, about $%.2f.",
-    format(n, big.mark = ",", scientific = FALSE), x_unit(what), n * price
+    "Read %s %s, about $%s.",
+    format(n, big.mark = ",", scientific = FALSE), x_unit(what), dollars(n * price)
   ))
 }
 

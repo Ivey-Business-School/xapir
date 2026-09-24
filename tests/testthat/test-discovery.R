@@ -307,7 +307,7 @@ test_that("search_communities signs in, hits /2/communities/search and returns t
     ))
   })
   out <- discovery_messages(search_communities("marketing", max_results = 25))
-  expect_match(out$msgs[1], "Reading up to 25 communities, about \\$0.12. Set max_results")
+  expect_match(out$msgs[1], "Reading up to 25 communities, about \\$0.13. Set max_results")
   expect_equal(length(urls), 1)
   expect_match(urls[1], "/2/communities/search?", fixed = TRUE)
   expect_match(urls[1], "query=marketing", fixed = TRUE)

@@ -20,9 +20,9 @@ NULL
 announce_user_cap <- function(n, cap_arg = NULL, what = "users") {
   price <- x_price(what)
   text <- sprintf(
-    "Reading up to %s users, about $%.2f.",
+    "Reading up to %s users, about $%s.",
     format(n, big.mark = ",", scientific = FALSE),
-    n * price
+    dollars(n * price)
   )
   if (!is.null(cap_arg)) {
     text <- paste0(text, " Set ", cap_arg, " to change this.")
