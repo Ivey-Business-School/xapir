@@ -57,7 +57,8 @@ get_list_memberships <- function(
   check_one_of_user(username, user_id)
   check_max_results(max_results, min = 1, max = 100, what = "lists")
   check_max_posts(max_lists, arg = "max_lists")
-  announce_cap(max_lists, what = "lists", arg = "max_lists")
+  owned <- is_owned(user_id)
+  announce_cap(max_lists, what = "lists", arg = "max_lists", owned = owned)
 
   if (is.null(user_id)) {
     user_id <- lookup_user_id(username, bearer_token)
@@ -74,6 +75,7 @@ get_list_memberships <- function(
     sleep_time       = sleep_time,
     pagination_token = pagination_token,
     what             = "lists",
+    owned            = owned,
     min_results      = 1
   )
 

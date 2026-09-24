@@ -102,8 +102,8 @@ get_pinned_lists <- function(
   user_id <- my_user_id(token)
 
   message(sprintf(
-    "Reading up to 5 lists, about $%s. Five is the most an account can pin.",
-    dollars(5 * x_price("lists"))
+    "Reading up to 5 lists, about $%s (your own data). Five is the most an account can pin.",
+    dollars(5 * x_price("owned"))
   ))
 
   page <- x_request(token$access_token) |>

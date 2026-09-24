@@ -61,7 +61,7 @@ get_post_analytics <- function(
 
   token <- authenticate_user()
 
-  page <- x_request(token$access_token) |>
+  req <- x_request(token$access_token) |>
     req_url_path_append("tweets", "analytics") |>
     req_url_query(
       ids              = str_c(post_ids, collapse = ","),
@@ -72,18 +72,34 @@ get_post_analytics <- function(
         c("id", "timestamp", "timestamped_metrics", names(analytics_metrics())),
         collapse = ","
       )
-    ) |>
-    x_perform()
+    )
+
+  # A 403 here names a missing Project, but the app is usually attached to
+  # one: the endpoint is closed to some accounts, and the API's own text
+  # sends people looking for the wrong thing.
+  page <- tryCatch(
+    x_perform(req),
+    httr2_http_403 = function(e) {
+      stop(
+        conditionMessage(e), "\n",
+        "Post analytics returned 403. That usually means the endpoint is not ",
+        "open to this account or app, whatever the message says about a ",
+        "Project.",
+        call. = FALSE
+      )
+    }
+  )
 
   warn_partial_errors(page$errors, what = "posts")
   analytics_table(page$data)
 }
 
 # A time is sent as the API wants it: an ISO 8601 string is passed through
-# and a Date or date-time is formatted in UTC.
+# and a Date or date-time goes through iso_8601(), so a bare Date means
+# local midnight here as it does everywhere else in the package.
 check_analytics_time <- function(x, arg) {
   if (inherits(x, c("Date", "POSIXt"))) {
-    return(iso_8601(x, tz = "UTC"))
+    return(iso_8601(x))
   }
   ok <- is.character(x) && length(x) == 1 && !is.na(x) && nzchar(x)
   if (!ok) {

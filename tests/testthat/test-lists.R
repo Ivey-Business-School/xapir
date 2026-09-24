@@ -101,9 +101,12 @@ test_that("a user with no lists gives the zero-row schema, silently", {
     json_response(200, list(meta = list(result_count = 0L))),
     json_response(200, list(meta = list(result_count = 0L)))
   ))
-  expect_silent(owned <- get_owned_list(user_id = "42", bearer_token = "tok"))
+  # one cost line each, no warning
+  expect_message(owned <- get_owned_list(user_id = "42", bearer_token = "tok"),
+                 "Reading up to 100 lists, about \\$0.50\\.")
   expect_identical(owned, list_schema())
-  expect_silent(followed <- get_followed_lists(user_id = "42", bearer_token = "tok"))
+  expect_message(followed <- get_followed_lists(user_id = "42", bearer_token = "tok"),
+                 "Reading up to 100 lists, about \\$0.50\\.")
   expect_identical(followed, list_schema())
 })
 

@@ -108,7 +108,8 @@ get_follows <- function(direction, username, user_id, max_results, max_users,
   check_one_of_user(username, user_id)
   check_max_results(max_results, min = 1, max = 1000, what = "users")
   check_max_users(max_users)
-  announce_cap(max_users, what = "follows", arg = "max_users")
+  owned <- is_owned(user_id)
+  announce_cap(max_users, what = "follows", arg = "max_users", owned = owned)
 
   # A handle costs a user read to resolve; an id addresses the endpoint
   # directly and costs nothing extra.
@@ -127,6 +128,7 @@ get_follows <- function(direction, username, user_id, max_results, max_users,
     sleep_time       = sleep_time,
     pagination_token = pagination_token,
     what             = "follows",
+    owned            = owned,
     min_results      = 1
   )
 

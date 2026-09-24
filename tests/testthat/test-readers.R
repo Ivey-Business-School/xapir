@@ -22,7 +22,7 @@ test_that("max_posts = Inf stops before any request", {
     "`max_users` must be a finite number"
   )
   expect_error(
-    get_bookmark("tesla", max_posts = Inf),
+    get_bookmark(max_posts = Inf),
     "`max_posts` must be a finite number"
   )
 })
@@ -77,7 +77,10 @@ test_that("get_liking_users announces users and their price", {
   expect_equal(out$msgs[2], "Finished getting users on page 1")
   expect_equal(out$msgs[3], "Read 20 users, about $0.02.")
   expect_match(urls[1], "/tweets/20/liking_users", fixed = TRUE)
-  expect_equal(length(out$result[[1]]$data), 20)
+  # a users table, like every other user reader, not raw pages
+  expect_s3_class(out$result, "tbl_df")
+  expect_equal(nrow(out$result), 20)
+  expect_equal(names(out$result), names(user_schema()))
 
   op <- options(xapir.prices = list(likes = 0.05))
   on.exit(options(op), add = TRUE)
@@ -261,4 +264,57 @@ test_that("iso_8601 turns dates, date-times and strings into UTC ISO 8601", {
 
   expect_match(iso_8601(Sys.time()), iso)
   expect_match(iso_8601(Sys.Date()), iso)
+})
+
+test_that("get_liking_users gives the zero-row users table for a post nobody liked", {
+  mock_user_token()
+  httr2::local_mocked_responses(list(
+    json_response(200, list(meta = list(result_count = 0L)))
+  ))
+  out <- suppressMessages(get_liking_users("20", max_users = 20))
+  expect_identical(out, user_schema())
+})
+
+test_that("your own data is announced at the owned price", {
+  # ten of your own posts are $0.01, not $0.05, once the package knows your id
+  op <- options(xapir.my_user_id = "42")
+  on.exit(options(op), add = TRUE)
+  httr2::local_mocked_responses(list(posts_page(1:10)))
+  out <- collect_messages(
+    get_timeline(user_id = "42", max_posts = 10, bearer_token = "tok")
+  )
+  expect_match(out$msgs[1], "Reading up to 10 posts, about \\$0.01 \\(your own data\\)")
+  expect_equal(out$msgs[length(out$msgs)], "Read 10 posts, about $0.01.")
+
+  # somebody else's posts stay at the post price
+  httr2::local_mocked_responses(list(posts_page(1:10)))
+  out <- collect_messages(
+    get_timeline(user_id = "43", max_posts = 10, bearer_token = "tok")
+  )
+  expect_match(out$msgs[1], "Reading up to 10 posts, about \\$0.05\\. Set max_posts")
+})
+
+test_that("bookmarks are always your own and warn when a username is given", {
+  mock_user_token()
+  httr2::local_mocked_responses(function(req) {
+    if (grepl("/users/me", req$url, fixed = TRUE)) {
+      json_response(200, list(data = list(id = "42", username = "me")))
+    } else {
+      posts_page(1:10)
+    }
+  })
+  out <- collect_messages(get_bookmark(max_posts = 10))
+  expect_match(out$msgs[1], "about \\$0.01 \\(your own data\\)")
+  expect_warning(suppressMessages(get_bookmark("tesla", max_posts = 10)), "ignored by get_bookmark")
+})
+
+test_that("get_post_analytics explains a 403 in plain words", {
+  mock_user_token()
+  httr2::local_mocked_responses(list(
+    json_response(403, list(title = "Client Forbidden", detail = "attached to a Project"))
+  ))
+  expect_error(
+    get_post_analytics("1", start_time = "2026-09-01T00:00:00Z", end_time = "2026-09-02T00:00:00Z"),
+    "not open to this account"
+  )
 })

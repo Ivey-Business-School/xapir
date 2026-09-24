@@ -27,8 +27,10 @@ for each trend. The API calls the post count \code{tweet_count}.}
 }
 \value{
 A tibble with one row per trend: \code{trend_name} and \code{post_count}
-(the number of posts on the topic, when the API reports one). A location
-with no trends gives the same columns with no rows.
+(the number of posts on the topic). The API often sends no count at
+all, and then \code{post_count} is \code{NA} for every row; the names are still
+the trends. A location with no trends gives the same columns with no
+rows.
 }
 \description{
 Retrieves the trending topics for a location, given its WOEID (Yahoo's

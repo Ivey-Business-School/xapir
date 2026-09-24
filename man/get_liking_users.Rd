@@ -21,11 +21,12 @@ get_liking_users(
 that range. For a reader that returns one page this is also the most it
 can read, and the worst-case cost is printed before the request.}
 
-\item{max_users}{The most users to read in this call. The API bills every
-user it returns (US$0.010 each in September 2026), so the function prints
-the cap in users and dollars before its first request and the total it
-read after the last page. Must be a finite number of 1 or more. Set
-\verb{options(xapir.price_per_user = <dollars>)} when the price changes.}
+\item{max_users}{The most users to read in this call. A like read is
+billed per user returned at US$0.001 (September 2026), a tenth of a
+profile read, which is why the default cap is 500 rather than 100. The
+function prints the cap in users and dollars before its first request
+and the total it read after the last page. Set
+\verb{options(xapir.prices = list(likes = <dollars>))} when the price changes.}
 
 \item{pagination_token}{A string used to navigate backward through result
 pages. The X API provides this token when more results are available.
@@ -51,8 +52,9 @@ account's relationship with the signed-in user; they need a user token
 and are not requested by default.}
 }
 \value{
-A \code{list} of pages. Each page holds \code{data} and \code{meta} as the
-API returned them.
+A tibble with one row per user who liked the post, with the 24
+columns described in \code{\link[=extract_user]{extract_user()}}, from \code{created_at} to \code{user_id}.
+A post nobody liked gives the same columns with no rows.
 }
 \description{
 Retrieves a list of Users who liked a specific Post by its ID via the \href{https://docs.x.com/x-api/posts/get-liking-users}{get liking users endpoint}.

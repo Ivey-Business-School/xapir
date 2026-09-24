@@ -15,8 +15,10 @@
 #' @param trend_fields \code{character}, \code{vector}; the fields to return
 #'   for each trend. The API calls the post count `tweet_count`.
 #' @return A tibble with one row per trend: `trend_name` and `post_count`
-#'   (the number of posts on the topic, when the API reports one). A location
-#'   with no trends gives the same columns with no rows.
+#'   (the number of posts on the topic). The API often sends no count at
+#'   all, and then `post_count` is `NA` for every row; the names are still
+#'   the trends. A location with no trends gives the same columns with no
+#'   rows.
 #' @examples
 #' \dontrun{
 #' trends <- get_trends_by_woeid(woeid = 4118)  # Toronto

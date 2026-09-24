@@ -7,6 +7,9 @@
 #' the account, and `since_id` lets you append only what is new.
 #'
 #' @template username
+#' @param user_id \code{character}; the account's X user id, as a string of
+#'   digits. When given, the handle lookup is skipped and `username` must be
+#'   `NULL`. Your own id also unlocks the owned-data price.
 #' @template max_results
 #' @template max_posts
 #' @param end_time The latest date-time from which you want to get posts.
@@ -35,7 +38,8 @@
 #' }
 #' @export
 get_mentions <- function(
-    username,
+    username         = NULL,
+    user_id          = NULL,
     max_results      = 100,
     max_posts        = 500,
     end_time         = NULL,
@@ -54,11 +58,15 @@ get_mentions <- function(
 ) {
 
   check_token(bearer_token)
-  check_max_results(max_results)
+  check_one_of_user(username, user_id)
+  check_max_results(max_results, min = 5)
   check_max_posts(max_posts)
-  announce_cap(max_posts)
+  owned <- is_owned(user_id)
+  announce_cap(max_posts, owned = owned)
 
-  user_id <- lookup_user_id(username, bearer_token)
+  if (is.null(user_id)) {
+    user_id <- lookup_user_id(username, bearer_token)
+  }
 
   req <- x_request(bearer_token) |>
     req_url_path_append("users", user_id, "mentions") |>
@@ -76,6 +84,7 @@ get_mentions <- function(
     max_posts        = max_posts,
     max_results      = max_results,
     sleep_time       = sleep_time,
-    pagination_token = pagination_token
+    pagination_token = pagination_token,
+    owned            = owned
   )
 }

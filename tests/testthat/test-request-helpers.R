@@ -11,7 +11,11 @@ test_that("a bad max_results stops before any request is made", {
   httr2::local_mocked_responses(function(req) stop("a request was made"))
   expect_error(
     get_timeline("tesla", max_results = 200, bearer_token = "tok"),
-    "between 10 and 100"
+    "between 5 and 100"
+  )
+  expect_error(
+    get_timeline("tesla", max_results = 4, bearer_token = "tok"),
+    "between 5 and 100"
   )
   expect_error(
     get_recent_post("tesla", max_results = 5, bearer_token = "tok"),

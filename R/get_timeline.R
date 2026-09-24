@@ -67,9 +67,10 @@ get_timeline <- function(
 ) {
   check_token(bearer_token)
   check_one_of_user(username, user_id)
-  check_max_results(max_results)
+  check_max_results(max_results, min = 5)
   check_max_posts(max_posts)
-  announce_cap(max_posts)
+  owned <- is_owned(user_id)
+  announce_cap(max_posts, owned = owned)
 
   # A handle costs a user read to resolve; an id addresses the timeline
   # directly and costs nothing extra.
@@ -96,6 +97,7 @@ get_timeline <- function(
     max_posts        = max_posts,
     max_results      = max_results,
     sleep_time       = sleep_time,
-    pagination_token = pagination_token
+    pagination_token = pagination_token,
+    owned            = owned
   )
 }

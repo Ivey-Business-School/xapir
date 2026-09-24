@@ -5,7 +5,8 @@
 #' endpoint](https://docs.x.com/x-api/bookmarks/get-bookmarks). Needs a user
 #' token, so the first call opens a browser window to sign in.
 #'
-#' @template username
+#' @param username Ignored, with a warning. Bookmarks always belong to the
+#'   account that signed in, so there is nobody else to name.
 #' @template max_results
 #' @template max_posts
 #' @template pagination_token
@@ -24,7 +25,7 @@
 #' }
 #' @export
 get_bookmark <- function(
-    username,
+    username         = NULL,
     max_results      = 100,
     max_posts        = 500,
     pagination_token = NULL,
@@ -37,12 +38,13 @@ get_bookmark <- function(
     expansions       = default_expansions()
 ) {
 
+  warn_username_ignored(username, "get_bookmark")
   check_max_results(max_results)
   check_max_posts(max_posts)
-  announce_cap(max_posts)
+  announce_cap(max_posts, owned = TRUE)
 
   token   <- authenticate_user()
-  user_id <- lookup_user_id(username, token$access_token)
+  user_id <- my_user_id(token)
 
   req <- x_request(token$access_token) |>
     req_url_path_append("users", user_id, "bookmarks") |>
@@ -56,6 +58,7 @@ get_bookmark <- function(
     max_posts        = max_posts,
     max_results      = max_results,
     sleep_time       = sleep_time,
-    pagination_token = pagination_token
+    pagination_token = pagination_token,
+    owned            = TRUE
   )
 }

@@ -40,6 +40,7 @@ get_owned_list <- function(
 ) {
   check_token(bearer_token)
   check_one_of_user(username, user_id)
+  announce_cap(100, what = "lists", arg = NA, owned = is_owned(user_id))
 
   if (is.null(user_id)) {
     user_id <- lookup_user_id(username, bearer_token)

@@ -110,6 +110,7 @@ x_default_prices <- list(
   blocks      = 0.001,
   spaces      = 0.005,
   communities = 0.005,
+  owned       = 0.001,   # your own data, when the signed-in account owns the app
   # per request
   counts_recent = 0.005,
   counts_all    = 0.010,
@@ -149,6 +150,20 @@ x_price <- function(what = "posts") {
     stop("No price is known for \"", what, "\".", call. = FALSE)
   }
   price
+}
+
+# The id of the account whose data bills as "owned". X charges $0.001 an
+# item for a user's own posts, mentions, likes, bookmarks, follows, lists,
+# blocks and mutes when the account that signed in owns the developer app.
+# Set options(xapir.my_user_id = "<id>") to tell the package your id up
+# front; after a sign-in the package remembers it on its own.
+x_owned_id <- function() {
+  as.character(getOption("xapir.my_user_id") %||% .x_env$my_user_id$id %||% NA)
+}
+
+is_owned <- function(user_id) {
+  own <- x_owned_id()
+  !is.na(own) && !is.null(user_id) && identical(as.character(user_id), own)
 }
 
 # The noun the cost line uses for `what`. Followers are users, likes are
@@ -226,14 +241,17 @@ check_post_ids <- function(post_ids, max_ids = 100, arg = "post_ids") {
 # cost. Every item returned is billed, so the cap is the worst case. `what` is
 # "posts" or "users" and picks the price; `price` overrides it; `arg` names
 # the argument that moves the cap.
-announce_cap <- function(max_posts, price = NULL, what = "posts", arg = NULL) {
-  price <- price %||% x_price(what)
+announce_cap <- function(max_posts, price = NULL, what = "posts", arg = NULL,
+                         owned = FALSE) {
+  price <- price %||% x_price(if (owned) "owned" else what)
   unit <- x_unit(what)
   arg <- arg %||% if (identical(unit, "users")) "max_users" else "max_posts"
+  suffix <- if (is.na(arg)) "" else paste0(" Set ", arg, " to change this.")
   message(sprintf(
-    "Reading up to %s %s, about $%s. Set %s to change this.",
+    "Reading up to %s %s, about $%s%s.%s",
     format(max_posts, big.mark = ",", scientific = FALSE),
-    unit, dollars(max_posts * price), arg
+    unit, dollars(max_posts * price),
+    if (owned) " (your own data)" else "", suffix
   ))
 }
 
@@ -253,8 +271,8 @@ announce_request_cost <- function(what, n = 1) {
 
 # One line after the last page, so a run that stopped early shows what it
 # actually spent.
-announce_total <- function(n, what = "posts", price = NULL) {
-  price <- price %||% x_price(what)
+announce_total <- function(n, what = "posts", price = NULL, owned = FALSE) {
+  price <- price %||% x_price(if (owned) "owned" else what)
   message(sprintf(
     "Read %s %s, about $%s.",
     format(n, big.mark = ",", scientific = FALSE), x_unit(what), dollars(n * price)
@@ -384,7 +402,7 @@ lookup_user_id <- function(username, token) {
 # optional: x_perform() already waits as long as a 429 asks.
 fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
                         pagination_token = NULL, what = "posts",
-                        min_results = 10) {
+                        min_results = 10, owned = FALSE) {
   response <- list()
   post_counter <- 0
   call_i <- 1
@@ -418,7 +436,7 @@ fetch_pages <- function(req, max_posts, max_results = 100, sleep_time = 0,
     Sys.sleep(sleep_time)
   }
 
-  announce_total(post_counter, what = what)
+  announce_total(post_counter, what = what, owned = owned)
   response
 }
 

@@ -50,6 +50,13 @@ is then cached under `httr2::oauth_cache_path()` in a folder named
 `xapir`, so you sign in once, not every session. Delete that folder to
 sign in as someone else.
 
+Two things must be true for that sign-in to work. The app’s settings on
+the developer portal must list `http://localhost:1410` as a callback
+URL, exactly, or X’s authorize page fails with “Something went wrong”
+and no detail. And R must be interactive; from `Rscript` or a scheduled
+job, set `options(rlang_interactive = TRUE)` first, or sign in once from
+RStudio so the cached token is there for the job.
+
 ## What a call costs
 
 X bills a read per item returned and a write per request. The prices
@@ -93,6 +100,14 @@ what it actually read at the end, and every write prints its price:
 so a pull never holds more than the cap. A `username` costs one user
 read to become an id; pass `user_id` where a reader takes it to skip
 that.
+
+Your own data is cheaper. X bills your own posts, mentions, likes,
+bookmarks, followers, lists, blocks and mutes at US\$0.001 an item when
+the account that signed in owns the app. The package prices a read that
+way when it knows the account is yours: the readers of the signed-in
+account always, and the readers that take a `user_id` when that id is
+yours. After a sign-in the package knows your id; before one, tell it
+with `options(xapir.my_user_id = "<your id>")` in `.Rprofile`.
 
 Two rules from the pricing page soften the bill. Reads are de-duplicated
 within a UTC day: reading the same post twice on the same day is billed
@@ -178,9 +193,9 @@ token, the rest the bearer token.
 | `get_repost(post_id)`                                | reposts of a post                                           |
 | `get_mentions(username)`                             | posts that name an account                                  |
 | `get_account_timeline(username)`                     | your home timeline (sign-in)                                |
-| `get_bookmark(username)`                             | your bookmarks (sign-in)                                    |
+| `get_bookmark()`                                     | your bookmarks (sign-in)                                    |
 | `get_liked_posts(username)`                          | posts an account liked (sign-in)                            |
-| `get_liking_users(post_id)`                          | users who liked a post (sign-in)                            |
+| `get_liking_users(post_id)`                          | users who liked a post, as a table (sign-in)                |
 | `get_repost_of_me()`                                 | your posts that were reposted (sign-in)                     |
 | `iso_8601(x)`                                        | a date as the API wants it                                  |
 | **Accounts and follows**                             |                                                             |

@@ -82,7 +82,10 @@ X_CLIENT_ID=your-client-id
 ```
 
 In the portal, the app must have user authentication turned on, with
-read-and-write permissions and `http://localhost:1410` as a callback URL.
+read-and-write permissions and `http://localhost:1410` as a callback URL,
+exactly. A missing callback shows up as "Something went wrong" on X's
+authorize page with no other detail. The sign-in needs an interactive R
+session; from `Rscript`, set `options(rlang_interactive = TRUE)` first.
 
 The first time you call one of these functions a browser window opens and
 asks you to approve the app. Approve it, come back to R, and the call
