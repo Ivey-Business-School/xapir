@@ -63,22 +63,57 @@ once, not every session. Delete that folder to sign in as someone else.
 
 ## What a call costs
 
-X bills per item returned: US$0.005 per post and US$0.010 per user (at
-September 2026 prices). Counts and fields are free. Before its first
-request every reader prints the most it can spend, and a paged reader
-prints what it actually read at the end:
+X bills a read per item returned and a write per request. The prices
+below are from the [pricing
+page](https://docs.x.com/x-api/getting-started/pricing) on 24 September
+2026; fields and expansions are free.
+
+| Per item read                       | US$   |
+|-------------------------------------|-------|
+| post                                | 0.005 |
+| user                                | 0.010 |
+| follower or followed account        | 0.010 |
+| list                                | 0.005 |
+| space or community                  | 0.005 |
+| user who liked, muted or blocked    | 0.001 |
+
+| Per request                                                | US$   |
+|------------------------------------------------------------|-------|
+| create a post                                              | 0.015 |
+| create a post whose text carries a URL                     | 0.200 |
+| post count, last seven days                                | 0.005 |
+| post count, full archive                                   | 0.010 |
+| trends                                                     | 0.010 |
+| like, follow, repost, block or mute                        | 0.015 |
+| undo one of those                                          | 0.010 |
+| create a list                                              | 0.010 |
+| change a list or its members; pin, follow or unfollow it   | 0.005 |
+| bookmark or remove one; delete a post; hide a reply        | 0.005 |
+
+Counts are not free, but a count is billed once however many posts it
+covers, so it is still the cheap way to size a query. Before its first
+request every reader prints the most it can spend, a paged reader prints
+what it actually read at the end, and every write prints its price:
 
 ```
 #> Reading up to 500 posts, about $2.50. Set max_posts to change this.
 #> Finished getting posts on page 1
 #> Read 143 posts, about $0.72.
+#> This request costs about $0.015.
 ```
 
 `max_posts` and `max_users` must be finite, and the last page is trimmed
 so a pull never holds more than the cap. A `username` costs one user read
-to become an id; pass `user_id` where a reader takes it to skip that. If
-prices change, set `options(xapir.price_per_post = 0.006,
-xapir.price_per_user = 0.02)` and every message follows.
+to become an id; pass `user_id` where a reader takes it to skip that.
+
+Two rules from the pricing page soften the bill. Reads are de-duplicated
+within a UTC day: reading the same post twice on the same day is billed
+once. And pay-per-use is capped at 3 million post reads a month.
+
+Every price lives in one table. If X changes one, set
+`options(xapir.prices = list(posts = 0.006))` in your `.Rprofile` and
+every message follows; the older `xapir.price_per_post` and
+`xapir.price_per_user` options still work.
 
 ## Read, save, unfold
 
@@ -118,7 +153,10 @@ the same columns every time, even when it has no rows. Eleven join to the
 post table on `post_id`; `extract_user()` joins on `user_id`. By default
 each table includes the posts a timeline quotes, replies to or reposts;
 pass `include_referenced_posts = FALSE` to keep only the posts the
-endpoint returned.
+endpoint returned. The post table has 24 columns (`paid_partnership` and
+`community_id` are new in 0.2.0) and the user table 24 (`media_count`,
+`verified_followers_count`, `subscription_type`, `parody`,
+`profile_banner_url` and `pinned_post_id` are new).
 
 | Function                           | One row per                       |
 |------------------------------------|-----------------------------------|
@@ -137,16 +175,16 @@ endpoint returned.
 
 ## Readers
 
-Every post reader returns the list of pages the tables above unfold.
-Readers marked "sign-in" use the user token; the rest use the bearer
-token.
+Every post reader returns the list of pages the tables above unfold; the
+rest return a tibble directly. Readers marked "sign-in" use the user
+token, the rest the bearer token.
 
 | Function                                     | Returns                                            |
 |----------------------------------------------|----------------------------------------------------|
 | **Reading posts**                            |                                                    |
 | `get_timeline(username = , user_id = )`      | an account's posts                                 |
 | `get_recent_post(query)`                     | posts matching a search, last seven days           |
-| `get_recent_post_count(query)`               | how many posts matched, per period; free           |
+| `get_recent_post_count(query)`               | how many posts matched, per period                 |
 | `get_post(post_ids)`                         | up to 100 posts by id                              |
 | `get_quote_post(post_id)`                    | posts that quote a post                            |
 | `get_repost(post_id)`                        | reposts of a post                                  |
@@ -157,34 +195,71 @@ token.
 | `get_liking_users(post_id)`                  | users who liked a post (sign-in)                   |
 | `get_repost_of_me()`                         | your posts that were reposted (sign-in)            |
 | `iso_8601(x)`                                | a date as the API wants it                         |
-| **Accounts and lists**                       |                                                    |
+| **Accounts and follows**                     |                                                    |
 | `get_users_by_usernames(usernames)`          | profiles by handle                                 |
 | `get_users_by_ids(user_ids)`                 | profiles by id                                     |
-| `get_my_user()`                              | your own profile (sign-in)                         |
+| `search_users(query)`                        | profiles matching a search (sign-in)               |
+| `get_followers(username = , user_id = )`     | who follows an account                             |
+| `get_following(username = , user_id = )`     | who an account follows                             |
+| `get_reposted_by(post_id)`                   | who reposted a post                                |
 | `get_blocking()`                             | accounts you block (sign-in)                       |
 | `get_muting()`                               | accounts you mute (sign-in)                        |
+| **Lists**                                    |                                                    |
 | `get_owned_list(username = , user_id = )`    | lists an account owns                              |
 | `get_followed_lists(username = , user_id = )`| lists an account follows                           |
+| `get_list_memberships(username = , user_id = )` | lists an account was added to                   |
+| `get_pinned_lists()`                         | lists you pinned (sign-in)                         |
 | `get_list_by_id(list_id)`                    | one list                                           |
 | `get_list_member(list_id)`                   | the members of a list                              |
+| `get_list_followers(list_id)`                | who follows a list                                 |
+| `get_list_posts(list_id)`                    | the posts on a list, as pages                      |
+| **Search the archive** (pay-per-use or Enterprise) |                                              |
+| `get_all_post(query)`                        | posts matching a search, back to 2006, as pages    |
+| `get_all_post_count(query)`                  | how many posts matched, per period                 |
+| **Spaces, communities and news**             |                                                    |
+| `get_spaces(space_ids = , user_ids = )`      | spaces by id or by creator                         |
+| `search_spaces(query)`                       | live or scheduled spaces matching a search         |
+| `get_space_posts(space_id)`                  | the posts shared in a space, as a page             |
+| `get_community(community_id)`                | one community                                      |
+| `search_communities(query)`                  | communities matching a search (sign-in)            |
+| `search_news(query)`                         | news stories X built from posts                    |
+| `get_news(news_id)`                          | one news story                                     |
 | `get_trends_by_woeid(woeid)`                 | trending topics for a place                        |
+| **Your own account**                         |                                                    |
+| `get_my_user()`                              | your own profile (sign-in)                         |
+| `get_usage()`                                | posts read this month against your cap             |
+| `get_usage_credits()`                        | the dollar balance left on your account            |
+| `get_post_analytics(post_ids, start_time, end_time)` | impressions, engagements and clicks on your posts (sign-in) |
+| `get_personalized_trends()`                  | the trends X picks for you (sign-in)               |
 
-User and list readers return a tibble directly: the same 18 user columns
-as `extract_user()`, or eight list columns (`list_id`, `list_name`, ...).
+User readers return the same 24 user columns as `extract_user()`; list
+readers return eight list columns (`list_id`, `list_name`, ...).
 
 ## Writing to X
 
-Each of these acts as the account that signed in, returns the
-`data` block the API sends back invisibly, and stops with the message X
-gives when the request is refused.
+Each of these acts as the account that signed in, prints its price
+before the request, returns the `data` block the API sends back
+invisibly, and stops with the message X gives when the request is
+refused.
 
 ```{r write}
 new_post <- create_post(text = "Hello from R!")
+#> This request costs about $0.015.
 delete_post(post_ids = new_post$id)
 
+# A photo: upload it first, then post with the id it returns
+media_id <- upload_media("chart.png", alt_text = "Sales by month")
+create_post(text = "Our year so far", media_ids = media_id)
+
+# A reply, a quote, a poll
+create_post(text = "Agreed!", reply_to_post_id = new_post$id)
+create_post(text = "Worth a read", quote_post_id = "1234567890123456789")
+create_post(text = "Which one?", poll_options = c("This", "That"))
+
+like_post(post_id = "1234567890123456789")
+unlike_post(post_id = "1234567890123456789")
 create_repost(post_id = "1234567890123456789")
 delete_repost(post_id = "1234567890123456789")
-
 create_bookmark(post_id = "1234567890123456789")
 delete_bookmark(post_id = "1234567890123456789")
 
@@ -192,9 +267,26 @@ follow_user(source_username = "your_handle", target_username = "XDevelopers")
 unfollow_user(source_username = "your_handle", target_username = "XDevelopers")
 mute_user(source_username = "your_handle", target_username = "XDevelopers")
 unmute_user(source_username = "your_handle", target_username = "XDevelopers")
-
+block_user(target_username = "spammer")
+unblock_user(target_username = "spammer")
 hide_reply(reply_id = "1234567890123456789")
+
+# Lists: create, fill, pin, delete
+new_list <- create_list(name = "EV makers")
+add_list_member(list_id = new_list$id, username = "Tesla")
+pin_list(list_id = new_list$id)
+delete_list(list_id = new_list$id)
 ```
+
+One gotcha: a post whose text carries a URL costs $0.200, not $0.015.
+The price line printed before the request shows which rate applies, so
+read it before posting a batch with links.
+
+## What is not covered
+
+Streaming, webhooks, the Activity API, direct messages, Chat,
+Broadcasts, Community Notes, Compliance, Bots and Articles. The package
+covers what a marketing course reads and writes, not the whole API.
 
 The [Getting Started](https://Ivey-Business-School.github.io/xapir/articles/getting-started.html)
 guide walks through all of this, and the

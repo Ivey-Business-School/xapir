@@ -7,12 +7,8 @@
 #'
 #' @importFrom httr2 req_url_path_append req_url_query
 #' @template user_fields
-#' @return A tibble with one row and the 18 columns described in
-#'   [extract_user()]: `created_at` (POSIXct, UTC), `username`, `name`,
-#'   `description`, `followers_count`, `following_count`, `post_count`,
-#'   `listed_count`, `like_count`, `protected`, `verified`, `verified_type`,
-#'   `is_identity_verified`, `location`, `profile_image_url`, `link_in_bio`,
-#'   `url` and `user_id`.
+#' @return A tibble with one row and the 24 columns described in
+#'   [extract_user()], from `created_at` to `user_id`.
 #' @examples
 #' \dontrun{
 #' my_user <- get_my_user()

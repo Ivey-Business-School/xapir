@@ -10,6 +10,7 @@ GIFs
 Lifecycle
 Nullcasted
 OAuth
+OpenAPI
 PKCE
 POSIXct
 Repost
@@ -23,10 +24,15 @@ api
 cashtag
 geo
 httr2
+jpeg
+jpg
+mov
 mp4
 pkgdown
+png
 repost
 reposted
+reposters
 reposting
 reposts
 tibble
@@ -40,3 +46,5 @@ unmuted
 unrepost
 unreposted
 v2
+webhooks
+webp

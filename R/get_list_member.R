@@ -18,13 +18,9 @@
 #' @param max_users \code{numeric}; the most users to read across all pages.
 #'   Reading stops once this many have been returned. Default 500.
 #' @template pagination_token
-#' @return A tibble with one row per member: `list_id`, then the 18 columns
-#'   described in [extract_user()]: `created_at` (POSIXct, UTC), `username`,
-#'   `name`, `description`, `followers_count`, `following_count`,
-#'   `post_count`, `listed_count`, `like_count`, `protected`, `verified`,
-#'   `verified_type`, `is_identity_verified`, `location`,
-#'   `profile_image_url`, `link_in_bio`, `url` and `user_id`. A list with no
-#'   members gives the same columns with no rows.
+#' @return A tibble with one row per member: `list_id`, then the 24 columns
+#'   described in [extract_user()], from `created_at` to `user_id`. A list
+#'   with no members gives the same columns with no rows.
 #' @examples
 #' \dontrun{
 #' members <- get_list_member(list_id = "1146654567674912769")

@@ -20,13 +20,9 @@
 #' @template sleep_time
 #' @template bearer_token
 #' @template user_fields
-#' @return A tibble with one row per follower: `list_id`, then the 18
-#'   columns described in [extract_user()]: `created_at` (POSIXct, UTC),
-#'   `username`, `name`, `description`, `followers_count`,
-#'   `following_count`, `post_count`, `listed_count`, `like_count`,
-#'   `protected`, `verified`, `verified_type`, `is_identity_verified`,
-#'   `location`, `profile_image_url`, `link_in_bio`, `url` and `user_id`. A
-#'   list nobody follows gives the same columns with no rows.
+#' @return A tibble with one row per follower: `list_id`, then the 24
+#'   columns described in [extract_user()], from `created_at` to `user_id`.
+#'   A list nobody follows gives the same columns with no rows.
 #' @examples
 #' \dontrun{
 #' followers <- get_list_followers(list_id = "1146654567674912769")

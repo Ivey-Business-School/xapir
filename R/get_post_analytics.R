@@ -15,7 +15,7 @@
 #' @param post_ids A character vector of up to 100 post ids. They must be
 #'   posts by the account that signed in.
 #' @param start_time The start of the period, as an ISO 8601 string such as
-#'   "2026-09-01T00:00:00Z" or a date-time object.
+#'   `"2026-09-01T00:00:00Z"` or a date-time object.
 #' @param end_time The end of the period, in the same form.
 #' @param granularity "total" (the default) for one row per post, or
 #'   "hourly", "daily" or "weekly" for one row per post per period.

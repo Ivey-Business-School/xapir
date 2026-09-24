@@ -46,6 +46,22 @@ user       <- extract_user(timeline)
 post_media <- extract_post_media(timeline)
 ```
 
+X bills a read per item returned (\$0.005 a post, \$0.010 a user) and a
+write or a count per request, so every function prints its price before
+it sends anything. Reads of the same item are billed once a day, and
+pay-per-use is capped at 3 million post reads a month. Prices live in
+one table: `options(xapir.prices = list(posts = 0.006))` moves one.
+
+The same tables unfold a search (`get_recent_post()`, or the full
+archive with `get_all_post()`), a list’s posts (`get_list_posts()`) and
+a space’s posts. Other readers return a tibble directly: followers and
+following, who reposted a post, lists and their members, spaces,
+communities, news stories, your usage and your post analytics. The write
+functions post (with media from `upload_media()`, a quote, a reply or a
+poll), like, repost, bookmark, follow, mute, block, hide replies and
+manage lists. Streaming, webhooks, direct messages and the other
+real-time parts of the API are not covered.
+
 The [Getting Started](articles/getting-started.html) guide covers
 signing in, what a call costs, the twelve tables and how they join, and
 writing to X. The [reference index](reference/index.html) lists every

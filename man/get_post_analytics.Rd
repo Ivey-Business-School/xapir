@@ -11,7 +11,7 @@ get_post_analytics(post_ids, start_time, end_time, granularity = "total")
 posts by the account that signed in.}
 
 \item{start_time}{The start of the period, as an ISO 8601 string such as
-"2026-09-01T00:00:00Z" or a date-time object.}
+\code{"2026-09-01T00:00:00Z"} or a date-time object.}
 
 \item{end_time}{The end of the period, in the same form.}
 

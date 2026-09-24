@@ -10,7 +10,7 @@ Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
 * `create_bookmark()` and `delete_bookmark()` no longer take `username`.
   Bookmarks always belong to the account that signed in, so the argument
   never did anything. Passing it warns and is ignored.
-* `get_list_member()` returns the same 18 user columns as
+* `get_list_member()` returns the same 24 user columns as
   `extract_user()`, after a `list_id` column. `is_verified` is now
   `verified` and `tweet_count` is now `post_count`.
 * `get_list_by_id()` names its columns `list_id` and `list_name` (they
@@ -32,6 +32,67 @@ Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
 * The package needs httr2 1.1.0 or newer. It already used a feature that
   arrived in 1.1.0, but asked only for 1.0.0, and on 1.0.0 every reader
   failed.
+
+## New functions
+
+The package was audited against the X API OpenAPI spec and the pricing
+page, and 35 functions were added, for 81 in all. Grouped:
+
+* Followers and following: `get_followers()`, `get_following()` and
+  `get_reposted_by()`. Each returns the 24 user columns and stops at
+  `max_users`.
+* Lists: `get_list_posts()` (pages for the `extract_*()` tables),
+  `get_list_followers()`, `get_list_memberships()`, `get_pinned_lists()`,
+  `create_list()`, `update_list()`, `delete_list()`, `add_list_member()`,
+  `remove_list_member()`, `follow_list()`, `unfollow_list()`, `pin_list()`
+  and `unpin_list()`.
+* Search the archive: `get_all_post()` and `get_all_post_count()`, every
+  public post back to 2006. Both need pay-per-use or Enterprise access; on
+  a tier without it the call stops with the API's own message.
+* Your own account: `get_usage()` (posts read against the monthly cap),
+  `get_usage_credits()` (the dollar balance left), `get_post_analytics()`
+  (impressions, engagements and clicks on your posts, one row per post
+  and period), `get_personalized_trends()` and `search_users()`.
+* Interactions: `like_post()`, `unlike_post()`, `block_user()` and
+  `unblock_user()`.
+* Media: `upload_media()` uploads a photo, GIF or video in chunks and
+  returns the media id. `create_post()` takes it as `media_ids`, and
+  gained `quote_post_id`, `reply_to_post_id`, `poll_options`,
+  `poll_duration_minutes`, `community_id`, `paid_partnership` and
+  `share_with_followers` as plain arguments, so nobody builds nested
+  lists.
+* Spaces, communities and news: `get_spaces()`, `search_spaces()`,
+  `get_space_posts()`, `get_community()`, `search_communities()`,
+  `search_news()` and `get_news()`.
+
+Deliberately not covered: streaming, webhooks, the Activity API, direct
+messages, Chat, Broadcasts, Community Notes, Compliance, Bots and
+Articles.
+
+## Prices
+
+* Counts and trends are not free. The pricing page bills them per
+  request: $0.005 for a recent count, $0.010 for an archive count, $0.010
+  for trends. `get_recent_post_count()`, `get_all_post_count()`,
+  `get_trends_by_woeid()` and `get_personalized_trends()` say so before
+  the request. Fields and expansions are still free.
+* Likes, mutes and blocks are billed per item at $0.001: `get_liking_users()`,
+  `get_muting()` and `get_blocking()` use that price. Followers,
+  following and reposters are billed per user at $0.010; lists, spaces and
+  communities per item at $0.005.
+* Every price lives in one table, and `options(xapir.prices = list(posts
+  = 0.006))` in `.Rprofile` overrides one entry. The older
+  `xapir.price_per_post` and `xapir.price_per_user` options still work.
+* Every write prints its price before the request: `This request costs
+  about $0.015.` A post is $0.015; a like, follow, repost, block or mute
+  $0.015 and its undo $0.010; a list $0.010 to create and $0.005 to change;
+  a bookmark, a deleted post or a hidden reply $0.005.
+* A post whose text carries a URL costs $0.200, not $0.015. The price
+  line shows which rate applies before anything is sent.
+* The pricing page also says reads are de-duplicated within a UTC day
+  (reading the same post twice on the same day is billed once) and that
+  pay-per-use is capped at 3 million post reads a month. Neither changes
+  what a reader prints: the cap it announces is still the worst case.
 
 ## Signing in
 
@@ -60,6 +121,14 @@ Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
   written on one pull runs on the next.
 * `extract_post_media()` picks the `video/mp4` variant with the highest
   bit rate for a video or an animated GIF, and reports it in `bit_rate`.
+* `extract_user()` and every user reader return 24 columns. New:
+  `media_count`, `verified_followers_count`, `subscription_type`
+  (`"Basic"`, `"Premium"`, `"PremiumPlus"` or `"None"`), `parody`,
+  `profile_banner_url` and `pinned_post_id`.
+* `extract_post()` returns 24 columns. New: `paid_partnership` (after
+  `possibly_sensitive`; `TRUE` when the author disclosed the post as paid
+  promotion) and `community_id` (before `conversation_id`; `NA` unless the
+  post was made in an X community).
 
 ## Reading from the API
 
@@ -69,9 +138,8 @@ Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
   read at the end: `Read 143 posts, about $0.72.`
 * User reads are priced too, at $0.010 per user: `Reading up to 2 users,
   about $0.02.`
-* The prices are options. When X changes them, set
-  `options(xapir.price_per_post = 0.006, xapir.price_per_user = 0.02)`
-  and every message follows. The defaults are `0.005` and `0.01`.
+* The prices are options; see Prices above. `options(xapir.prices =
+  list(posts = 0.006))` moves one, and every message follows.
 * `sleep_time` defaults to `0` everywhere. `get_timeline()`,
   `get_account_timeline()`, `get_liked_posts()` and `get_liking_users()`
   used to wait 90 seconds between pages; a rate limit already waits as
@@ -84,7 +152,7 @@ Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
 * The user and list readers (`extract_user()`, `get_users_by_usernames()`,
   `get_users_by_ids()`, `get_my_user()`, `get_blocking()`, `get_muting()`,
   `get_list_member()`, `get_owned_list()`, `get_followed_lists()`,
-  `get_list_by_id()` and `get_trends_by_woeid()`) share one 18-column
+  `get_list_by_id()` and `get_trends_by_woeid()`) share one 24-column
   user schema, read only the API's `data` block, and warn when the API
   reports a partial error (a suspended account among the ids, say)
   instead of building rows out of the error.
@@ -114,9 +182,15 @@ Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
 * R CMD check and test coverage run on every push. The stale committed
   `docs/` folder is gone; the site is built by the pkgdown workflow.
 * tidyr is no longer a dependency; nothing in the package used it.
-* Tests cover the write functions, the user and list readers, and the
-  cost lines and caps of every reader. Nothing in the tests calls the
-  API.
+* The package imports curl, for the multipart requests that
+  `upload_media()` sends.
+* 81 exported functions, after an audit of the package against the X API
+  OpenAPI spec (version 2.168) and the pricing page of 24 September 2026.
+  Every endpoint the package covers was checked for its arguments, its
+  page size and its price.
+* Tests cover the write functions, the user and list readers, the media
+  upload, and the cost lines and caps of every reader: 1,427 expectations.
+  Nothing in the tests calls the API.
 
 # xapir 0.1.1
 

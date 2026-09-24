@@ -16,13 +16,9 @@
 #' @template user_fields
 #' @param expansions Not used by this endpoint. Accepted so that older code
 #'   keeps running.
-#' @return A tibble with one row per user and the 18 columns described in
-#'   [extract_user()]: `created_at` (POSIXct, UTC), `username`, `name`,
-#'   `description`, `followers_count`, `following_count`, `post_count`,
-#'   `listed_count`, `like_count`, `protected`, `verified`, `verified_type`,
-#'   `is_identity_verified`, `location`, `profile_image_url`, `link_in_bio`,
-#'   `url` and `user_id`. When no handle is found, the same columns with no
-#'   rows.
+#' @return A tibble with one row per user and the 24 columns described in
+#'   [extract_user()], from `created_at` to `user_id`. When no handle is
+#'   found, the same columns with no rows.
 #' @examples
 #' \dontrun{
 #' users <- get_users_by_usernames(c("Tesla", "XDevelopers"))

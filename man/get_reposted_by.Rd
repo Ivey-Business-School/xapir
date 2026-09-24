@@ -54,13 +54,9 @@ account's relationship with the signed-in user; they need a user token
 and are not requested by default.}
 }
 \value{
-A tibble with one row per reposting user and the 18 columns
-described in \code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username},
-\code{name}, \code{description}, \code{followers_count}, \code{following_count},
-\code{post_count}, \code{listed_count}, \code{like_count}, \code{protected}, \code{verified},
-\code{verified_type}, \code{is_identity_verified}, \code{location},
-\code{profile_image_url}, \code{link_in_bio}, \code{url} and \code{user_id}. A post nobody
-reposted gives the same columns with no rows.
+A tibble with one row per reposting user and the 24 columns
+described in \code{\link[=extract_user]{extract_user()}}, from \code{created_at} to \code{user_id}. A post
+nobody reposted gives the same columns with no rows.
 }
 \description{
 Returns the users who reposted a post via the

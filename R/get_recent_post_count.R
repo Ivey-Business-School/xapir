@@ -5,10 +5,10 @@
 #' [recent posts count
 #' endpoint](https://docs.x.com/x-api/posts/recent-search-counts).
 #'
-#' A count request is billed once (US\$0.005 in September 2026), however
+#' A count request is billed once (US$0.005 in September 2026), however
 #' many posts it counts. The endpoint returns how many posts matched in each
-#' period and no posts at all, so nothing in this call is billed. Use it to
-#' size a query before paying for `get_recent_post()`.
+#' period and no posts at all, so no post is billed. Use it to size a query
+#' before paying for `get_recent_post()`.
 #'
 #' @importFrom purrr pluck map_chr map_int
 #' @importFrom tibble tibble

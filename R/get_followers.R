@@ -29,13 +29,9 @@
 #' @template sleep_time
 #' @template bearer_token
 #' @template user_fields
-#' @return A tibble with one row per follower and the 18 columns described
-#'   in [extract_user()]: `created_at` (POSIXct, UTC), `username`, `name`,
-#'   `description`, `followers_count`, `following_count`, `post_count`,
-#'   `listed_count`, `like_count`, `protected`, `verified`, `verified_type`,
-#'   `is_identity_verified`, `location`, `profile_image_url`, `link_in_bio`,
-#'   `url` and `user_id`. An account with no followers gives the same
-#'   columns with no rows.
+#' @return A tibble with one row per follower and the 24 columns described
+#'   in [extract_user()], from `created_at` to `user_id`. An account with no
+#'   followers gives the same columns with no rows.
 #' @examples
 #' \dontrun{
 #' followers <- get_followers("XDevelopers", max_users = 200)
@@ -75,13 +71,9 @@ get_followers <- function(
 #' skipped.
 #'
 #' @inheritParams get_followers
-#' @return A tibble with one row per followed account and the 18 columns
-#'   described in [extract_user()]: `created_at` (POSIXct, UTC), `username`,
-#'   `name`, `description`, `followers_count`, `following_count`,
-#'   `post_count`, `listed_count`, `like_count`, `protected`, `verified`,
-#'   `verified_type`, `is_identity_verified`, `location`,
-#'   `profile_image_url`, `link_in_bio`, `url` and `user_id`. An account that
-#'   follows nobody gives the same columns with no rows.
+#' @return A tibble with one row per followed account and the 24 columns
+#'   described in [extract_user()], from `created_at` to `user_id`. An
+#'   account that follows nobody gives the same columns with no rows.
 #' @examples
 #' \dontrun{
 #' following <- get_following("XDevelopers", max_users = 200)

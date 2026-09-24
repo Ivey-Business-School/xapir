@@ -66,29 +66,86 @@ reference:
       - extract_post_poll_option
       - extract_post_place
       - extract_post_edited_post_id
-  - title: Accounts and lists
+  - title: Accounts and follows
+    desc: Profiles by handle, id or search, and who follows, is followed by, reposts, blocks or mutes. Each returns the 24 user columns of `extract_user()`.
     contents:
       - get_users_by_usernames
       - get_users_by_ids
-      - get_my_user
+      - search_users
+      - get_followers
+      - get_following
+      - get_reposted_by
       - get_blocking
       - get_muting
+  - title: Lists
+    desc: Lists an account owns, follows, pinned or was added to, and a list's members, followers and posts.
+    contents:
       - get_owned_list
       - get_followed_lists
       - get_list_by_id
       - get_list_member
+      - get_list_followers
+      - get_list_memberships
+      - get_list_posts
+      - get_pinned_lists
+  - title: Search the archive
+    desc: Every public post back to 2006. Needs pay-per-use or Enterprise access.
+    contents:
+      - get_all_post
+      - get_all_post_count
+  - title: Spaces, communities and news
+    desc: Audio spaces, communities, the news stories X builds from posts, and trending topics by place.
+    contents:
+      - get_spaces
+      - search_spaces
+      - get_space_posts
+      - get_community
+      - search_communities
+      - search_news
+      - get_news
       - get_trends_by_woeid
+  - title: Your own account
+    desc: What your project has read and spent, how your posts performed, your trends and your profile. All need a sign-in except usage.
+    contents:
+      - get_my_user
+      - get_usage
+      - get_usage_credits
+      - get_post_analytics
+      - get_personalized_trends
   - title: Writing to X
-    desc: These act on your own account and need a user token.
+    desc: These act on your own account and need a user token. Each prints its price before the request.
+  - subtitle: Posts and media
     contents:
       - create_post
+      - upload_media
       - delete_post
       - create_repost
       - delete_repost
-      - create_bookmark
-      - delete_bookmark
-      - hide_reply
+  - subtitle: Interactions
+    contents:
+      - like_post
+      - unlike_post
       - follow_user
       - unfollow_user
+  - subtitle: Lists
+    contents:
+      - create_list
+      - update_list
+      - delete_list
+      - add_list_member
+      - remove_list_member
+      - follow_list
+      - unfollow_list
+      - pin_list
+      - unpin_list
+  - subtitle: Bookmarks
+    contents:
+      - create_bookmark
+      - delete_bookmark
+  - subtitle: Moderation
+    contents:
+      - hide_reply
       - mute_user
       - unmute_user
+      - block_user
+      - unblock_user

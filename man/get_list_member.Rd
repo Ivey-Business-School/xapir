@@ -47,13 +47,9 @@ but you can supply a pagination_token from a previous response to continue
 retrieving results beyond the last page, if desired.}
 }
 \value{
-A tibble with one row per member: \code{list_id}, then the 18 columns
-described in \code{\link[=extract_user]{extract_user()}}: \code{created_at} (POSIXct, UTC), \code{username},
-\code{name}, \code{description}, \code{followers_count}, \code{following_count},
-\code{post_count}, \code{listed_count}, \code{like_count}, \code{protected}, \code{verified},
-\code{verified_type}, \code{is_identity_verified}, \code{location},
-\code{profile_image_url}, \code{link_in_bio}, \code{url} and \code{user_id}. A list with no
-members gives the same columns with no rows.
+A tibble with one row per member: \code{list_id}, then the 24 columns
+described in \code{\link[=extract_user]{extract_user()}}, from \code{created_at} to \code{user_id}. A list
+with no members gives the same columns with no rows.
 }
 \description{
 Returns the users that are members of a list via the
