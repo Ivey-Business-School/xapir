@@ -1,13 +1,18 @@
 #' Get My User
 #'
 #' @description
-#' Returns details about the authenticated User
-#' via the [get my user endpoint](https://docs.x.com/x-api/users/get-my-user).
+#' Returns details about the signed-in user via the
+#' [get my user endpoint](https://docs.x.com/x-api/users/get-my-user).
+#' Needs a user token, so the first call opens a browser window to sign in.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_perform resp_body_json req_url_query
-#' @importFrom stringr str_c
+#' @importFrom httr2 req_url_path_append req_url_query
 #' @template user_fields
-#' @return A tibble containing the authenticated user's information and any expansions.
+#' @return A tibble with one row and the 18 columns described in
+#'   [extract_user()]: `created_at` (POSIXct, UTC), `username`, `name`,
+#'   `description`, `followers_count`, `following_count`, `post_count`,
+#'   `listed_count`, `like_count`, `protected`, `verified`, `verified_type`,
+#'   `is_identity_verified`, `location`, `profile_image_url`, `link_in_bio`,
+#'   `url` and `user_id`.
 #' @examples
 #' \dontrun{
 #' my_user <- get_my_user()
@@ -16,82 +21,14 @@
 get_my_user <- function(
   user_fields = default_user_fields()
 ) {
-
-  # Get cached or refreshed token
   token <- authenticate_user()
 
-  # Join fields as comma-separated strings
-  user_fields_str <- str_c(user_fields, collapse = ",")
+  page <- x_request(token$access_token) |>
+    req_url_path_append("users", "me") |>
+    req_url_query(user.fields = join_fields(user_fields)) |>
+    x_perform()
 
-  # Base endpoint URL
-  url <- "https://api.twitter.com/2/users/me"
-
-  # Perform GET request
-  response <- request(url) |>
-    req_auth_bearer_token(token$access_token) |>
-    req_url_query(
-      user.fields = user_fields_str
-    ) |>
-    req_perform() |>
-    resp_body_json()
-
-  # Extract user data directly
-  response |>
-    unlist(recursive = FALSE) ->
-    user_list
-
-  # Define the variable order
-  user_variable <- c(
-    "created_at",
-    "username",
-    "name",
-    "description",
-    "followers_count",
-    "following_count",
-    "post_count",
-    "listed_count",
-    "like_count",
-    "protected",
-    "verified",
-    "verified_type",
-    "is_identity_verified",
-    "location",
-    "profile_image_url",
-    "link_in_bio",
-    "url",
-    "user_id"
-  )
-
-  # Create the user tibble
-  user_list |>
-    map_dfr(
-      ~ tibble(
-        created_at        = .x$created_at,
-        username          = .x$username,
-        name              = .x$name,
-        description       = .x$description %||% NA |> as.character(),
-        followers_count   = .x$public_metrics$followers_count,
-        following_count   = .x$public_metrics$following_count,
-        post_count        = .x$public_metrics$tweet_count,
-        listed_count      = .x$public_metrics$listed_count,
-        like_count        = .x$public_metrics$like_count,
-        protected         = .x$protected,
-        verified          = .x$verified,
-        verified_type     = .x$verified_type,
-        is_identity_verified = .x$is_identity_verified %||% NA,
-        location          = .x$location %||% NA |> as.character(),
-        profile_image_url = .x$profile_image_url,
-        link_in_bio       = .x$entities$url$urls |>
-                              pluck(1, "display_url", .default = NA) |>
-                              as.character(),
-        url               = na_if(.x$url %||% NA_character_, ""),
-        user_id           = .x$id
-      )
-    ) |>
-    mutate(created_at = ymd_hms(created_at)) |>
-    distinct(user_id, .keep_all = TRUE) |>
-    select(any_of(user_variable)) ->
-    user
-
-  return(user)
+  warn_partial_errors(page$errors, what = "users")
+  # This endpoint returns one user object in `data`, not a list of them.
+  users_table(list(page$data))
 }

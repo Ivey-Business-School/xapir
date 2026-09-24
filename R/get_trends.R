@@ -1,67 +1,65 @@
 #' Get Trends by WOEID
 #'
 #' @description
-#' Retrieves trending topics for a specified location via its WOEID from the
-#' [Get Trends by WOEID endpoint](https://docs.x.com/x-api/trends/get-trends-by-woeid).
+#' Retrieves the trending topics for a location, given its WOEID (Yahoo's
+#' "Where On Earth" id), via the
+#' [get trends by WOEID endpoint](https://docs.x.com/x-api/trends/get-trends-by-woeid).
+#' For example, 1 is worldwide, 23424977 is the United States and 4118 is
+#' Toronto.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_url_path_append req_url_query req_perform resp_body_json
-#' @importFrom tibble tibble
-#' @importFrom purrr map_chr map_int
+#' @importFrom httr2 req_url_path_append req_url_query
+#' @importFrom purrr map_chr
+#' @param woeid The location's WOEID, one number or a string of digits.
 #' @template bearer_token
-#' @param woeid Integer WOEID of the location to fetch trends for.
-#' @param max_trends Integer for maximum results (1–50, default 20).
-#' @param trend_fields Character vector of fields to include (e.g., "trend_name", "tweet_count").
-#' @return A tibble with trend names and tweet count, or NULL if no data.
+#' @param max_trends The most trends to return, between 1 and 50. Default 20.
+#' @param trend_fields \code{character}, \code{vector}; the fields to return
+#'   for each trend. The API calls the post count `tweet_count`.
+#' @return A tibble with one row per trend: `trend_name` and `post_count`
+#'   (the number of posts on the topic, when the API reports one). A location
+#'   with no trends gives the same columns with no rows.
 #' @examples
 #' \dontrun{
-#' tr <- get_trends_by_woeid(woeid = 4118)  # e.g., Toronto
+#' trends <- get_trends_by_woeid(woeid = 4118)  # Toronto
 #' }
 #' @export
 get_trends_by_woeid <- function(
   woeid,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  max_trends = 20,
+  max_trends   = 20,
   trend_fields = c("trend_name", "tweet_count")
 ) {
+  check_token(bearer_token)
 
-  # Validate inputs
-  if (!is.numeric(woeid) || length(woeid) != 1) {
-    stop("`woeid` must be a single numeric value.")
+  woeid_ok <- length(woeid) == 1 && !is.na(woeid) &&
+    grepl("^[0-9]+$", as.character(woeid))
+  if (!woeid_ok) {
+    stop(
+      "`woeid` must be one whole number, such as 1 for worldwide.",
+      call. = FALSE
+    )
   }
-  if (!is.numeric(max_trends) || max_trends < 1 || max_trends > 50) {
-    stop("`max_trends` must be between 1 and 50.")
-  }
-
-  # Construct the URL and parameters
-  endpoint <- paste0("trends/by/woeid/", woeid)
-  query <- list(
-    max_trends = max_trends,
-    trend.fields = paste(trend_fields, collapse = ",")
-  )
-
-  # Perform the request
-  resp <- request(base_url = "https://api.x.com/2") |>
-    req_url_path_append(endpoint = endpoint) |>
-    req_auth_bearer_token(bearer_token) |>
-    req_url_query(!!!query) |>
-    req_perform() |>
-    resp_body_json()
-
-  # Handle errors from API
-  if (!is.null(resp$errors)) {
-    stop("API error: ", resp$errors[[1]]$detail %||% "Unknown error")
+  max_trends_ok <- is.numeric(max_trends) && length(max_trends) == 1 &&
+    !is.na(max_trends) && max_trends >= 1 && max_trends <= 50
+  if (!max_trends_ok) {
+    stop("`max_trends` must be a number between 1 and 50.", call. = FALSE)
   }
 
-  # Extract and return data as tibble
-  if (is.null(resp$data) || length(resp$data) == 0) {
-    message("No trending data available for WOEID: ", woeid)
-    return(NULL)
+  page <- x_request(bearer_token) |>
+    req_url_path_append("trends", "by", "woeid", as.character(woeid)) |>
+    req_url_query(
+      max_trends   = as.integer(max_trends),
+      trend.fields = join_fields(trend_fields)
+    ) |>
+    x_perform()
+
+  if (is.null(page$data) && length(page$errors) > 0) {
+    reason <- map_chr(page$errors, ~ .x$detail %||% .x$title %||% "")
+    stop(
+      "No trends found for woeid ", woeid, ". ",
+      paste(reason, collapse = " "),
+      call. = FALSE
+    )
   }
 
-  trends <- tibble(
-    trend_name  = map_chr(resp$data, ~ .x$trend_name %||% NA_character_),
-    tweet_count = map_int(resp$data, ~ .x$tweet_count %||% NA_integer_)
-  )
-
-  return(trends)
+  trends_table(page$data)
 }

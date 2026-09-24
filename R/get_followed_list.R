@@ -1,68 +1,55 @@
 #' Get Followed Lists
 #'
 #' @description
-#' Retrieves the Lists followed by a given User via the 
+#' Retrieves the lists a user follows via the
 #' [get followed lists endpoint](https://docs.x.com/x-api/users/get-followed-lists).
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_perform resp_body_json
-#' @importFrom tibble tibble
-#' @importFrom purrr map_chr map_int map_lgl
-#' @param username Username of the account whose followed lists are being retrieved.
+#' Give either `username` or `user_id`, not both. A `username` costs one
+#' user read to turn the handle into an id before the lists are read. When
+#' you already know the account's id, pass `user_id` and that read is
+#' skipped.
+#'
+#' @importFrom httr2 req_url_path_append req_url_query
+#' @template username
+#' @param user_id \code{character}; the account's X user id, as a string of
+#'   digits. When given, the handle lookup is skipped and `username` must be
+#'   `NULL`.
 #' @template bearer_token
-#' @param list_fields Character vector of list fields to include in the response.
-#'   Defaults to commonly useful fields.
-#' @return A tibble containing the IDs of the followed lists and their metadata, 
-#'   or NULL if none are found.
+#' @param list_fields \code{character}, \code{vector}; the fields to return
+#'   for each list.
+#' @return A tibble with one row per list: `list_id`, `list_name`,
+#'   `description`, `created_at` (POSIXct, UTC), `follower_count`,
+#'   `member_count`, `private` and `owner_id`. A user who follows no lists
+#'   gives the same columns with no rows.
 #' @examples
 #' \dontrun{
 #' lists <- get_followed_lists(username = "XDevelopers")
+#'
+#' # The same lists by id, with no user read for the handle
+#' lists <- get_followed_lists(user_id = "2244994945")
 #' }
 #' @export
 get_followed_lists <- function(
-  username,
+  username     = NULL,
+  user_id      = NULL,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  list_fields  =
-    c("id", "name", "created_at", "description", 
-      "follower_count", "member_count", "private")
+  list_fields  = c(
+    "id", "name", "created_at", "description", "follower_count",
+    "member_count", "private", "owner_id"
+  )
 ) {
+  check_token(bearer_token)
+  check_one_of_user(username, user_id)
 
-  # Step 1: Get user ID from username
-  url <- paste0("https://api.twitter.com/2/users/by/username/", username)
-  
-  req <- request(url) |>
-    req_auth_bearer_token(bearer_token) |>
-    req_perform()
-  
-  resp <- resp_body_json(req)
-
-  if (!is.null(resp$error)) {
-    stop("Error: ", resp$error)
+  if (is.null(user_id)) {
+    user_id <- lookup_user_id(username, bearer_token)
   }
 
-  user_id <- resp$data$id
+  page <- x_request(bearer_token) |>
+    req_url_path_append("users", user_id, "followed_lists") |>
+    req_url_query(list.fields = join_fields(list_fields)) |>
+    x_perform()
 
-  # Step 2: Get followed lists
-  lists_req <- request(paste0("https://api.twitter.com/2/users/", user_id, "/followed_lists")) |>
-    req_auth_bearer_token(bearer_token) |>
-    req_url_query(`list.fields` = paste(list_fields, collapse = ",")) |>
-    req_perform()
-  
-  lists_data <- resp_body_json(lists_req)
-
-  # Step 3: Return tibble or NULL
-  if (!is.null(lists_data$data)) {
-    data <- lists_data$data
-    return(tibble(
-      list_id        = map_chr(data, ~ as.character(.x$id)),
-      list_name      = map_chr(data, ~ as.character(.x$name)),
-      description    = map_chr(data, ~ .x$description %||% NA_character_),
-      created_at     = map_chr(data, ~ .x$created_at %||% NA_character_),
-      follower_count = map_int(data, ~ .x$follower_count %||% NA_integer_),
-      member_count   = map_int(data, ~ .x$member_count %||% NA_integer_),
-      private        = map_lgl(data, ~ .x$private %||% NA)
-    ))
-  } else {
-    message("No followed lists found.")
-    return(NULL)
-  }
+  warn_partial_errors(page$errors, what = "lists")
+  lists_table(page$data)
 }

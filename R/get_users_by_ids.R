@@ -1,105 +1,50 @@
 #' Get Users by IDs
 #'
 #' @description
-#' Retrieves details of multiple Users by their IDs via 
+#' Retrieves details of up to 100 users by their ids via
 #' the [get users by IDs endpoint](https://docs.x.com/x-api/users/get-users-by-ids).
+#' Every user returned is billed, so the function says what the call can
+#' cost before it reads anything.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_url_query req_perform resp_body_json
-#' @param user_ids A list of User IDs. Up to 100 comma-separated User IDs can be looked up using this endpoint.
+#' An id the API cannot find does not stop the call: the users it did find
+#' are returned, and one warning names each id that was not.
+#'
+#' @importFrom httr2 req_url_path_append req_url_query
+#' @param user_ids A character vector of up to 100 user ids, each a string
+#'   of digits. Keep ids as text: as numbers they lose digits.
 #' @template bearer_token
 #' @template user_fields
-#' @return A tibble containing the user information 
 #' @param expansions Not used by this endpoint. Accepted so that older code
 #'   keeps running.
+#' @return A tibble with one row per user and the 18 columns described in
+#'   [extract_user()]: `created_at` (POSIXct, UTC), `username`, `name`,
+#'   `description`, `followers_count`, `following_count`, `post_count`,
+#'   `listed_count`, `like_count`, `protected`, `verified`, `verified_type`,
+#'   `is_identity_verified`, `location`, `profile_image_url`, `link_in_bio`,
+#'   `url` and `user_id`. When no id is found, the same columns with no rows.
 #' @examples
 #' \dontrun{
-#' # Get basic user info for multiple users
-#' get_users_by_ids(
-#' user_ids = c("783214", "2244994945")
-#' )
+#' users <- get_users_by_ids(c("783214", "2244994945"))
 #' }
 #' @export
 get_users_by_ids <- function(
   user_ids,
-  bearer_token     = Sys.getenv("X_BEARER_TOKEN"),
-  user_fields = default_user_fields(),
-  expansions       = NULL
+  bearer_token = Sys.getenv("X_BEARER_TOKEN"),
+  user_fields  = default_user_fields(),
+  expansions   = NULL
 ) {
-  
-  # Base endpoint URL
-  url <- "https://api.twitter.com/2/users"
-  
-  # Prepare query parameters
-  user_ids_str <- str_c(user_ids, collapse = ",")
-  user_fields_str <- str_c(user_fields, collapse = ",")
-  
-  # Perform GET request
-  response <- request(url) |>
-    req_auth_bearer_token(bearer_token) |>
+  check_token(bearer_token)
+  user_ids <- check_user_ids(user_ids)
+  announce_user_cap(length(user_ids))
+
+  page <- x_request(bearer_token) |>
+    req_url_path_append("users") |>
     req_url_query(
-      ids = user_ids_str,
-      user.fields = user_fields_str
+      ids         = str_c(user_ids, collapse = ","),
+      user.fields = join_fields(user_fields)
     ) |>
-    req_perform() |>
-    resp_body_json()
-  
-  # Extract user data directly
-  response |>
-    unlist(recursive = FALSE) ->
-    user_list
+    x_perform()
 
-  # Define the variable order
-  user_variable <- c(
-    "created_at",
-    "username",
-    "name",
-    "description",
-    "followers_count",
-    "following_count",
-    "post_count",
-    "listed_count",
-    "like_count",
-    "protected",
-    "verified",
-    "verified_type",
-    "is_identity_verified",
-    "location",
-    "profile_image_url",
-    "link_in_bio",
-    "url",
-    "user_id"
-  )
-
-  # Create the user tibble
-  user_list |>
-    map_dfr(
-      ~ tibble(
-        created_at        = .x$created_at,
-        username          = .x$username,
-        name              = .x$name,
-        description       = .x$description %||% NA |> as.character(),
-        followers_count   = .x$public_metrics$followers_count,
-        following_count   = .x$public_metrics$following_count,
-        post_count        = .x$public_metrics$tweet_count,
-        listed_count      = .x$public_metrics$listed_count,
-        like_count        = .x$public_metrics$like_count,
-        protected         = .x$protected,
-        verified          = .x$verified,
-        verified_type     = .x$verified_type,
-        is_identity_verified = .x$is_identity_verified %||% NA,
-        location          = .x$location %||% NA |> as.character(),
-        profile_image_url = .x$profile_image_url,
-        link_in_bio       = .x$entities$url$urls |>
-                              pluck(1, "display_url", .default = NA) |>
-                              as.character(),
-        url               = na_if(.x$url %||% NA_character_, ""),
-        user_id           = .x$id
-      )
-    ) |>
-    mutate(created_at = ymd_hms(created_at)) |>
-    distinct(user_id, .keep_all = TRUE) |>
-    select(any_of(user_variable)) ->
-    user
-
-  return(user)
+  warn_partial_errors(page$errors, what = "user ids")
+  users_table(page$data)
 }

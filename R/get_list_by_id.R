@@ -1,14 +1,19 @@
 #' Get List by ID
 #'
 #' @description
-#' Retrieves the details of a specific List by its ID via the
-#' [Get List by ID endpoint](https://docs.x.com/x-api/lists/get-list-by-id).
+#' Retrieves the details of one list by its id via the
+#' [get list by ID endpoint](https://docs.x.com/x-api/lists/get-list-by-id).
+#' An id the API cannot find stops the call with the API's reason.
 #'
-#' @importFrom httr2 request req_auth_bearer_token req_url_query req_perform resp_body_json
-#' @param list_id The ID of the List to retrieve.
+#' @importFrom httr2 req_url_path_append req_url_query
+#' @importFrom purrr map_chr
+#' @param list_id The list's id, as a string of digits.
 #' @template bearer_token
-#' @param list_fields Character vector of fields to include (default common fields).
-#' @return A tibble with list details (one row), or NULL if there's an error.
+#' @param list_fields \code{character}, \code{vector}; the fields to return
+#'   for the list.
+#' @return A tibble with one row: `list_id`, `list_name`, `description`,
+#'   `created_at` (POSIXct, UTC), `follower_count`, `member_count`, `private`
+#'   and `owner_id`.
 #' @examples
 #' \dontrun{
 #' lst <- get_list_by_id(list_id = "1146654567674912769")
@@ -17,53 +22,30 @@
 get_list_by_id <- function(
   list_id,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  list_fields   = c(
+  list_fields  = c(
     "id", "name", "description", "created_at", "follower_count",
     "member_count", "owner_id", "private"
   )
 ) {
+  check_token(bearer_token)
+  check_list_id(list_id)
 
-  # Prepare comma-separated query parameters
-  query_params <- list(
-    `list.fields` = paste(list_fields, collapse = ",")
-  )
+  page <- x_request(bearer_token) |>
+    req_url_path_append("lists", list_id) |>
+    req_url_query(list.fields = join_fields(list_fields)) |>
+    x_perform()
 
-  # Perform the API request
-  req <- request(paste0("https://api.x.com/2/lists/", list_id)) |>
-    req_auth_bearer_token(bearer_token) |>
-    req_url_query(!!!query_params) |>
-    req_perform()
-
-  resp <- resp_body_json(req)
-
-  # Error handling
-  if (!is.null(resp$errors)) {
-    stop("API error: ", paste(sapply(resp$errors, `[[`, "detail"), collapse = "; "))
+  # A list that does not exist comes back as a 200 with `errors` and no
+  # `data`, the same way an unknown handle does.
+  if (is.null(page$data)) {
+    reason <- map_chr(page$errors %||% list(), ~ .x$detail %||% .x$title %||% "")
+    stop(
+      "No list found for list_id \"", list_id, "\". ",
+      paste(reason, collapse = " "),
+      call. = FALSE
+    )
   }
 
-  if (is.null(resp$data)) {
-    message("No data returned for list ID: ", list_id)
-    return(NULL)
-  }
-
-  ld <- resp$data
-
-  # Convert to tibble
-  tib <- tibble(
-    id             = ld$id,
-    name           = ld$name %||% NA_character_,
-    description    = ld$description %||% NA_character_,
-    created_at     = ld$created_at %||% NA_character_,
-    follower_count = ld$follower_count %||% NA_integer_,
-    member_count   = ld$member_count %||% NA_integer_,
-    owner_id       = ld$owner_id %||% NA_character_,
-    private        = ld$private %||% NA
-  )
-
-  # Optionally attach includes as list-column for further inspection
-  if (!is.null(resp$includes)) {
-    tib$includes <- list(resp$includes)
-  }
-
-  tib
+  # This endpoint returns one list object in `data`, not a list of them.
+  lists_table(list(page$data))
 }

@@ -1,65 +1,55 @@
-#' Get Owned List
-#' 
-#' @description
-#' Get a User’s Owned Lists via the [owned list endpoint](https://docs.x.com/x-api/lists/get-a-users-owned-lists).
+#' Get Owned Lists
 #'
-#' @importFrom httr2 oauth_client oauth_flow_auth_code request req_auth_bearer_token req_perform resp_body_json
-#' @importFrom tibble tibble
-#' @importFrom purrr map_chr map_int map_lgl
-#' @param username Username of the account that owns the lists
-#' @template bearer_token 
-#' @return A tibble containing the IDs of the lists and their names, or NULL if none found.
+#' @description
+#' Retrieves the lists a user owns via the
+#' [owned lists endpoint](https://docs.x.com/x-api/lists/get-a-users-owned-lists).
+#'
+#' Give either `username` or `user_id`, not both. A `username` costs one
+#' user read to turn the handle into an id before the lists are read. When
+#' you already know the account's id, pass `user_id` and that read is
+#' skipped.
+#'
+#' @importFrom httr2 req_url_path_append req_url_query
+#' @template username
+#' @param user_id \code{character}; the account's X user id, as a string of
+#'   digits. When given, the handle lookup is skipped and `username` must be
+#'   `NULL`.
+#' @template bearer_token
 #' @param list_fields \code{character}, \code{vector}; the fields to return
 #'   for each list.
+#' @return A tibble with one row per list: `list_id`, `list_name`,
+#'   `description`, `created_at` (POSIXct, UTC), `follower_count`,
+#'   `member_count`, `private` and `owner_id`. A user with no lists gives the
+#'   same columns with no rows.
 #' @examples
 #' \dontrun{
 #' lists <- get_owned_list(username = "Tesla")
+#'
+#' # The same lists by id, with no user read for the handle
+#' lists <- get_owned_list(user_id = "13298072")
 #' }
 #' @export
 get_owned_list <- function(
-  username,
+  username     = NULL,
+  user_id      = NULL,
   bearer_token = Sys.getenv("X_BEARER_TOKEN"),
-  list_fields     =
-    c("id", "name", "created_at", "description", "follower_count", "member_count", 
-    "private")
+  list_fields  = c(
+    "id", "name", "created_at", "description", "follower_count",
+    "member_count", "private", "owner_id"
+  )
 ) {
+  check_token(bearer_token)
+  check_one_of_user(username, user_id)
 
-  # Get user ID
-  url <- paste0("https://api.twitter.com/2/users/by/username/", username)
-  
-  req <- request(url) |>
-    req_auth_bearer_token(bearer_token) |>
-    req_perform()
-  
-  resp <- resp_body_json(req)
-
-  if (!is.null(resp$error)) {
-    stop("Error: ", resp$error)
+  if (is.null(user_id)) {
+    user_id <- lookup_user_id(username, bearer_token)
   }
 
-  user_id <- resp$data$id
+  page <- x_request(bearer_token) |>
+    req_url_path_append("users", user_id, "owned_lists") |>
+    req_url_query(list.fields = join_fields(list_fields)) |>
+    x_perform()
 
-  # Get lists owned by user
-  lists_req <- request(paste0("https://api.twitter.com/2/users/", user_id, "/owned_lists")) |>
-    req_auth_bearer_token(bearer_token) |>
-    req_url_query(`list.fields` = paste(list_fields, collapse = ",")) |>
-    req_perform()
-  
-  lists_data <- resp_body_json(lists_req)
-
-  if (!is.null(lists_data$data)) {
-    data <- lists_data$data
-    return(tibble(
-      list_id             = map_chr(data, ~ as.character(.x$id)),
-      list_name           = map_chr(data, ~ as.character(.x$name)),
-      description         = map_chr(data, ~ .x$description %||% NA_character_),
-      created_at          = map_chr(data, ~ .x$created_at %||% NA_character_),
-      follower_count      = map_int(data, ~ .x$follower_count %||% NA_integer_),
-      member_count        = map_int(data, ~ .x$member_count %||% NA_integer_),
-      private             = map_lgl(data, ~ .x$private %||% NA)
-    ))
-  } else {
-    message("No owned lists found.")
-    return(NULL)
-  }
+  warn_partial_errors(page$errors, what = "lists")
+  lists_table(page$data)
 }
