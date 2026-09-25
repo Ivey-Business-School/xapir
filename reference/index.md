@@ -146,6 +146,8 @@ trends and your profile. All need a sign-in except usage.
   : Get My User
 - [`get_usage()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage.md)
   : Get Usage
+- [`get_spend()`](https://Ivey-Business-School.github.io/xapir/reference/get_spend.md)
+  : Get Spend
 - [`get_usage_credits()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage_credits.md)
   : Get Usage Credits
 - [`get_post_analytics()`](https://Ivey-Business-School.github.io/xapir/reference/get_post_analytics.md)

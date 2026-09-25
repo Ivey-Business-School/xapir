@@ -1,0 +1,209 @@
+# The course workflow
+
+This article is the routine you follow once a week for the brand you are
+tracking. Set up once, pull what is new, save it, unfold it into tables,
+join them, and check the bill. Each step is short, and the order
+matters: save before you unfold, and read the cost line before you
+spend.
+
+## Set up once
+
+Put your bearer token in `.Renviron` (`usethis::edit_r_environ()` opens
+it) and restart R:
+
+    X_BEARER_TOKEN=AAAA...
+
+Then look the brand up once. A handle costs one user read (\$0.010)
+every time a reader turns it into an id, so save the id to a small file
+and pass `user_id` from then on. Keep the id as text: as a number it
+loses digits.
+
+``` r
+
+library(xapir)
+library(dplyr)
+
+brand <- get_users_by_usernames("Tesla")
+#> Reading up to 1 users, about $0.01.
+
+readr::write_csv(select(brand, user_id, username), "data-raw/brand.csv")
+```
+
+Every later week starts by reading that file back. `readr` keeps the id
+as text on its own;
+[`read.csv()`](https://rdrr.io/r/utils/read.table.html) would turn it
+into a number.
+
+``` r
+
+brand <- readr::read_csv("data-raw/brand.csv", col_types = "cc")
+brand_id <- brand$user_id
+```
+
+## The weekly pull
+
+Ask for only what is new. `since_id` takes the id of the newest post
+from last week’s pull, so a post is never paid for twice on purpose, and
+`max_posts` caps the worst case.
+
+``` r
+
+# NULL in week one, so the pull starts from the newest post
+last_id <- if (file.exists("data-raw/last-post-id.rds")) {
+  readRDS("data-raw/last-post-id.rds")
+}
+
+pages <- get_timeline(
+  user_id   = brand_id,
+  since_id  = last_id,
+  max_posts = 500
+)
+#> Reading up to 500 posts, about $2.50. Set max_posts to change this.
+#> Finished getting posts on page 1
+#> Read 38 posts, about $0.19.
+```
+
+The first line is the most the call can cost; the last is what it did
+cost, because a week rarely fills the cap. Save the raw pages to a dated
+file before touching anything, and record the newest id for next week.
+
+``` r
+
+saveRDS(pages, sprintf("data-raw/tesla-%s.rds", Sys.Date()))
+
+newest <- extract_post(pages, include_referenced_posts = FALSE)
+saveRDS(newest$post_id[which.max(newest$created_at)], "data-raw/last-post-id.rds")
+```
+
+Reading a file back is free; reading the timeline again is not.
+
+## Unfold
+
+Each `extract_*()` function turns the saved pages into one table. None
+calls the API, so run them as often as you like.
+
+``` r
+
+pages <- readRDS("data-raw/tesla-2026-09-25.rds")
+
+post         <- extract_post(pages)
+user         <- extract_user(pages)
+post_media   <- extract_post_media(pages)
+post_hashtag <- extract_post_hashtag(pages)
+post_url     <- extract_post_url(pages)
+```
+
+Week over week, stack the new rows on the old ones. A post can appear in
+two pulls, since the tables include the posts a timeline quoted, replied
+to or reposted, and a post quoted this week may have been read last
+week.
+[`distinct()`](https://dplyr.tidyverse.org/reference/distinct.html)
+keeps one copy.
+
+``` r
+
+all_post <- bind_rows(readRDS("data/post.rds"), post) |>
+  distinct(post_id, .keep_all = TRUE)
+saveRDS(all_post, "data/post.rds")
+
+all_user <- bind_rows(readRDS("data/user.rds"), user) |>
+  distinct(user_id, .keep_all = TRUE)
+saveRDS(all_user, "data/user.rds")
+
+all_hashtag <- bind_rows(readRDS("data/post_hashtag.rds"), post_hashtag) |>
+  distinct(post_id, hashtag, .keep_all = TRUE)
+saveRDS(all_hashtag, "data/post_hashtag.rds")
+```
+
+The same two lines work for `post_media` (on `post_id` and `media_id`)
+and `post_url` (on `post_id` and `url`). In week one there is no old
+file yet, so
+[`bind_rows()`](https://dplyr.tidyverse.org/reference/bind_rows.html)
+gets only the new table.
+
+## Join
+
+Every post table carries `post_id`, and `user` carries `user_id`, the
+author. Which hashtags did the brand use, and who wrote each post?
+
+``` r
+
+all_post |>
+  inner_join(all_hashtag, by = "post_id") |>
+  left_join(all_user, by = "user_id") |>
+  select(created_at, username, hashtag, like_count) |>
+  arrange(desc(like_count))
+```
+
+A first engagement summary: likes per post by type. Reposts carry `NA`
+for likes, replies, quotes and bookmarks by design, because those
+numbers belong to the original post, so they drop out of the mean rather
+than pulling it towards zero.
+
+``` r
+
+all_post |>
+  filter(user_id == brand_id) |>
+  group_by(post_type) |>
+  summarise(
+    posts      = n(),
+    mean_likes = mean(like_count, na.rm = TRUE),
+    .groups    = "drop"
+  )
+```
+
+## The conversation around the brand
+
+[`get_mentions()`](https://Ivey-Business-School.github.io/xapir/reference/get_mentions.md)
+returns the posts that name the account. It takes `since_id` too, so it
+appends the same way: pull, save the dated file, unfold, stack, keep the
+newest id.
+
+``` r
+
+mention_pages <- get_mentions(
+  user_id   = brand_id,
+  since_id  = readRDS("data-raw/last-mention-id.rds"),
+  max_posts = 500
+)
+saveRDS(mention_pages, sprintf("data-raw/tesla-mentions-%s.rds", Sys.Date()))
+
+mention <- extract_post(mention_pages)
+```
+
+Before paying for a search, size it. A count is billed once per request
+(\$0.005 for the last seven days), however many posts it covers.
+
+``` r
+
+get_recent_post_count("@Tesla -is:retweet", granularity = "day")
+#> This request costs about $0.005.
+```
+
+If the count says 4,000 posts, a `max_posts = 500` pull reads the newest
+500 for \$2.50 and stops; narrow the query or raise the cap on purpose.
+
+## Keeping the bill in view
+
+End the week with two calls that cost nothing.
+[`get_spend()`](https://Ivey-Business-School.github.io/xapir/reference/get_spend.md)
+prices each day’s post reads at the post price and prints one line.
+
+``` r
+
+get_spend(days = 7)
+#> Read 1,430 posts in the last 7 days, about $7.15 at the post price.
+```
+
+That figure is a ceiling: it counts post reads only, and reads of your
+own data or of the same post twice in a day bill for less. The balance
+itself comes from
+[`get_usage_credits()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage_credits.md).
+
+``` r
+
+get_usage_credits()
+```
+
+Reading a saved file, unfolding it and joining the tables never touch
+the API, so the bill moves only when you pull.

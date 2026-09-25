@@ -102,6 +102,13 @@ page, and 35 functions were added, for 81 in all. Grouped:
   [`get_personalized_trends()`](https://Ivey-Business-School.github.io/xapir/reference/get_personalized_trends.md)
   and
   [`search_users()`](https://Ivey-Business-School.github.io/xapir/reference/search_users.md).
+- [`get_spend()`](https://Ivey-Business-School.github.io/xapir/reference/get_spend.md):
+  the daily post reads from
+  [`get_usage()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage.md)
+  priced at the post price, one row a day with `date`, `posts` and
+  `dollars`, and one summary line. It counts post reads only and is a
+  ceiling; the balance itself is
+  [`get_usage_credits()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage_credits.md).
 - Interactions:
   [`like_post()`](https://Ivey-Business-School.github.io/xapir/reference/like_post.md),
   [`unlike_post()`](https://Ivey-Business-School.github.io/xapir/reference/unlike_post.md),
@@ -271,6 +278,15 @@ Articles.
   [`get_personalized_trends()`](https://Ivey-Business-School.github.io/xapir/reference/get_personalized_trends.md)
   return `post_count` as `NA` when the API sends no number, which it
   often does.
+
+- A new article, “The course workflow”
+  ([`vignette("course-workflow")`](https://Ivey-Business-School.github.io/xapir/articles/course-workflow.md)),
+  walks through the weekly routine for one brand: save the id, pull with
+  `since_id`, save the pages, unfold, stack week over week, join, and
+  check the bill with
+  [`get_spend()`](https://Ivey-Business-School.github.io/xapir/reference/get_spend.md)
+  and
+  [`get_usage_credits()`](https://Ivey-Business-School.github.io/xapir/reference/get_usage_credits.md).
 
 - Every reader prints the most it can spend before its first request,
   single-page readers included:
