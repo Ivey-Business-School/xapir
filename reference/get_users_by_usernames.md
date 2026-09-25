@@ -39,11 +39,16 @@ get_users_by_usernames(
 - user_fields:
 
   `character`, `vector`; the fields to return for each user. Default:
-  `c("created_at", "description", "protected", "entities", "location", "profile_image_url", "profile_banner_url", "public_metrics", "verified", "verified_type", "verified_followers_count", "subscription_type", "parody", "is_identity_verified", "url")`.
-  Four more fields, `connection_status`, `confirmed_email`,
-  `receives_your_dm` and `subscribes_to_you`, describe the account's
-  relationship with the signed-in user; they need a user token and are
-  not requested by default.
+  `c("created_at", "description", "protected", "entities", "location", "profile_image_url", "profile_banner_url", "public_metrics", "verified", "verified_type", "is_identity_verified", "url")`.
+  Three fields the spec lists, `verified_followers_count`,
+  `subscription_type` and `parody`, are refused to an app token ("not
+  authorized to access 'parody' on the user", 24 September 2026), so
+  they are not requested by default; their columns are NA. Ask for them
+  with `user_fields = c(default_user_fields(), "parody")` when your
+  token can read them. Four more, `connection_status`,
+  `confirmed_email`, `receives_your_dm` and `subscribes_to_you`,
+  describe the account's relationship with the signed-in user and need a
+  user token.
 
 - expansions:
 

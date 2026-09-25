@@ -237,6 +237,23 @@ Articles.
 
 ### Reading from the API
 
+- Three user fields the spec lists, `verified_followers_count`,
+  `subscription_type` and `parody`, are refused to an app token, so they
+  are no longer requested by default. Their columns stay in the user
+  table as `NA`; ask for them with `user_fields` when your token can
+  read them. A refused field now warns once, naming the fields, instead
+  of being counted as a user that could not be read.
+
+- [`get_my_user()`](https://Ivey-Business-School.github.io/xapir/reference/get_my_user.md)
+  remembers whose account signed in, so a later read of that account’s
+  own posts or followers by `user_id` is priced as owned.
+
+- [`get_owned_list()`](https://Ivey-Business-School.github.io/xapir/reference/get_owned_list.md)
+  and
+  [`get_followed_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_followed_lists.md)
+  print what they read after the page comes back, like the paged
+  readers.
+
 - [`get_liking_users()`](https://Ivey-Business-School.github.io/xapir/reference/get_liking_users.md)
   returns the 24-column users table, like every other user reader. It
   returned raw pages before.

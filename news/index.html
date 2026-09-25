@@ -28,7 +28,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/Ivey-Business-School/xapir/blob/v0.2.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/Ivey-Business-School/xapir/blob/master/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
@@ -96,7 +96,10 @@
 </ul></div>
 <div class="section level3">
 <h3 id="reading-from-the-api-0-2-0">Reading from the API<a class="anchor" aria-label="anchor" href="#reading-from-the-api-0-2-0"></a></h3>
-<ul><li><p><code><a href="../reference/get_liking_users.html">get_liking_users()</a></code> returns the 24-column users table, like every other user reader. It returned raw pages before.</p></li>
+<ul><li><p>Three user fields the spec lists, <code>verified_followers_count</code>, <code>subscription_type</code> and <code>parody</code>, are refused to an app token, so they are no longer requested by default. Their columns stay in the user table as <code>NA</code>; ask for them with <code>user_fields</code> when your token can read them. A refused field now warns once, naming the fields, instead of being counted as a user that could not be read.</p></li>
+<li><p><code><a href="../reference/get_my_user.html">get_my_user()</a></code> remembers whose account signed in, so a later read of that account’s own posts or followers by <code>user_id</code> is priced as owned.</p></li>
+<li><p><code><a href="../reference/get_owned_list.html">get_owned_list()</a></code> and <code><a href="../reference/get_followed_lists.html">get_followed_lists()</a></code> print what they read after the page comes back, like the paged readers.</p></li>
+<li><p><code><a href="../reference/get_liking_users.html">get_liking_users()</a></code> returns the 24-column users table, like every other user reader. It returned raw pages before.</p></li>
 <li><p><code><a href="../reference/get_mentions.html">get_mentions()</a></code> and <code><a href="../reference/get_liked_posts.html">get_liked_posts()</a></code> take <code>user_id</code> as an alternative to <code>username</code>, like <code><a href="../reference/get_timeline.html">get_timeline()</a></code>.</p></li>
 <li><p><code><a href="../reference/get_bookmark.html">get_bookmark()</a></code> no longer takes <code>username</code>. Bookmarks always belong to the account that signed in; passing a name warns and is ignored.</p></li>
 <li><p><code><a href="../reference/get_timeline.html">get_timeline()</a></code>, <code><a href="../reference/get_mentions.html">get_mentions()</a></code> and <code><a href="../reference/get_liked_posts.html">get_liked_posts()</a></code> accept <code>max_results</code> down to 5, the endpoint’s floor, so five posts cost five.</p></li>

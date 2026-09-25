@@ -36,7 +36,7 @@ reading at max_posts."><meta property="og:image" content="https://Ivey-Business-
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Get List Posts</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Ivey-Business-School/xapir/blob/v0.2.0/R/get_list_posts.R" class="external-link"><code>R/get_list_posts.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Ivey-Business-School/xapir/blob/master/R/get_list_posts.R" class="external-link"><code>R/get_list_posts.R</code></a></small>
       <div class="d-none name"><code>get_list_posts.Rd</code></div>
     </div>
 
@@ -135,12 +135,16 @@ this.</p></dd>
 for each user. Default: <code>c("created_at", "description", "protected",
   "entities", "location", "profile_image_url", "profile_banner_url",
   "public_metrics", "verified", "verified_type",
-  "verified_followers_count", "subscription_type", "parody",
-  "is_identity_verified", "url")</code>. Four more fields,
-<code>connection_status</code>, <code>confirmed_email</code>,
-<code>receives_your_dm</code> and <code>subscribes_to_you</code>, describe the
-account's relationship with the signed-in user; they need a user token
-and are not requested by default.</p></dd>
+  "is_identity_verified", "url")</code>. Three fields the spec lists,
+<code>verified_followers_count</code>, <code>subscription_type</code> and
+<code>parody</code>, are refused to an app token ("not authorized to access
+'parody' on the user", 24 September 2026), so they are not requested by
+default; their columns are NA. Ask for them with
+<code>user_fields = c(default_user_fields(), "parody")</code> when your
+token can read them. Four more, <code>connection_status</code>,
+<code>confirmed_email</code>, <code>receives_your_dm</code> and
+<code>subscribes_to_you</code>, describe the account's relationship with the
+signed-in user and need a user token.</p></dd>
 
 
 <dt id="arg-media-fields">media_fields<a class="anchor" aria-label="anchor" href="#arg-media-fields"></a></dt>
