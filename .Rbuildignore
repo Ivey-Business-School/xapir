@@ -27,3 +27,4 @@
 ^CRAN-RELEASE$
 ^CRAN-SUBMISSION$
 ^vignettes/.*\.html$
+^CLAUDE\.md$
