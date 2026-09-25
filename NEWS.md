@@ -146,6 +146,16 @@ Articles.
 
 ## Reading from the API
 
+* Three user fields the spec lists, `verified_followers_count`,
+  `subscription_type` and `parody`, are refused to an app token, so they
+  are no longer requested by default. Their columns stay in the user
+  table as `NA`; ask for them with `user_fields` when your token can read
+  them. A refused field now warns once, naming the fields, instead of
+  being counted as a user that could not be read.
+* `get_my_user()` remembers whose account signed in, so a later read of
+  that account's own posts or followers by `user_id` is priced as owned.
+* `get_owned_list()` and `get_followed_lists()` print what they read
+  after the page comes back, like the paged readers.
 * `get_liking_users()` returns the 24-column users table, like every
   other user reader. It returned raw pages before.
 * `get_mentions()` and `get_liked_posts()` take `user_id` as an

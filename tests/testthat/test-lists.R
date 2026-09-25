@@ -221,3 +221,13 @@ test_that("get_trends_by_woeid reads trends and validates before any request", {
                "between 1 and 50")
   expect_error(get_trends_by_woeid(4118, bearer_token = ""), "X_BEARER_TOKEN")
 })
+
+test_that("get_owned_list() prints what it read after the page comes back", {
+  httr2::local_mocked_responses(list(json_response(200, list(
+    data = list(list(id = "1", name = "a"), list(id = "2", name = "b"), list(id = "3", name = "c"))
+  ))))
+  out <- collect_messages(get_owned_list(user_id = "42", bearer_token = "tok"))
+  expect_match(out$msgs[1], "Reading up to 100 lists, about \\$0.50")
+  expect_equal(out$msgs[length(out$msgs)], "Read 3 lists, about $0.02.")
+  expect_equal(nrow(out$result), 3)
+})

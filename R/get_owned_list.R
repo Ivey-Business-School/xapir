@@ -52,5 +52,7 @@ get_owned_list <- function(
     x_perform()
 
   warn_partial_errors(page$errors, what = "lists")
-  lists_table(page$data)
+  out <- lists_table(page$data)
+  announce_total(nrow(out), what = "lists", owned = is_owned(user_id))
+  out
 }

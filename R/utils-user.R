@@ -98,12 +98,33 @@ warn_partial_errors <- function(errors, what = "users") {
   if (length(errors) == 0) {
     return(invisible(NULL))
   }
-  reasons <- map_chr(errors, ~ .x$detail %||% .x$title %||% "Unknown error.")
-  warning(
-    length(errors), " of the ", what, " could not be read. ",
-    paste(reasons, collapse = " "),
-    call. = FALSE
-  )
+  # A "Field Authorization Error" means one field was refused, not one
+  # item: the item came back with that field missing. Those get their own
+  # warning naming the fields, and are not counted as unread items.
+  detail   <- map_chr(errors, ~ .x$detail %||% .x$title %||% "Unknown error.")
+  is_field <- map_lgl(errors, ~ identical(.x$title, "Field Authorization Error")) |
+    grepl("not authorized to access '", detail, fixed = TRUE)
+
+  if (any(is_field)) {
+    fields <- unique(map_chr(errors[is_field], function(e) {
+      e$value %||% sub(".*access '([^']+)'.*", "\\1", e$detail %||% "")
+    }))
+    fields <- fields[nzchar(fields)]
+    warning(
+      "This token cannot read ", length(fields), " of the fields asked for, ",
+      "so they are NA: ", paste(fields, collapse = ", "), ". ",
+      "Drop them from `user_fields` to silence this.",
+      call. = FALSE
+    )
+  }
+
+  if (any(!is_field)) {
+    warning(
+      sum(!is_field), " of the ", what, " could not be read. ",
+      paste(detail[!is_field], collapse = " "),
+      call. = FALSE
+    )
+  }
   invisible(NULL)
 }
 

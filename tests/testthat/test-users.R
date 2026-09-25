@@ -278,3 +278,62 @@ test_that("get_muting with nobody muted is the zero-row schema", {
   muted <- suppressMessages(get_muting())
   expect_identical(muted, user_schema())
 })
+
+test_that("a field the token cannot read warns once and does not count as a missing user", {
+  httr2::local_mocked_responses(list(json_response(200, list(
+    data = list(api_user(1)),
+    errors = list(
+      list(title = "Field Authorization Error", parameter = "user.fields", value = "parody",
+           detail = "Sorry, you are not authorized to access 'parody' on the user.",
+           resource_type = "user"),
+      list(title = "Field Authorization Error", parameter = "user.fields",
+           value = "subscription_type",
+           detail = "Sorry, you are not authorized to access 'subscription_type' on the user.",
+           resource_type = "user")
+    )
+  ))))
+  expect_warning(
+    out <- suppressMessages(get_users_by_usernames("one", bearer_token = "tok")),
+    "cannot read 2 of the fields asked for, so they are NA: parody, subscription_type"
+  )
+  # the user itself still came through; the helper's mock fills parody, the API would not
+  expect_equal(nrow(out), 1)
+})
+
+test_that("a missing user and a refused field give two separate warnings", {
+  httr2::local_mocked_responses(list(json_response(200, list(
+    data = list(api_user(1)),
+    errors = list(
+      list(title = "Not Found Error", detail = "Could not find user with usernames: [nobody].",
+           resource_type = "user", parameter = "usernames", value = "nobody"),
+      list(title = "Field Authorization Error", value = "parody",
+           detail = "Sorry, you are not authorized to access 'parody' on the user.")
+    )
+  ))))
+  warnings <- character(0)
+  out <- withCallingHandlers(
+    suppressMessages(get_users_by_usernames(c("one", "nobody"), bearer_token = "tok")),
+    warning = function(w) { warnings <<- c(warnings, conditionMessage(w)); invokeRestart("muffleWarning") }
+  )
+  expect_length(warnings, 2)
+  expect_match(warnings[1], "cannot read 1 of the fields")
+  expect_match(warnings[2], "^1 of the usernames could not be read")
+  expect_equal(nrow(out), 1)
+})
+
+test_that("get_my_user() remembers whose account this is, so its own data prices as owned", {
+  mock_user_token()
+  httr2::local_mocked_responses(function(req) {
+    if (grepl("/users/me", req$url, fixed = TRUE)) {
+      json_response(200, list(data = api_user(42, username = "me")))
+    } else {
+      posts_page(1:10)
+    }
+  })
+  suppressMessages(get_my_user())
+  out <- collect_messages(
+    get_timeline(user_id = "42", max_results = 10, max_posts = 10, bearer_token = "tok")
+  )
+  expect_match(out$msgs[1], "about \\$0.01 \\(your own data\\)")
+  .x_env$my_user_id <- NULL
+})

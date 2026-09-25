@@ -37,10 +37,7 @@ get_muting <- function(
   token <- authenticate_user()
 
   # The endpoint is addressed by the caller's own id.
-  me <- x_request(token$access_token) |>
-    req_url_path_append("users", "me") |>
-    x_perform()
-  user_id <- pluck(me, "data", "id")
+  user_id <- my_user_id(token)
 
   req <- x_request(token$access_token) |>
     req_url_path_append("users", user_id, "muting") |>

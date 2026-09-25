@@ -116,9 +116,11 @@ test_that("the default post fields include the long-post and article fields", {
   # the live API still answers to the old names, so the defaults keep them
   expect_false(any(c("note_post", "referenced_posts", "source") %in%
                      default_post_fields()))
-  expect_true(all(c("is_identity_verified", "url", "profile_banner_url",
-                    "subscription_type", "verified_followers_count",
-                    "parody") %in% default_user_fields()))
+  expect_true(all(c("is_identity_verified", "url", "profile_banner_url")
+                  %in% default_user_fields()))
+  # an app token is refused these three, so the defaults leave them out
+  expect_false(any(c("subscription_type", "verified_followers_count",
+                     "parody") %in% default_user_fields()))
   # these need a user token, so an app token must not ask for them
   user_context_only <- c("connection_status", "confirmed_email",
                          "receives_your_dm", "subscribes_to_you")

@@ -26,5 +26,12 @@ get_my_user <- function(
 
   warn_partial_errors(page$errors, what = "users")
   # This endpoint returns one user object in `data`, not a list of them.
-  users_table(list(page$data))
+  user <- users_table(list(page$data))
+
+  # Remember whose account this is, so a later read of its own data is
+  # priced as owned.
+  if (nrow(user) == 1 && !is.na(user$user_id)) {
+    .x_env$my_user_id <- list(key = token$access_token, id = user$user_id)
+  }
+  user
 }

@@ -16,12 +16,16 @@ get_muting(
 for each user. Default: \code{c("created_at", "description", "protected",
   "entities", "location", "profile_image_url", "profile_banner_url",
   "public_metrics", "verified", "verified_type",
-  "verified_followers_count", "subscription_type", "parody",
-  "is_identity_verified", "url")}. Four more fields,
-\code{connection_status}, \code{confirmed_email},
-\code{receives_your_dm} and \code{subscribes_to_you}, describe the
-account's relationship with the signed-in user; they need a user token
-and are not requested by default.}
+  "is_identity_verified", "url")}. Three fields the spec lists,
+\code{verified_followers_count}, \code{subscription_type} and
+\code{parody}, are refused to an app token ("not authorized to access
+'parody' on the user", 24 September 2026), so they are not requested by
+default; their columns are NA. Ask for them with
+\code{user_fields = c(default_user_fields(), "parody")} when your
+token can read them. Four more, \code{connection_status},
+\code{confirmed_email}, \code{receives_your_dm} and
+\code{subscribes_to_you}, describe the account's relationship with the
+signed-in user and need a user token.}
 
 \item{max_results}{\code{numeric}; the number of users per API call,
 between 10 and 100. The function stops before any request if the value

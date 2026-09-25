@@ -37,9 +37,14 @@ default_user_fields <- function() {
   c(
     "created_at", "description", "protected", "entities", "location",
     "profile_image_url", "profile_banner_url", "public_metrics", "verified",
-    "verified_type", "verified_followers_count", "subscription_type",
-    "parody", "is_identity_verified", "url"
+    "verified_type", "is_identity_verified", "url"
   )
+  # Not asked for by default: verified_followers_count, subscription_type
+  # and parody. The spec lists them, but on 24 September 2026 an app token
+  # got "Sorry, you are not authorized to access 'parody' on the user" for
+  # each, and the whole read then carried a warning. The columns stay in the
+  # user table (NA) and a user_fields = c(default_user_fields(), "parody")
+  # asks for them when an account can read them.
 }
 
 default_media_fields <- function() {

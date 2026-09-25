@@ -121,6 +121,7 @@ users_page <- function(ids, next_token = NULL) {
 }
 
 mock_user_token <- function(env = parent.frame()) {
+  .x_env$my_user_id <- NULL
   testthat::local_mocked_bindings(
     authenticate_user = function(...) list(access_token = "tok"),
     .package = "xapir",
