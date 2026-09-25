@@ -33,6 +33,7 @@ articles:
   - title: Guides
     contents:
       - getting-started
+      - course-workflow
 
 reference:
   - title: Reading posts
@@ -109,6 +110,7 @@ reference:
     contents:
       - get_my_user
       - get_usage
+      - get_spend
       - get_usage_credits
       - get_post_analytics
       - get_personalized_trends

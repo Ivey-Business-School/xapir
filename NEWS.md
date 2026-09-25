@@ -53,6 +53,10 @@ page, and 35 functions were added, for 81 in all. Grouped:
   `get_usage_credits()` (the dollar balance left), `get_post_analytics()`
   (impressions, engagements and clicks on your posts, one row per post
   and period), `get_personalized_trends()` and `search_users()`.
+* `get_spend()`: the daily post reads from `get_usage()` priced at the
+  post price, one row a day with `date`, `posts` and `dollars`, and one
+  summary line. It counts post reads only and is a ceiling; the balance
+  itself is `get_usage_credits()`.
 * Interactions: `like_post()`, `unlike_post()`, `block_user()` and
   `unblock_user()`.
 * Media: `upload_media()` uploads a photo, GIF or video in chunks and
@@ -160,6 +164,10 @@ Articles.
   or account; the endpoint has no language parameter.
 * `get_trends_by_woeid()` and `get_personalized_trends()` return
   `post_count` as `NA` when the API sends no number, which it often does.
+* A new article, "The course workflow" (`vignette("course-workflow")`),
+  walks through the weekly routine for one brand: save the id, pull with
+  `since_id`, save the pages, unfold, stack week over week, join, and
+  check the bill with `get_spend()` and `get_usage_credits()`.
 
 
 * Every reader prints the most it can spend before its first request,
