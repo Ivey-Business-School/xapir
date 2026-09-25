@@ -1,5 +1,27 @@
 # Changelog
 
+## xapir 0.2.1
+
+Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.1")`.
+
+Three fixes from a second read-only run against the live API on 24
+September 2026, after the 0.2.0 tag was cut.
+
+- Three user fields the spec lists, `verified_followers_count`,
+  `subscription_type` and `parody`, are refused to an app token, so they
+  are no longer requested by default. Their columns stay in the user
+  table as `NA`; ask for them with `user_fields` when your token can
+  read them. A refused field now warns once, naming the fields, instead
+  of being counted as a user that could not be read.
+- [`get_my_user()`](https://Ivey-Business-School.github.io/xapir/reference/get_my_user.md)
+  remembers whose account signed in, so a later read of that account’s
+  own posts or followers by `user_id` is priced as owned.
+- [`get_owned_list()`](https://Ivey-Business-School.github.io/xapir/reference/get_owned_list.md)
+  and
+  [`get_followed_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_followed_lists.md)
+  print what they read after the page comes back, like the paged
+  readers.
+
 ## xapir 0.2.0
 
 Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.0")`.
@@ -236,23 +258,6 @@ Articles.
   unless the post was made in an X community).
 
 ### Reading from the API
-
-- Three user fields the spec lists, `verified_followers_count`,
-  `subscription_type` and `parody`, are refused to an app token, so they
-  are no longer requested by default. Their columns stay in the user
-  table as `NA`; ask for them with `user_fields` when your token can
-  read them. A refused field now warns once, naming the fields, instead
-  of being counted as a user that could not be read.
-
-- [`get_my_user()`](https://Ivey-Business-School.github.io/xapir/reference/get_my_user.md)
-  remembers whose account signed in, so a later read of that account’s
-  own posts or followers by `user_id` is priced as owned.
-
-- [`get_owned_list()`](https://Ivey-Business-School.github.io/xapir/reference/get_owned_list.md)
-  and
-  [`get_followed_lists()`](https://Ivey-Business-School.github.io/xapir/reference/get_followed_lists.md)
-  print what they read after the page comes back, like the paged
-  readers.
 
 - [`get_liking_users()`](https://Ivey-Business-School.github.io/xapir/reference/get_liking_users.md)
   returns the 24-column users table, like every other user reader. It
