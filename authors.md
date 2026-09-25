@@ -9,7 +9,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/Ivey-Business-School/xapir/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/Ivey-Business-School/xapir/blob/v0.2.1/DESCRIPTION)
 
 Boichuk J (2026). *xapir: An Implementation of X APIs for Social Media
 Engagement Research*. R package version 0.2.1,
