@@ -15,7 +15,7 @@ The package is not on CRAN. Install a numbered release from GitHub:
 
 ``` r
 # install.packages("pak")
-pak::pak("Ivey-Business-School/xapir@v0.2.0")
+pak::pak("Ivey-Business-School/xapir@v0.2.1")
 ```
 
 ## Getting started
