@@ -32,8 +32,10 @@ string, date, or date-time object to the required format (e.g.,
 \item{is_local_tz}{Logical. Convert \code{start} and \code{end} from UTC to the
 system time zone.}
 
-\item{drop_incomplete}{Drops the first and last rows, which cover only part
-of a \code{granularity} period.}
+\item{drop_incomplete}{Drops the periods the search window cuts short:
+any period shorter than \code{granularity}, or reaching outside
+\code{start_time} and \code{end_time}. A window that starts and ends on a period
+boundary (midnight for \code{"day"}) loses nothing.}
 
 \item{bearer_token}{A string containing the bearer token for authenticating
 with the X API. By default, this argument retrieves the token from the

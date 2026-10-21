@@ -17,7 +17,7 @@
 #' @importFrom purrr pluck map_chr map_int
 #' @importFrom tibble tibble
 #' @importFrom lubridate ymd_hms with_tz
-#' @importFrom dplyr mutate slice n bind_rows
+#' @importFrom dplyr mutate bind_rows
 #' @param query The search to be made on X. You can find ways to build
 #'   specific queries according to the [X API documentation
 #'   website](https://docs.x.com/x-api/posts/search/integrate/build-a-query#types)
@@ -31,8 +31,10 @@
 #'   `"day"`. The function stops before any request on anything else.
 #' @param is_local_tz Logical. Convert `start` and `end` from UTC to the
 #'   system time zone.
-#' @param drop_incomplete Drops the first and last rows, which cover only part
-#'   of a `granularity` period.
+#' @param drop_incomplete Drops the periods the search window cuts short:
+#'   any period shorter than `granularity`, or reaching outside
+#'   `start_time` and `end_time`. A window that starts and ends on a period
+#'   boundary (midnight for `"day"`) loses nothing.
 #' @template bearer_token
 #' @return A tibble with one row per period: `start` and `end` (date-times)
 #'   and `post_count` (integer). When the query matched nothing, the tibble
@@ -104,19 +106,17 @@ get_all_post_count <- function(
     })
   )
 
+  # Sorted and cut in UTC, before any change of time zone.
+  counts_df <- tidy_count_periods(
+    counts_df, granularity, start_time, end_time, drop_incomplete
+  )
+
   if (isTRUE(is_local_tz)) {
     counts_df <- counts_df |>
       mutate(
         start = with_tz(start, tzone = Sys.timezone()),
         end   = with_tz(end, tzone = Sys.timezone())
       )
-  }
-
-  # The first and last periods are cut by the search window, so their counts
-  # are low. Nothing to drop when there are no rows.
-  if (isTRUE(drop_incomplete) && nrow(counts_df) > 0) {
-    counts_df <- counts_df |>
-      slice(-1, -n())
   }
 
   counts_df

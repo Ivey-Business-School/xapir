@@ -15,6 +15,15 @@ count_row <- function(day, n) {
   )
 }
 
+# A period the search window cut short, such as 2020-02-01 from noon.
+partial_row <- function(from, to, n) {
+  list(
+    start = sprintf("2020-02-%s:00:00.000Z", from),
+    end = sprintf("2020-02-%s:00:00.000Z", to),
+    post_count = as.integer(n)
+  )
+}
+
 # Full-archive search --------------------------------------------------------
 
 test_that("get_all_post hits /search/all with the query and returns pages", {
@@ -88,9 +97,9 @@ test_that("get_all_post_count follows next_token, binds the rows and drops the e
   httr2::local_mocked_responses(function(req) {
     urls <<- c(urls, req$url)
     if (grepl("next_token=c2", req$url, fixed = TRUE)) {
-      all_count_page(list(count_row(4, 40), count_row(5, 5)))
+      all_count_page(list(count_row(4, 40), partial_row("05T00", "05T12", 5)))
     } else {
-      all_count_page(list(count_row(1, 1), count_row(2, 20), count_row(3, 30)), next_token = "c2")
+      all_count_page(list(partial_row("01T12", "02T00", 1), count_row(2, 20), count_row(3, 30)), next_token = "c2")
     }
   })
   out <- collect_messages(get_all_post_count(
@@ -112,6 +121,50 @@ test_that("get_all_post_count follows next_token, binds the rows and drops the e
   expect_equal(counts$post_count, c(20L, 30L, 40L))
   expect_s3_class(counts$start, "POSIXct")
   expect_equal(format(counts$start[1], "%Y-%m-%d", tz = "UTC"), "2020-02-02")
+})
+
+test_that("get_all_post_count keeps the days either side of a page seam", {
+  # X sends the newest page first. Before 0.2.2 the rows were dropped
+  # "first and last" in that order, which removed 2020-02-03 and
+  # 2020-02-04, the two whole days where the pages meet.
+  httr2::local_mocked_responses(function(req) {
+    if (grepl("next_token=older", req$url, fixed = TRUE)) {
+      all_count_page(list(count_row(1, 10), count_row(2, 20), count_row(3, 30)))
+    } else {
+      all_count_page(
+        list(count_row(4, 40), count_row(5, 50), count_row(6, 60)),
+        next_token = "older"
+      )
+    }
+  })
+  counts <- suppressMessages(get_all_post_count(
+    "tesla", start_time = "2020-02-01T00:00:00Z", end_time = "2020-02-07T00:00:00Z",
+    is_local_tz = FALSE, bearer_token = "tok"
+  ))
+  # A window on midnight boundaries is all whole days, so nothing is dropped.
+  expect_equal(counts$post_count, c(10L, 20L, 30L, 40L, 50L, 60L))
+  expect_equal(
+    format(counts$start, "%Y-%m-%d", tz = "UTC"),
+    sprintf("2020-02-%02d", 1:6)
+  )
+})
+
+test_that("get_all_post_count drops only the periods cut short, in time order", {
+  httr2::local_mocked_responses(function(req) {
+    if (grepl("next_token=older", req$url, fixed = TRUE)) {
+      all_count_page(list(partial_row("01T12", "02T00", 1), count_row(2, 20)))
+    } else {
+      all_count_page(
+        list(count_row(3, 30), partial_row("04T00", "04T06", 4)),
+        next_token = "older"
+      )
+    }
+  })
+  counts <- suppressMessages(get_all_post_count(
+    "tesla", start_time = "2020-02-01T12:00:00Z", end_time = "2020-02-04T06:00:00Z",
+    is_local_tz = FALSE, bearer_token = "tok"
+  ))
+  expect_equal(counts$post_count, c(20L, 30L))
 })
 
 test_that("get_all_post_count keeps every row when drop_incomplete is FALSE and reads tweet_count too", {

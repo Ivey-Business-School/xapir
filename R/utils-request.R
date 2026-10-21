@@ -473,3 +473,34 @@ check_granularity <- function(granularity) {
   }
   invisible(granularity)
 }
+
+# Put count rows in time order and drop the periods the search window cut
+# short. A paged count arrives newest page first, so the rows are sorted
+# before anything is dropped; dropping "the first and last rows" of the
+# unsorted pile removed two whole days at every page seam. A period is
+# incomplete when it is shorter than the granularity or reaches outside the
+# window, so a window that starts and ends on a boundary keeps every period.
+#' @importFrom dplyr distinct arrange
+#' @noRd
+tidy_count_periods <- function(counts_df, granularity, start_time, end_time,
+                               drop_incomplete) {
+  counts_df <- counts_df |>
+    distinct(start, .keep_all = TRUE) |>
+    arrange(start)
+  if (!isTRUE(drop_incomplete) || nrow(counts_df) == 0) {
+    return(counts_df)
+  }
+
+  period <- c(minute = 60, hour = 3600, day = 86400)[[granularity]]
+  length_secs <- as.numeric(
+    difftime(counts_df$end, counts_df$start, units = "secs")
+  )
+  complete <- !is.na(length_secs) & length_secs >= period
+  if (!is.null(start_time)) {
+    complete <- complete & counts_df$start >= ymd_hms(start_time, tz = "UTC")
+  }
+  if (!is.null(end_time)) {
+    complete <- complete & counts_df$end <= ymd_hms(end_time, tz = "UTC")
+  }
+  counts_df[complete, ]
+}
