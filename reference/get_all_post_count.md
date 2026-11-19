@@ -59,8 +59,10 @@ get_all_post_count(
 
 - drop_incomplete:
 
-  Drops the first and last rows, which cover only part of a
-  `granularity` period.
+  Drops the periods the search window cuts short: any period shorter
+  than `granularity`, or reaching outside `start_time` and `end_time`. A
+  window that starts and ends on a period boundary (midnight for
+  `"day"`) loses nothing.
 
 - bearer_token:
 

@@ -1,5 +1,32 @@
 # Changelog
 
+## xapir 0.2.2
+
+Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.2")`.
+
+- Every request now has a time limit, two minutes by default; set
+  `options(xapir.timeout = )` to change it. Before, a connection that
+  stalled waited forever: on 19 November 2026 a full-archive search sat
+  four hours on one. A read that times out or loses its connection is
+  tried again, like a 429. A write (a post, a like, an upload) is not,
+  because X may have acted on the first try.
+- [`get_all_post_count()`](https://Ivey-Business-School.github.io/xapir/reference/get_all_post_count.md)
+  no longer loses two days where its pages meet. X sends the newest page
+  first, and the rows were dropped “first and last” in that order, which
+  removed the two whole periods at the seam instead of the window’s cut
+  edges. Found on 20 October 2026, when every multi-page daily count for
+  a class request came back two days short. Rows are now sorted by
+  `start`, and duplicates removed, before anything is dropped.
+- In both
+  [`get_all_post_count()`](https://Ivey-Business-School.github.io/xapir/reference/get_all_post_count.md)
+  and
+  [`get_recent_post_count()`](https://Ivey-Business-School.github.io/xapir/reference/get_recent_post_count.md),
+  `drop_incomplete` now drops only a period the window actually cuts
+  short: one shorter than `granularity`, or reaching outside
+  `start_time` and `end_time`. A window that starts and ends on a
+  boundary (midnight for `"day"`) keeps every period; before, it lost
+  its first and last whole periods.
+
 ## xapir 0.2.1
 
 Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.1")`.

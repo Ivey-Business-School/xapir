@@ -9,16 +9,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/Ivey-Business-School/xapir/blob/v0.2.1/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/Ivey-Business-School/xapir/blob/master/DESCRIPTION)
 
 Boichuk J (2026). *xapir: An Implementation of X APIs for Social Media
-Engagement Research*. R package version 0.2.1,
+Engagement Research*. R package version 0.2.2,
 <https://github.com/Ivey-Business-School/xapir>.
 
     @Manual{,
       title = {xapir: An Implementation of X APIs for Social Media Engagement Research},
       author = {Jeffrey Boichuk},
       year = {2026},
-      note = {R package version 0.2.1},
+      note = {R package version 0.2.2},
       url = {https://github.com/Ivey-Business-School/xapir},
     }
