@@ -29,6 +29,8 @@ Imports:
     tibble,
     utils
 Suggests:
+    callr,
+    httpuv,
     jsonlite,
     knitr,
     rmarkdown,

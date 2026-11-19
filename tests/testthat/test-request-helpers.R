@@ -267,3 +267,61 @@ test_that("dollars() rounds a half cent up on every platform", {
   expect_equal(dollars(0.005, 3), "0.005")
   expect_equal(dollars(150 * 0.005), "0.75")
 })
+
+# A local server that accepts a connection and never answers: the stalled
+# connection that hung a full-archive search for four hours in November 2026.
+silent_server <- function() {
+  port <- httpuv::randomPort()
+  server <- callr::r_bg(function(port) {
+    socket <- serverSocket(port)
+    connections <- list()
+    repeat {
+      connections[[length(connections) + 1]] <- socketAccept(socket)
+    }
+  }, args = list(port = port))
+  Sys.sleep(1)
+  list(url = paste0("http://127.0.0.1:", port), process = server)
+}
+
+test_that("a stalled read times out and is tried again", {
+  skip_on_cran()
+  skip_if_not_installed("callr")
+  skip_if_not_installed("httpuv")
+  server <- silent_server()
+  on.exit(server$process$kill())
+  started <- Sys.time()
+  expect_error(
+    x_perform(httr2::request(server$url), max_tries = 2, timeout = 1),
+    class = "httr2_failure"
+  )
+  elapsed <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+  expect_gt(elapsed, 2)
+})
+
+test_that("a stalled write times out once and is not tried again", {
+  skip_on_cran()
+  skip_if_not_installed("callr")
+  skip_if_not_installed("httpuv")
+  server <- silent_server()
+  on.exit(server$process$kill())
+  req <- httr2::request(server$url) |>
+    httr2::req_body_json(list(text = "hello"))
+  started <- Sys.time()
+  expect_error(
+    x_perform(req, max_tries = 2, timeout = 1),
+    class = "httr2_failure"
+  )
+  elapsed <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+  expect_lt(elapsed, 2)
+})
+
+test_that("the time limit can be set with an option", {
+  seen <- NULL
+  httr2::local_mocked_responses(function(req) {
+    seen <<- req$options$timeout_ms
+    httr2::response_json(body = list(data = list()))
+  })
+  withr::local_options(xapir.timeout = 30)
+  x_perform(httr2::request("https://api.x.com/2/users/me"))
+  expect_equal(seen, 30000)
+})

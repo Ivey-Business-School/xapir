@@ -2,6 +2,12 @@
 
 Install it with `pak::pak("Ivey-Business-School/xapir@v0.2.2")`.
 
+* Every request now has a time limit, two minutes by default; set
+  `options(xapir.timeout = )` to change it. Before, a connection that
+  stalled waited forever: on 19 November 2026 a full-archive search sat
+  four hours on one. A read that times out or loses its connection is
+  tried again, like a 429. A write (a post, a like, an upload) is not,
+  because X may have acted on the first try.
 * `get_all_post_count()` no longer loses two days where its pages meet.
   X sends the newest page first, and the rows were dropped "first and
   last" in that order, which removed the two whole periods at the seam

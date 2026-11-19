@@ -3,7 +3,7 @@
 
 #' @importFrom httr2 request req_auth_bearer_token req_user_agent
 #'   req_url_path_append req_url_query req_retry req_error req_perform
-#'   resp_body_json resp_status resp_header
+#'   req_timeout req_get_method resp_body_json resp_status resp_header
 NULL
 
 # Field defaults -------------------------------------------------------------
@@ -335,13 +335,23 @@ x_request <- function(token) {
 # side). It waits as long as x-rate-limit-reset or Retry-After asks, and gives
 # up after max_tries attempts. Any other 4xx (a bad token, a misspelled handle,
 # a field the tier cannot see) stops at once with the API's own message.
-x_perform <- function(req, max_tries = 4) {
+#
+# Every request also has a time limit, two minutes unless
+# options(xapir.timeout = ) says otherwise. Without one, a connection that
+# stalls waits forever: on 19 November 2026 a full-archive search sat four
+# hours on one. A read that times out, or whose connection fails, is tried
+# again like a 429. A write (a post, a like, an upload) is not, because X may
+# have acted on the first try, and a second could post twice.
+x_perform <- function(req, max_tries = 4,
+                      timeout = getOption("xapir.timeout", 120)) {
+  is_read <- req_get_method(req) == "GET"
   req |>
+    req_timeout(timeout) |>
     req_retry(
       max_tries        = max_tries,
       is_transient     = x_is_transient,
       after            = x_retry_after,
-      retry_on_failure = FALSE
+      retry_on_failure = is_read
     ) |>
     req_error(body = x_error_body) |>
     req_perform() |>
